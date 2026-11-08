@@ -10,6 +10,6 @@ RDForms est la boîte à outils de formulaires de la plateforme RDCore : des for
 | `RDCore.Forms.Avalonia` | Les contrôles, et la fenêtre construite à partir du modèle. |
 
 > [!NOTE]
-> RDForms est en développement pré-alpha. Rien n'est encore publié, et l'API changera.
+> RDForms est en développement pré-alpha. Aucun paquet n'est publié, et l'API n'est pas stable.
 
 La référence de l'API est générée à partir des _xmldocs_ des bibliothèques.

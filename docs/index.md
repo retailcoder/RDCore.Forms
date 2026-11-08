@@ -10,6 +10,6 @@ RDForms is the form toolkit of the RDCore platform: cross-platform forms for RD-
 | `RDCore.Forms.Avalonia` | The controls, and the window built from the model. |
 
 > [!NOTE]
-> RDForms is in pre-alpha development. Nothing is published yet, and the API will change.
+> RDForms is in pre-alpha development. No package is published, and the API is not stable.
 
 The API reference is generated from the libraries' xmldocs.
