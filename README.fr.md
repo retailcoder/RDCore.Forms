@@ -3,7 +3,7 @@
 
 ![VIVAT CUCUMIS](./assets/vivat-cucumis-stonecore.png)
 
-RDCore.Forms est RDForms, la bibliothèque de formulaires de la plateforme [RDCore](https://github.com/rubberduck-vba/RDCore). Elle décrit les formulaires, leurs contrôles et leurs événements, les affiche avec [Avalonia](https://avaloniaui.net) sous Windows, Linux et macOS, et importe les formulaires des projets Visual Basic 6.0 (fichiers `.frm` et `.frx`) et des projets VBA (UserForms).
+RDCore.Forms est RDForms, la bibliothèque de formulaires de la plateforme [RDCore](https://github.com/rubberduck-vba/RDCore). Elle décrit les formulaires, leurs contrôles et leurs événements, les affiche avec [Avalonia](https://avaloniaui.net) sous Windows, Linux et macOS, et importe les formulaires des projets Visual Basic 6.0 (fichiers `.frm` et `.frx`). RDCore importe les UserForms des projets VBA dans le même modèle.
 
 Le _runtime_ de RDCore exécute le code d'un formulaire. RDCore.Forms affiche le formulaire et transmet à ce code les événements de ses contrôles.
 
