@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="README.md" />
+    <File Path="README.fr.md" />
+    <File Path="NOTICE.md" />
+    <File Path="LICENSE" />
+  </Folder>
+  <Folder Name="/Solution Items/Build/">
+    <File Path=".github/workflows/build.yml" />
+    <File Path=".github/workflows/cla.yml" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/RDCore.Forms/RDCore.Forms.csproj" />
+    <Project Path="src/RDCore.Forms.Avalonia/RDCore.Forms.Avalonia.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RDCore.Forms.Tests/RDCore.Forms.Tests.csproj" />
+  </Folder>
+</Solution>

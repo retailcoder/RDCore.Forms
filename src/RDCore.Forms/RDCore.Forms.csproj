@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyTitle>RDCore.Forms</AssemblyTitle>
+    <Description>RDForms' form model and documents, with no UI dependency: component classes, their properties and events, the instances of a form, and the readers that import a VB6 or MSForms form into the model.</Description>
+  </PropertyGroup>
+
+</Project>
