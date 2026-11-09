@@ -61,7 +61,7 @@ The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinBut
 |Containers|A control placed in a Frame or a PictureBox is shown in it. A control placed in any other component is not shown.|
 |Stacking|In each container, the first control the form holds is on top. A windowless control (a Label, an Image, a Shape or a Line) is under every windowed one.|
 |Tab order|One order across the whole form, by `TabIndex`, the form's order deciding a tie. A `TabIndex` past the last place takes the first free place, in the form's order.|
-|Focus|Tab skips a control that takes no focus (a Label, a Frame or an Image), one whose `TabStop` is False, and one that is hidden or disabled or in a hidden or disabled container.|
+|Focus|Tab skips a control that takes no focus (a Label, a Frame, an Image, a Timer, a Shape or a Line), one whose `TabStop` is False, and one that is hidden or disabled or in a hidden or disabled container.|
 
 ## Common properties
 

@@ -25,8 +25,8 @@ public readonly record struct DrawingScale(double TwipsAcross, double TwipsDown,
     /// <param name="insideWidth">The container's inside width, in twips: within its border, if it has one.</param>
     /// <param name="insideHeight">The container's inside height, in twips.</param>
     /// <returns>
-    /// The scale. A container with no <c>ScaleMode</c>, such as a Frame, and a user scale with no width or height, are
-    /// <see cref="Twips"/>.
+    /// The scale. It is <see cref="Twips"/> for no container, for a container with no <c>ScaleMode</c> such as a Frame, and for a
+    /// user scale whose <c>ScaleWidth</c> or <c>ScaleHeight</c> is 0.
     /// </returns>
     public static DrawingScale Of(ComponentInstance? container, double insideWidth, double insideHeight)
     {
