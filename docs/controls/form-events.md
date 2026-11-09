@@ -63,3 +63,8 @@ The root's KeyPress follows the TextBox's rules: a character outside ASCII raise
 
 > [!NOTE]
 > **Not implemented.** The root's GotFocus and LostFocus. A TextBox is the only control that raises its own key events; with `KeyPreview` True, a key on another control raises the root's events alone.
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---
