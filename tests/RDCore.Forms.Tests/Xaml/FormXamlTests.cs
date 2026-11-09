@@ -1,4 +1,5 @@
 ﻿using RDCore.Forms.Import.VB6;
+using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 using RDCore.Forms.Xaml;
@@ -61,6 +62,31 @@ public sealed class FormXamlTests
         }
 
         CollectionAssert.AreEqual(form.ControlLibraries, read.ControlLibraries);
+    }
+
+    [TestMethod]
+    public void AMenusShortcut_IsWrittenAsVBWritesIt_AndReadBack()
+    {
+        var form = VB6FormReader.ReadFile(Fixture("Intrinsics.frm")).Form!;
+
+        var written = FormXaml.Write(form);
+        var read = FormXaml.Read(written);
+
+        StringAssert.Contains(written, "Shortcut=\"^O\"");
+        Assert.IsEmpty(read.Diagnostics, string.Join(Environment.NewLine, read.Diagnostics));
+        Assert.AreEqual(new MenuShortcut(79, ShortcutModifiers.Ctrl),
+            read.Form!.Components.Single(c => c.Name == "mnuFileOpen").Get(P.Shortcut));
+    }
+
+    [TestMethod]
+    [DataRow("+{F2}", (short)113, ShortcutModifiers.Shift)]
+    [DataRow("+^{DEL}", (short)46, ShortcutModifiers.Shift | ShortcutModifiers.Ctrl)]
+    public void AShortcutAttribute_IsReadAsVBWritesIt(string text, short keyCode, ShortcutModifiers modifiers)
+    {
+        var read = Read($"<Menu Name=\"mnuA\" Caption=\"A\" Shortcut=\"{text}\" />");
+
+        Assert.IsEmpty(read.Diagnostics, string.Join(Environment.NewLine, read.Diagnostics));
+        Assert.AreEqual(new MenuShortcut(keyCode, modifiers), read.Form!.Components.Single(c => c.Name == "mnuA").Get(P.Shortcut));
     }
 
     [TestMethod]
