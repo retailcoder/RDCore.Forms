@@ -17,7 +17,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <remarks>
 /// <para>
 /// Its border is a sunken edge when 3-D and one pixel when flat. The controls it holds are placed inside the border, from its client
-/// origin. Its <c>Picture</c> is not drawn.
+/// origin. Its <c>Picture</c> is drawn at its own size in pixels from the client origin, clipped, under the controls it holds. A
+/// picture <see cref="VBPicture.Decode"/> refuses is not drawn, and <see cref="PictureError"/> says why.
 /// </para>
 /// <para>
 /// It takes the focus, whether or not it holds controls. It raises Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove and
@@ -29,6 +30,8 @@ public sealed class VBPictureBox : Control, IVBContainer
 {
     private readonly ComponentInstance instance;
     private readonly VBEdge edge = new();
+    private readonly VBPicture.Holder picture = new();
+    private readonly PictureLayer layer = new();
     private IBrush background = Brushes.Transparent;
 
     static VBPictureBox()
@@ -48,7 +51,7 @@ public sealed class VBPictureBox : Control, IVBContainer
     public VBPictureBox(ComponentInstance instance)
     {
         this.instance = instance;
-        edge.Child = ChildHost;
+        edge.Child = new Panel { Children = { layer, ChildHost } };
         VisualChildren.Add(edge);
         LogicalChildren.Add(edge);
         ComponentBinding.Bind(this, instance, VBClasses.PictureBox, Apply);
@@ -61,6 +64,17 @@ public sealed class VBPictureBox : Control, IVBContainer
     /// The edge its border is drawn with.
     /// </summary>
     public VBEdgeStyle Edge => edge.Edge;
+
+    /// <summary>
+    /// The size in pixels of the picture it draws, or <see langword="null"/> where it draws none.
+    /// </summary>
+    public PixelSize? PictureSize => picture.Picture?.PixelSize;
+
+    /// <summary>
+    /// <see cref="FormError.InvalidPicture"/> where its component's <c>Picture</c> is refused and not drawn; otherwise
+    /// <see langword="null"/>.
+    /// </summary>
+    public FormError? PictureError => picture.Error;
 
     /// <inheritdoc/>
     public override void Render(DrawingContext context) => context.FillRectangle(background, new Rect(Bounds.Size));
@@ -78,6 +92,10 @@ public sealed class VBPictureBox : Control, IVBContainer
                 break;
             case nameof(P.ForeColor):
                 SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(e.After));
+                break;
+            case nameof(P.Picture):
+                if (picture.Take((byte[]?)e.After))
+                    layer.Picture = picture.Picture;
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);
