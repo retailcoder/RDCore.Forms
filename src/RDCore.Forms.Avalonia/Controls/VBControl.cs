@@ -86,6 +86,13 @@ public static class VBControl
         return arguments;
     }
 
+    // An event of a component a part of its control raises, such as its drawing surface, to the sink the part has.
+    internal static void RaiseFor(Control part, ComponentInstance instance, EventDefinition definition)
+    {
+        if (GetEventSink(part) is { } sink)
+            sink.Raise(instance, definition, []);
+    }
+
     // Whether control is the innermost component under the pointer. A routed pointer event bubbles, so a press on a button inside a
     // Frame reaches the Frame too, where it is not the Frame's: VB raises the innermost control's event and nothing above it. The
     // walk stops at the first visual that shows a component. A template part shows none, so a press on a Label's text is the Label's.

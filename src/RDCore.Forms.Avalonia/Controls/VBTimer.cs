@@ -14,7 +14,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <remarks>
 /// <para>
 /// It runs while it is on a shown form, its own <c>Enabled</c> is True and its <c>Interval</c> is more than 0. Setting
-/// <c>Enabled</c> or <c>Interval</c> to a new value starts the interval again, and stopping it drops a tick not yet raised.
+/// <c>Enabled</c> or <c>Interval</c> to a new value begins a new interval, and stopping it drops a tick still waiting to be raised.
 /// </para>
 /// <para>
 /// The interval is counted on the clock <see cref="VBControl.GetTimeProvider"/> gives, the system's timer unless one is set, so a

@@ -30,8 +30,6 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </remarks>
 public sealed class VBShape : Control
 {
-    private const int HatchSpacing = 8;
-
     private ShapeType figure;
     private IBrush back = Brushes.Transparent;
     private bool opaque;
@@ -53,16 +51,6 @@ public sealed class VBShape : Control
         ComponentBinding.Bind(this, instance, VBClasses.Shape, Apply);
     }
 
-    // The runs of pixels on and off a one-pixel GDI pen draws for a style, from where it starts.
-    internal static double[]? Dashes(ShapeBorderStyle style) => style switch
-    {
-        ShapeBorderStyle.Dash => [18, 6],
-        ShapeBorderStyle.Dot => [3, 3],
-        ShapeBorderStyle.DashDot => [9, 6, 3, 6],
-        ShapeBorderStyle.DashDotDot => [9, 3, 3, 3, 3, 3],
-        _ => null,
-    };
-
     /// <inheritdoc/>
     public override void Render(DrawingContext context)
     {
@@ -73,14 +61,12 @@ public sealed class VBShape : Control
             bounds = new Rect((bounds.Width - side) / 2, (bounds.Height - side) / 2, side, side);
         }
 
-        var drawsABorder = borderStyle != ShapeBorderStyle.Transparent && borderWidth > 0;
+        var pen = GdiDrawing.Pen(border, borderWidth, borderStyle);
         // A pen is centred on its path, so the path is set in by half the pen to keep the border inside the control.
-        var path = drawsABorder ? bounds.Deflate(borderWidth / 2.0) : bounds;
+        var path = pen is not null ? bounds.Deflate(borderWidth / 2.0) : bounds;
         if (path.Width < 0 || path.Height < 0)
             return;
         var radius = figure is ShapeType.RoundedRectangle or ShapeType.RoundedSquare ? Math.Min(path.Width, path.Height) / 10 : 0;
-        var dashes = borderWidth == 1 ? Dashes(borderStyle) : null;
-        var pen = drawsABorder ? new Pen(border, borderWidth, dashes is null ? null : new DashStyle(dashes, 0)) : null;
 
         if (opaque)
             Draw(context, back, null, path, radius);
@@ -106,27 +92,7 @@ public sealed class VBShape : Control
         using var clip = figure is ShapeType.Oval or ShapeType.Circle
             ? context.PushGeometryClip(new EllipseGeometry(path))
             : context.PushClip(new RoundedRect(path, radius));
-        using var aliased = context.PushRenderOptions(new RenderOptions { EdgeMode = EdgeMode.Aliased });
-        var pen = new Pen(fill, 1);
-        double width = Bounds.Width, height = Bounds.Height;
-        var horizontal = fillStyle is FillStyle.HorizontalLine or FillStyle.Cross;
-        var vertical = fillStyle is FillStyle.VerticalLine or FillStyle.Cross;
-        var rising = fillStyle is FillStyle.UpwardDiagonal or FillStyle.DiagonalCross;
-        var falling = fillStyle is FillStyle.DownwardDiagonal or FillStyle.DiagonalCross;
-        if (horizontal)
-            for (var y = 0; y < height; y += HatchSpacing)
-                context.DrawLine(pen, new Point(0, y + 0.5), new Point(width, y + 0.5));
-        if (vertical)
-            for (var x = 0; x < width; x += HatchSpacing)
-                context.DrawLine(pen, new Point(x + 0.5, 0), new Point(x + 0.5, height));
-        // A diagonal line covers the pixels whose x + y (rising) or x - y (falling) is a multiple of the spacing.
-        var span = width + height;
-        if (rising)
-            for (var start = 0; start < span; start += HatchSpacing)
-                context.DrawLine(pen, new Point(start + 0.5, 0.5), new Point(start + 0.5 - span, 0.5 + span));
-        if (falling)
-            for (var start = -(int)height / HatchSpacing * HatchSpacing; start < width; start += HatchSpacing)
-                context.DrawLine(pen, new Point(start + 0.5, 0.5), new Point(start + 0.5 + span, 0.5 + span));
+        GdiDrawing.Hatch(context, fill, fillStyle, Bounds.Width, Bounds.Height);
     }
 
     private void Apply(ComponentPropertyChangedEventArgs e)

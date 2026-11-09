@@ -173,9 +173,20 @@ public static class VBProperties
     public static readonly PropertyDefinition<Align> Align = new("Align", PropertyCategory.Position);
 
     /// <summary>
-    /// Whether drawing is kept in a bitmap and repainted from it.
+    /// Whether a form or a PictureBox keeps what its drawing methods draw and raises no Paint event. RDForms keeps the drawing either
+    /// way; where this is False, it raises Paint.
     /// </summary>
     public static readonly PropertyDefinition<bool> AutoRedraw = new("AutoRedraw", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// The width in pixels of the lines a form's or a PictureBox's drawing methods draw.
+    /// </summary>
+    public static readonly PropertyDefinition<short> DrawWidth = new("DrawWidth", PropertyCategory.Appearance, 1);
+
+    /// <summary>
+    /// How a form's or a PictureBox's drawing methods draw their lines.
+    /// </summary>
+    public static readonly PropertyDefinition<DrawStyle> DrawStyle = new("DrawStyle", PropertyCategory.Appearance, VB.DrawStyle.Solid);
 
     /// <summary>
     /// The picture the component shows, as the bytes of its image file (a bitmap, icon, cursor, GIF, JPEG or metafile), or
@@ -286,8 +297,8 @@ public static class VBProperties
     public static readonly PropertyDefinition<double> Y2 = new("Y2", PropertyCategory.Position);
 
     /// <summary>
-    /// How a Line's colour combines with what is drawn under it: a raster operation from 1 to 16. 13, the default, draws the colour
-    /// as it is.
+    /// How a Line's colour, or the colour of a form's or a PictureBox's drawing, combines with what is drawn under it: a raster
+    /// operation from 1 to 16. 13, the default, draws the colour as it is.
     /// </summary>
     public static readonly PropertyDefinition<short> DrawMode = new("DrawMode", PropertyCategory.Appearance, 13);
 

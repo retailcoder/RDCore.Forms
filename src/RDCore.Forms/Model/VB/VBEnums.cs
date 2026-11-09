@@ -284,6 +284,41 @@ public enum ShapeBorderStyle
 }
 
 /// <summary>
+/// How a VB form's or PictureBox's drawing methods draw their lines: its <c>DrawStyle</c>.
+/// </summary>
+public enum DrawStyle
+{
+    /// <summary>
+    /// A solid line, the default.
+    /// </summary>
+    Solid = 0,
+    /// <summary>
+    /// Dashes.
+    /// </summary>
+    Dash = 1,
+    /// <summary>
+    /// Dots.
+    /// </summary>
+    Dot = 2,
+    /// <summary>
+    /// Dashes and dots.
+    /// </summary>
+    DashDot = 3,
+    /// <summary>
+    /// A dash and two dots.
+    /// </summary>
+    DashDotDot = 4,
+    /// <summary>
+    /// Not drawn.
+    /// </summary>
+    Transparent = 5,
+    /// <summary>
+    /// A solid line drawn inside a figure's bounds.
+    /// </summary>
+    InsideSolid = 6,
+}
+
+/// <summary>
 /// The pointer shown over a VB form or control: its <c>MousePointer</c>.
 /// </summary>
 public enum MousePointer
