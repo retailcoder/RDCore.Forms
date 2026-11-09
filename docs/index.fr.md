@@ -9,6 +9,6 @@ Le _runtime_ de RDCore exécute le code d'un formulaire. RDCore.Forms affiche le
 > **Non implémenté.** Certaines classes intrinsèques de Visual Basic 6.0 n'ont aucun contrôle dans RDCore.Forms.Avalonia, et la fenêtre d'un formulaire n'en affiche aucune : voir [Controls](controls/index.md) (en anglais).
 
 ---
-ACCUEIL • [HOME](index.md) | [BIENVENUE](introduction.fr.md) • [WELCOME](introduction.md) | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | [CONTROLS](controls/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+ACCUEIL • [HOME](index.md) | [BIENVENUE](introduction.fr.md) • [WELCOME](introduction.md) | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | [CONTROLS](controls/index.md) | [FORMAT](format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---

@@ -18,7 +18,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <para>
 /// Its border is a sunken edge when 3-D and one pixel when flat. The controls it holds are placed inside the border, from its client
 /// origin. Its <c>Picture</c> is drawn at its own size in pixels from the client origin, clipped, under the controls it holds. A
-/// metafile is not drawn. Neither is a picture <see cref="VBPicture.Decode"/> refuses, and <see cref="PictureError"/> says why.
+/// metafile is not drawn. Neither is a picture <see cref="VBPicture.Decode"/> refuses, and <see cref="PictureError"/> says why. Its
+/// drawing statements draw on its <see cref="Drawing"/>, over its picture and under its controls.
 /// </para>
 /// <para>
 /// It takes the focus, whether or not it holds controls. It raises Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove and
@@ -51,14 +52,21 @@ public sealed class VBPictureBox : Control, IVBContainer
     public VBPictureBox(ComponentInstance instance)
     {
         this.instance = instance;
-        edge.Child = new Panel { Children = { layer, ChildHost } };
         VisualChildren.Add(edge);
         LogicalChildren.Add(edge);
         ComponentBinding.Bind(this, instance, VBClasses.PictureBox, Apply);
+        // What its drawing statements draw is over its picture and under the controls it holds.
+        Drawing = new VBDrawingLayer(instance);
+        edge.Child = new Panel { Children = { layer, Drawing, ChildHost } };
     }
 
     /// <inheritdoc/>
     public Canvas ChildHost { get; } = new();
+
+    /// <summary>
+    /// The surface its drawing statements draw on.
+    /// </summary>
+    public VBDrawingLayer Drawing { get; }
 
     /// <summary>
     /// The edge its border is drawn with.

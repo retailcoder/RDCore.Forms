@@ -135,18 +135,20 @@ public sealed class ListControlTests
     }
 
     [TestMethod]
-    public void TheFactory_MakesTheControlOfEachIntrinsicClass_AndNoneForATimer()
+    public void TheFactory_MakesTheControlOfEachIntrinsicClass_AndNoneForAMenu()
     {
         var made = UI.Run(() => new[]
         {
             VBClasses.CommandButton, VBClasses.TextBox, VBClasses.Label, VBClasses.Frame, VBClasses.CheckBox, VBClasses.OptionButton,
-            VBClasses.ListBox, VBClasses.ComboBox, VBClasses.PictureBox, VBClasses.Image, VBClasses.Timer,
+            VBClasses.ListBox, VBClasses.ComboBox, VBClasses.PictureBox, VBClasses.Image, VBClasses.Timer, VBClasses.HScrollBar,
+            VBClasses.VScrollBar, VBClasses.Shape, VBClasses.Line, VBClasses.Menu,
         }.Select(type => VBControls.Create(new ComponentInstance(type, "x"))?.GetType().Name ?? "none").ToArray());
 
         Expect.Lines(new[]
         {
             "VBCommandButton", "VBTextBox", "VBLabel", "VBFrame", "VBCheckBox", "VBOptionButton",
-            "VBListBox", "VBComboBox", "VBPictureBox", "VBImage", "none",
+            "VBListBox", "VBComboBox", "VBPictureBox", "VBImage", "VBTimer", "VBScrollBar",
+            "VBScrollBar", "VBShape", "VBLine", "none",
         }, made);
     }
 

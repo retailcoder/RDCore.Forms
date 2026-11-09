@@ -26,12 +26,12 @@ public static class VBEvents
     public static readonly EventDefinition DblClick = new("DblClick");
 
     /// <summary>
-    /// The control received the focus.
+    /// The component received the focus: a control, or a form none of whose controls can take it.
     /// </summary>
     public static readonly EventDefinition GotFocus = new("GotFocus");
 
     /// <summary>
-    /// The control lost the focus.
+    /// The component lost the focus.
     /// </summary>
     public static readonly EventDefinition LostFocus = new("LostFocus");
 
@@ -91,6 +91,29 @@ public static class VBEvents
     public static readonly EventDefinition Resize = new("Resize");
 
     /// <summary>
+    /// A form became the program's active form.
+    /// </summary>
+    public static readonly EventDefinition Activate = new("Activate");
+
+    /// <summary>
+    /// A form stopped being the program's active form, as another of its forms became active.
+    /// </summary>
+    public static readonly EventDefinition Deactivate = new("Deactivate");
+
+    /// <summary>
+    /// A form is about to unload. A handler that sets <c>Cancel</c> to a value other than 0 keeps it loaded. <c>UnloadMode</c> says
+    /// why it unloads: 0 for its close box, 1 for an <c>Unload</c> statement, 2 for Windows ending its session, 3 for the Task
+    /// Manager, 4 for its MDI form closing, and 5 for its owner closing.
+    /// </summary>
+    public static readonly EventDefinition QueryUnload = new("QueryUnload",
+        new EventParameter("Cancel", "Integer"), new EventParameter("UnloadMode", "Integer"));
+
+    /// <summary>
+    /// A form is unloading, after its QueryUnload. A handler that sets <c>Cancel</c> to a value other than 0 keeps it loaded.
+    /// </summary>
+    public static readonly EventDefinition Unload = new("Unload", new EventParameter("Cancel", "Integer"));
+
+    /// <summary>
     /// The user pressed an access key of a UserControl.
     /// </summary>
     public static readonly EventDefinition AccessKeyPress = new("AccessKeyPress", new EventParameter("KeyAscii", "Integer"));
@@ -146,7 +169,7 @@ public static class VBEvents
     public static readonly EventDefinition HitTest = new("HitTest", X, Y, new EventParameter("HitResult", "Integer"));
 
     /// <summary>
-    /// A UserControl or a PropertyPage was created.
+    /// A form, a UserControl or a PropertyPage was created.
     /// </summary>
     public static readonly EventDefinition Initialize = new("Initialize");
 
@@ -201,7 +224,7 @@ public static class VBEvents
     public static readonly EventDefinition Show = new("Show");
 
     /// <summary>
-    /// A UserControl or a PropertyPage is about to be destroyed.
+    /// A form, a UserControl or a PropertyPage is about to be destroyed.
     /// </summary>
     public static readonly EventDefinition Terminate = new("Terminate");
 

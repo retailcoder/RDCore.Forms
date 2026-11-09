@@ -39,6 +39,8 @@ public sealed class FormRenderingTests
         Dispatcher.UIThread.RunJobs();
         // A hit test reads the rendered scene, which takes the stacking at a render: one is forced here, with no clock.
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+        // What the form raises as it is shown is not what these tests look at.
+        sink.Raised.Clear();
         return (window, sink);
     }
 
@@ -273,9 +275,9 @@ public sealed class FormRenderingTests
         {
             var error = Assert.ThrowsExactly<ArgumentException>(() => new VBFormWindow(new FormDefinition(new ComponentInstance(VBClasses.UserControl, "UserControl1"))));
             var root = Root();
-            var timer = new ComponentInstance(VBClasses.Timer, "Timer1");
-            timer.SetContainer(root);
-            return (error.ParamName, new VBFormView(new FormDefinition(root)).ControlOf(timer));
+            var menu = new ComponentInstance(VBClasses.Menu, "mnuFile");
+            menu.SetContainer(root);
+            return (error.ParamName, new VBFormView(new FormDefinition(root)).ControlOf(menu));
         });
 
         Assert.AreEqual("form", parameter);

@@ -8,3 +8,9 @@
   href: lists.md
 - name: Containers and pictures
   href: containers.md
+- name: Timers, scroll bars and shapes
+  href: timers-scrollbars-shapes.md
+- name: Drawing
+  href: drawing.md
+- name: Form events
+  href: form-events.md

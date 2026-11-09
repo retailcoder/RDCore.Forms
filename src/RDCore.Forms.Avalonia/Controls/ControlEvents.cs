@@ -74,7 +74,8 @@ internal static class ControlEvents
     //    MouseUp, Click.
     // So the order is set by registration. A Button raises Click in its own release handler, which Avalonia registered first, so
     // MouseUp follows it there. A control whose Click is raised on release by AttachClick attaches its mouse events first.
-    public static void AttachMouse<T>(DblClick dblClick = DblClick.None) where T : Control
+    // A form's own X and Y are in its scale instead: inScale converts the twips to its ScaleMode.
+    public static void AttachMouse<T>(DblClick dblClick = DblClick.None, bool inScale = false) where T : Control
     {
         InputElement.PointerPressedEvent.AddClassHandler<T>((control, e) =>
         {
@@ -85,12 +86,14 @@ internal static class ControlEvents
             else
                 secondPresses.Remove(control);
             if (!second || dblClick == DblClick.AfterMouseDown)
-                RaiseMouse(control, e, VBEvents.MouseDown);
+                RaiseMouse(control, e, VBEvents.MouseDown, inScale);
             if (second)
                 VBControl.Raise(control, VBEvents.DblClick);
         }, handledEventsToo: true);
-        InputElement.PointerReleasedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, VBEvents.MouseUp), handledEventsToo: true);
-        InputElement.PointerMovedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, VBEvents.MouseMove), handledEventsToo: true);
+        InputElement.PointerReleasedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, VBEvents.MouseUp, inScale),
+            handledEventsToo: true);
+        InputElement.PointerMovedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, VBEvents.MouseMove, inScale),
+            handledEventsToo: true);
     }
 
     // Whether the press now held on the control is a double click's second, whose release raises no Click.
@@ -101,7 +104,7 @@ internal static class ControlEvents
         (short)((modifiers.HasFlag(KeyModifiers.Shift) ? 1 : 0) | (modifiers.HasFlag(KeyModifiers.Control) ? 2 : 0)
                 | (modifiers.HasFlag(KeyModifiers.Alt) ? 4 : 0));
 
-    private static void RaiseMouse(Control control, PointerEventArgs e, EventDefinition definition)
+    private static void RaiseMouse(Control control, PointerEventArgs e, EventDefinition definition, bool inScale)
     {
         if (!VBControl.Owns(control, e.Source))
             return;
@@ -119,8 +122,11 @@ internal static class ControlEvents
         // VB has no event for the other buttons.
         if (button == 0 && !ReferenceEquals(definition, VBEvents.MouseMove))
             return;
+        double x = Twips(point.Position.X), y = Twips(point.Position.Y);
+        if (inScale)
+            (x, y) = VBDrawingLayer.ScaleOf(VBControl.GetInstance(control)).FromTwips(x, y);
         VBControl.Raise(control, definition, FormValue.FromInteger((short)button), FormValue.FromInteger(ShiftOf(e.KeyModifiers)),
-            FormValue.FromSingle(Twips(point.Position.X)), FormValue.FromSingle(Twips(point.Position.Y)));
+            FormValue.FromSingle((float)x), FormValue.FromSingle((float)y));
     }
 
     private static float Twips(double pixels) => (float)(Math.Floor(pixels) * ScaleModeExtensions.TwipsPerPixel);

@@ -24,6 +24,7 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 |`Text`|Typing sets it, and a change from code shows in the box.|
 |Change|Raised from the component's `Text`, whichever way it changed, and only when it changed.|
 |A character typed|A KeyPress first, with its `KeyAscii`. A handler that sets it to 0 cancels the character; one that sets another code types that character instead. Backspace is 8, and Ctrl+A is 1.|
+|The form's `KeyPreview`|True raises the form's KeyDown, KeyPress and KeyUp before the box's: see [Form events](form-events.md#keyboard).|
 |`Locked`|The text cannot be edited.|
 |`Alignment`|Aligns the text left, right or centre.|
 |`BorderStyle`|None draws no border.|
@@ -33,6 +34,6 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 > **Not implemented.** `MultiLine`, `ScrollBars`, `PasswordChar` and `MaxLength` are not in the model, so a TextBox is one line, shows its text, and takes text of any length.
 
 ---
-[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---

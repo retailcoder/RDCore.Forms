@@ -16,11 +16,15 @@
 |`VB.ListBox`|[`VBListBox`](../api/RDCore.Forms.Avalonia.Controls.VBListBox.yml)|Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp|[Lists](lists.md)|
 |`VB.ComboBox`|[`VBComboBox`](../api/RDCore.Forms.Avalonia.Controls.VBComboBox.yml)|Change, Click, DropDown, GotFocus, LostFocus|[Lists](lists.md)|
 |`VB.Frame`|[`VBFrame`](../api/RDCore.Forms.Avalonia.Controls.VBFrame.yml)|Click, DblClick, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
-|`VB.PictureBox`|[`VBPictureBox`](../api/RDCore.Forms.Avalonia.Controls.VBPictureBox.yml)|Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
+|`VB.PictureBox`|[`VBPictureBox`](../api/RDCore.Forms.Avalonia.Controls.VBPictureBox.yml)|Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp, Paint|[Containers and pictures](containers.md)|
 |`VB.Image`|[`VBImage`](../api/RDCore.Forms.Avalonia.Controls.VBImage.yml)|Click, DblClick, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
+|`VB.Timer`|[`VBTimer`](../api/RDCore.Forms.Avalonia.Controls.VBTimer.yml)|Timer|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
+|`VB.HScrollBar`, `VB.VScrollBar`|[`VBScrollBar`](../api/RDCore.Forms.Avalonia.Controls.VBScrollBar.yml)|Change, GotFocus, LostFocus|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
+|`VB.Shape`|[`VBShape`](../api/RDCore.Forms.Avalonia.Controls.VBShape.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
+|`VB.Line`|[`VBLine`](../api/RDCore.Forms.Avalonia.Controls.VBLine.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 
 > [!NOTE]
-> **Not implemented.** `VB.Timer`, `VB.HScrollBar`, `VB.VScrollBar`, `VB.Shape`, `VB.Line` and `VB.Menu` have no control: `Create` returns `null` for them, and a form's window shows none of them. The form itself raises none of its events, such as Load, Resize, and its key and mouse events.
+> **Not implemented.** `VB.Menu` has no control: `Create` returns `null` for it, and a form's window shows no menu.
 
 ## Showing a form
 
@@ -47,17 +51,17 @@ sealed class PrintingSink : IComponentEventSink
 
 The sink is called with the component, the event, and its arguments in the order of the event's parameters. A handler's assignment to an argument, such as a `KeyAscii` set to 0, is written back into the array, and the control reads it there.
 
-The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinButton` and `ShowInTaskbar`. A `StartUpPosition` of CenterOwner or CenterScreen centres it; Manual and Windows Default leave its place to the window system.
+The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinButton` and `ShowInTaskbar`, and a user who resizes it sets the root's `Width` and `Height`. A `StartUpPosition` of CenterOwner or CenterScreen centres it; Manual and Windows Default leave its place to the window system. The root raises its own events, Resize, Activate, QueryUnload, Unload and its mouse and key events among them: see [Form events](form-events.md).
 
 ## Placement
 
 |Rule|Behaviour|
 |---|---|
-|Units|A control's `Left`, `Top`, `Width` and `Height` are twips, whatever its container's `ScaleMode`: 15 twips a pixel.|
-|Containers|A control placed in a Frame or a PictureBox is shown in it. A control placed in a component with no control, such as a Timer, is not shown.|
-|Stacking|In each container, the first control the form holds is on top. A windowless control (a Label or an Image) is under every windowed one.|
+|Units|A control's `Left`, `Top`, `Width` and `Height` are twips, whatever its container's `ScaleMode`: 15 twips a pixel. A Line's ends are in its container's scale.|
+|Containers|A control placed in a Frame or a PictureBox is shown in it. A control placed in any other component is not shown.|
+|Stacking|In each container, the first control the form holds is on top. A windowless control (a Label, an Image, a Shape or a Line) is under every windowed one.|
 |Tab order|One order across the whole form, by `TabIndex`, the form's order deciding a tie. A `TabIndex` past the last place takes the first free place, in the form's order.|
-|Focus|Tab skips a control that takes no focus (a Label, a Frame or an Image), one whose `TabStop` is False, and one that is hidden or disabled or in a hidden or disabled container.|
+|Focus|Tab skips a control that takes no focus (a Label, a Frame, an Image, a Timer, a Shape or a Line), one whose `TabStop` is False, and one that is hidden or disabled or in a hidden or disabled container.|
 
 ## Common properties
 
@@ -74,6 +78,6 @@ The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinBut
 A member that refuses a value throws a [`FormErrorException`](../api/RDCore.Forms.Model.FormErrorException.yml) that holds VB's error number and description, such as 380 for a `ListIndex` outside the items.
 
 ---
-[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | CONTROLS | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | CONTROLS | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---

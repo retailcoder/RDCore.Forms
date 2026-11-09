@@ -16,6 +16,7 @@ Frame and PictureBox hold controls; PictureBox and Image draw pictures. The thre
 
 - Its border is a sunken edge when 3-D, and one pixel when flat. The controls it holds are placed inside the border, from its client origin.
 - Its `Picture` is drawn at its own size in pixels from the client origin, clipped, under the controls it holds.
+- Its drawing statements draw over its `Picture` and under its controls; see [Drawing](drawing.md). It raises Paint as its drawing surface does.
 - It takes the focus, whether or not it holds controls. It raises MouseUp before Click, and Click only where the release is over the PictureBox again. Its mouse events' X and Y are in twips.
 
 ## Image
@@ -49,6 +50,6 @@ Before anything decodes a picture, [`FormPictures.Inspect`](../api/RDCore.Forms.
 A refused picture is error 481, "Invalid picture", and so is one whose header passes but whose body the decoder cannot read. It is not drawn, the form still shows, and the control's `PictureError` holds the error. [`VBPicture.Decode`](../api/RDCore.Forms.Avalonia.Controls.VBPicture.yml) decodes a picture the same way for other uses.
 
 ---
-[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---
