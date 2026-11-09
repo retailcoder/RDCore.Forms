@@ -11,7 +11,7 @@ RDCore.Forms est la bibliothèque de formulaires de la plateforme [RDCore](https
 |`RDCore.Forms.Avalonia`|Les contrôles d'un formulaire, et la fenêtre construite à partir du modèle, rendue avec [Avalonia](https://avaloniaui.net).|
 
 > [!NOTE]
-> **Non implémenté.** `RDCore.Forms.Avalonia` n'a aucun contrôle pour un Timer, une barre de défilement, un Shape, un Line ou un menu : la fenêtre d'un formulaire n'en affiche aucun.
+> **Non implémenté.** Certaines classes intrinsèques de Visual Basic 6.0 n'ont aucun contrôle dans `RDCore.Forms.Avalonia`, et la fenêtre d'un formulaire n'en affiche aucune : voir [Controls](controls/index.md) (en anglais).
 
 ## Comment RDCore l'utilise
 
@@ -28,6 +28,6 @@ Ce qu'un formulaire définit et que le modèle n'a pas est conservé tel qu'il a
 RDCore.Forms est en développement **pré-alpha**. Aucun paquet n'est publié : [Démarrer](getting-started.fr.md) le compile à partir des sources.
 
 ---
-[ACCUEIL](index.fr.md) • [HOME](index.md) | BIENVENUE • [WELCOME](introduction.md) | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+[ACCUEIL](index.fr.md) • [HOME](index.md) | BIENVENUE • [WELCOME](introduction.md) | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | [CONTROLS](controls/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---

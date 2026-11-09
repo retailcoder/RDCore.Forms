@@ -53,6 +53,6 @@ if (import.Form is { } form)
 [Importer des formulaires VB6](import/vb6.fr.md) décrit ce que le lecteur lit, ce qu'il conserve sous forme de texte, et ce qu'il signale.
 
 ---
-[ACCUEIL](index.fr.md) • [HOME](index.md) | [BIENVENUE](introduction.fr.md) • [WELCOME](introduction.md) | DÉMARRER • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+[ACCUEIL](index.fr.md) • [HOME](index.md) | [BIENVENUE](introduction.fr.md) • [WELCOME](introduction.md) | DÉMARRER • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | [CONTROLS](controls/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---
