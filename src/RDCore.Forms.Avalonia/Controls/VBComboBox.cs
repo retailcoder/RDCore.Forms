@@ -39,7 +39,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <para>
 /// An item's icon, its <c>ItemIcon</c>, is drawn before its text in the list, scaled to fit a square as tall as the text. Where any
 /// item has one, every item's text starts after that square, so that the text lines up. A Dropdown List draws its selected item's icon
-/// in its box too; a Dropdown Combo's edit box shows text only. Item icons are an RD-VBA addition.
+/// in its box too; a Dropdown Combo's edit box shows text only. A metafile icon is not drawn. Item icons are an RD-VBA addition.
 /// </para>
 /// <para>
 /// A <c>Style</c> of Simple Combo is shown as a Dropdown Combo, and <c>Locked</c> is not applied.
