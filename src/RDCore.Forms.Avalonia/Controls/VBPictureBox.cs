@@ -18,7 +18,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <para>
 /// Its border is a sunken edge when 3-D and one pixel when flat. The controls it holds are placed inside the border, from its client
 /// origin. Its <c>Picture</c> is drawn at its own size in pixels from the client origin, clipped, under the controls it holds. A
-/// picture <see cref="VBPicture.Decode"/> refuses is not drawn, and <see cref="PictureError"/> says why.
+/// metafile is not drawn. Neither is a picture <see cref="VBPicture.Decode"/> refuses, and <see cref="PictureError"/> says why.
 /// </para>
 /// <para>
 /// It takes the focus, whether or not it holds controls. It raises Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove and
