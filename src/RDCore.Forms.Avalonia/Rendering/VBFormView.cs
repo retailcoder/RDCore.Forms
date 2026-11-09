@@ -24,7 +24,7 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <para>
 /// A control's <c>Left</c>, <c>Top</c>, <c>Width</c> and <c>Height</c> are twips whatever its container's <c>ScaleMode</c>, as a
 /// designer file holds them: a control is placed at 15 twips a pixel. In each container the first control the form holds is on
-/// top, and a windowless control (a Label, an Image, a Shape or a Line) is under every windowed one, whatever their order.
+/// top, and a windowless control (a Label or an Image) is under every windowed one, whatever their order.
 /// </para>
 /// <para>
 /// Tab and Shift+Tab move the focus through one order across the whole form, a control in a Frame or a PictureBox included: by

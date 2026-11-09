@@ -11,7 +11,7 @@ RDCore.Forms is the form library of the [RDCore](https://github.com/rubberduck-v
 |`RDCore.Forms.Avalonia`|The controls of a form, and the window built from the model, rendered with [Avalonia](https://avaloniaui.net).|
 
 > [!NOTE]
-> **Not implemented.** `RDCore.Forms.Avalonia` builds no window from the model: no form is shown on screen. It has no control for a Timer, a scroll bar, a Shape, a Line or a menu.
+> **Not implemented.** `RDCore.Forms.Avalonia` has no control for a Timer, a scroll bar, a Shape, a Line or a menu: a form's window shows none of them.
 
 ## How RDCore uses it
 
