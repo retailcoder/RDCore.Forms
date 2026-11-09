@@ -6,9 +6,9 @@ RDCore.Forms is RDForms, the form toolkit of the [RDCore](https://github.com/rub
 The RDCore runtime runs the code behind a form. RDCore.Forms shows the form and raises its controls' events to that code.
 
 > [!NOTE]
-> **Not implemented.** RDCore.Forms.Avalonia has no control for a Timer, a scroll bar, a Shape, a Line or a menu: a form's window shows none of them.
+> **Not implemented.** Some of Visual Basic 6.0's intrinsic classes have no control in RDCore.Forms.Avalonia, and a form's window shows none of them: see [Controls](controls/index.md).
 
 ---
-[ACCUEIL](index.fr.md) • HOME | [BIENVENUE](introduction.fr.md) • [WELCOME](introduction.md) | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+[ACCUEIL](index.fr.md) • HOME | [BIENVENUE](introduction.fr.md) • [WELCOME](introduction.md) | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | [CONTROLS](controls/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---
