@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MalformedDocument" xml:space="preserve">
+    <value>The document is not well-formed XML, so it holds no form: {0}</value>
+    <comment>{0} is what the XML reader reports.</comment>
+  </data>
+  <data name="NotAForm" xml:space="preserve">
+    <value>{0} is not a Form, an MDIForm, a UserControl or a PropertyPage of the RDForms namespace, so the document holds no form.</value>
+    <comment>{0} is the root element's name, with its namespace.</comment>
+  </data>
+  <data name="NewerFormatVersion" xml:space="preserve">
+    <value>The document's format version is {0}, later than {1}. It is read anyway, and what this version does not know is reported.</value>
+    <comment>{0} is the document's FormatVersion; {1} is the latest version this reader knows.</comment>
+  </data>
+  <data name="NamelessComponent" xml:space="preserve">
+    <value>This {0} has no Name, so it is kept as text.</value>
+    <comment>{0} is the component's class, such as CommandButton.</comment>
+  </data>
+  <data name="NestingTooDeep" xml:space="preserve">
+    <value>{0} is nested more than {1} components deep, so it is kept as text, with its contents.</value>
+    <comment>{0} is the component's name; {1} is the most components deep a document is read.</comment>
+  </data>
+  <data name="UnmodelledElement" xml:space="preserve">
+    <value>The element {0} is not a class the model has in this place, so it is kept as text.</value>
+    <comment>{0} is the element's name, with its namespace.</comment>
+  </data>
+  <data name="MisplacedComponent" xml:space="preserve">
+    <value>{0} cannot be placed in {1}, so it is placed in {2}.</value>
+    <comment>{0} is the component's name; {1} is the name of the component it is written in; {2} is the name of the component it is placed in.</comment>
+  </data>
+  <data name="UnknownProperty" xml:space="preserve">
+    <value>{0} has no property {1}, so its value is kept as text.</value>
+    <comment>{0} is the component's name; {1} is the property's name.</comment>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>{0}.{1} cannot take the value "{2}", so it is kept as text.</value>
+    <comment>{0} is the component's name; {1} is the property's name; {2} is the value, as the document writes it.</comment>
+  </data>
+</root>

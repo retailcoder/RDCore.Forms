@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MalformedDocument" xml:space="preserve">
+    <value>Le document n'est pas un document XML bien formé; il ne contient donc aucun formulaire : {0}</value>
+  </data>
+  <data name="NotAForm" xml:space="preserve">
+    <value>{0} n'est ni un Form, ni un MDIForm, ni un UserControl, ni une PropertyPage de l'espace de noms RDForms; le document ne contient donc aucun formulaire.</value>
+  </data>
+  <data name="NewerFormatVersion" xml:space="preserve">
+    <value>La version de format du document est {0}, postérieure à {1}. Il est lu quand même, et ce que cette version ne connaît pas est signalé.</value>
+  </data>
+  <data name="NamelessComponent" xml:space="preserve">
+    <value>Cet élément {0} n'a pas de Name; il est donc conservé sous forme de texte.</value>
+  </data>
+  <data name="NestingTooDeep" xml:space="preserve">
+    <value>{0} est imbriqué à plus de {1} composants de profondeur; il est donc conservé sous forme de texte, avec son contenu.</value>
+  </data>
+  <data name="UnmodelledElement" xml:space="preserve">
+    <value>L'élément {0} n'est pas une classe que le modèle admet à cet endroit; il est donc conservé sous forme de texte.</value>
+  </data>
+  <data name="MisplacedComponent" xml:space="preserve">
+    <value>{0} ne peut pas être placé dans {1}; il est donc placé dans {2}.</value>
+  </data>
+  <data name="UnknownProperty" xml:space="preserve">
+    <value>{0} n'a pas de propriété {1}; sa valeur est donc conservée sous forme de texte.</value>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>{0}.{1} ne peut pas prendre la valeur « {2} »; elle est donc conservée sous forme de texte.</value>
+  </data>
+</root>
