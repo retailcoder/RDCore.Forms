@@ -43,7 +43,8 @@ public static class VBProperties
     public static readonly PropertyDefinition<double> Height = new("Height", PropertyCategory.Position);
 
     /// <summary>
-    /// The unit of a form's or a PictureBox's scale, which its contents' positions and sizes are in.
+    /// The unit of a form's or a PictureBox's scale: the unit of its <c>ScaleLeft</c>, <c>ScaleTop</c>, <c>ScaleWidth</c> and
+    /// <c>ScaleHeight</c>, and of the ends of the Lines it holds. Its controls' positions and sizes are in twips whatever its scale.
     /// </summary>
     public static readonly PropertyDefinition<ScaleMode> ScaleMode = new("ScaleMode", PropertyCategory.Position, Model.ScaleMode.Twip);
 
