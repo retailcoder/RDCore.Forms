@@ -19,7 +19,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <remarks>
 /// <para>
 /// Every component of the form that <see cref="VBControls.Create"/> makes a control for is shown, in its container's canvas. A
-/// component it makes none for, such as a Timer or a menu item, is not shown, and neither is anything placed in one.
+/// component it makes none for, a menu item, is not shown, and neither is anything placed in one. A Timer's control is on the form
+/// and draws nothing.
 /// </para>
 /// <para>
 /// A control's <c>Left</c>, <c>Top</c>, <c>Width</c> and <c>Height</c> are twips whatever its container's <c>ScaleMode</c>, as a
@@ -36,11 +37,24 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// The view follows the root's <c>Width</c>, <c>Height</c>, <c>BackColor</c>, <c>Enabled</c>, <c>Font</c> and
 /// <c>MousePointer</c>. A disabled root takes no input in any of its controls.
 /// </para>
+/// <para>
+/// The root's drawing statements draw on its <see cref="Drawing"/>, under every control.
+/// </para>
+/// <para>
+/// A press on no control is the root's: it raises MouseDown, MouseMove and MouseUp with <c>X</c> and <c>Y</c> in the root's scale, and
+/// Click after MouseUp, for every button, where the release is over the root again and over none of its controls.
+/// </para>
 /// </remarks>
 public sealed class VBFormView : Canvas
 {
     // The windowless plane's top: a container would need a million windowed controls to reach it.
     private const int WindowlessTop = -1_000_000;
+
+    static VBFormView()
+    {
+        ControlEvents.AttachMouse<VBFormView>(inScale: true);
+        ControlEvents.AttachClick<VBFormView>(ClickRelease.OverTheControl);
+    }
 
     private readonly Dictionary<ComponentInstance, Control> controls = new(ReferenceEqualityComparer.Instance);
     // The shown components, in the order the form holds them.
@@ -55,6 +69,9 @@ public sealed class VBFormView : Canvas
     {
         ArgumentNullException.ThrowIfNull(form);
         Form = form;
+        // What the form's drawing statements draw is under every control, the windowless ones included.
+        Drawing = new VBDrawingLayer(form.Root) { ZIndex = int.MinValue };
+        Children.Add(Drawing);
         Place(form.Root, this);
         ComponentBinding.Bind(this, form.Root, form.Root.Class, Apply);
         AddHandler(KeyDownEvent, OnKeyDown);
@@ -64,6 +81,11 @@ public sealed class VBFormView : Canvas
     /// The form the view shows.
     /// </summary>
     public FormDefinition Form { get; }
+
+    /// <summary>
+    /// The surface the form's drawing statements draw on, under its controls.
+    /// </summary>
+    public VBDrawingLayer Drawing { get; }
 
     /// <summary>
     /// The controls that take part in the form's tab order, in it: every shown control whose class has a <c>TabIndex</c>, whether

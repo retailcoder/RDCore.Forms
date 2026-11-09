@@ -23,10 +23,12 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <para>
 /// It raises KeyDown, KeyPress and KeyUp. A character typed is a KeyPress first, with its <c>KeyAscii</c>: a handler that sets it to
 /// 0 cancels the character, and one that sets another code types that character instead. Backspace is KeyAscii 8, and Ctrl+A is 1.
+/// Where its form's <c>KeyPreview</c> is True, the form raises each of them first: a KeyCode the form sets to 0 in KeyDown raises no
+/// KeyDown on the box, and the box's KeyPress has the KeyAscii the form's left.
 /// It raises Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove and MouseUp, MouseUp before Click.
 /// </para>
 /// </remarks>
-public sealed class VBTextBox : TextBox
+public sealed class VBTextBox : TextBox, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
 
@@ -107,11 +109,15 @@ public sealed class VBTextBox : TextBox
         base.OnKeyDown(e);
     }
 
-    // The KeyAscii the handlers left, the code typed where there are none. One outside a character's range types nothing.
+    // The KeyAscii the handlers left, the form's first, the code typed where there are none. One outside a character's range types
+    // nothing.
     private int KeyPress(int ascii)
     {
-        var after = VBControl.Raise(this, VBEvents.KeyPress, FormValue.FromInteger((short)ascii));
-        var code = after is { } args && args[0].Kind == FormValueKind.Integer ? args[0].AsInteger() : ascii;
+        var previewed = FormKeys.Preview(this, VBEvents.KeyPress, (short)ascii);
+        if (previewed == 0)
+            return 0;
+        var after = VBControl.Raise(this, VBEvents.KeyPress, FormValue.FromInteger(previewed));
+        var code = after is { } args && args[0].Kind == FormValueKind.Integer ? args[0].AsInteger() : previewed;
         return code is > 0 and <= 255 ? code : 0;
     }
 
@@ -119,7 +125,10 @@ public sealed class VBTextBox : TextBox
     {
         if (e.Handled || !VBControl.Owns(this, e.Source) || KeyCodes.Of(e) is not { } code)
             return;
-        VBControl.Raise(this, definition, FormValue.FromInteger(code), FormValue.FromInteger(ControlEvents.ShiftOf(e.KeyModifiers)));
+        var shift = ControlEvents.ShiftOf(e.KeyModifiers);
+        var own = FormKeys.Preview(this, definition, code, shift);
+        if (own != 0)
+            VBControl.Raise(this, definition, FormValue.FromInteger(own), FormValue.FromInteger(shift));
     }
 
     private void Apply(ComponentPropertyChangedEventArgs e)
