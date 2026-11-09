@@ -20,7 +20,7 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// caption is a hyphen is a separator.
 /// </para>
 /// <para>
-/// It raises Click as VB6 does, as measured with native and p-code builds: an item that holds items raises it as its menu opens, and
+/// It raises Click as VB6 does (measured with VB6): an item that holds items raises it as its menu opens, and
 /// one that holds none as it is chosen, alone. Choosing an item leaves its <c>Checked</c> as the program set it, unless its
 /// <c>CheckOnClick</c> is True: then it ticks or unticks it, before Click. <see cref="Choose"/> chooses an item as its shortcut does.
 /// </para>

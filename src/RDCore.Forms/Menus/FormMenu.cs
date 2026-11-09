@@ -65,7 +65,7 @@ public sealed class FormMenu
 /// separator, drawn as a line.
 /// </para>
 /// <para>
-/// The setters refuse what VB6 refuses, as measured with native and p-code builds: <see cref="Checked"/> on a top-level item or a
+/// The setters refuse what VB6 refuses, as measured with VB6: <see cref="Checked"/> on a top-level item or a
 /// separator, a separator's <see cref="Enabled"/> set to False, the last visible item of a menu hidden, and a hyphen as a caption.
 /// </para>
 /// </remarks>
