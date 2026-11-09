@@ -20,7 +20,7 @@
 |`VB.Image`|[`VBImage`](../api/RDCore.Forms.Avalonia.Controls.VBImage.yml)|Click, DblClick, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
 
 > [!NOTE]
-> **Not implemented.** `VB.Timer`, `VB.HScrollBar`, `VB.VScrollBar`, `VB.Shape`, `VB.Line` and `VB.Menu` have no control: `Create` returns `null` for them, and a form's window shows none of them. The form itself raises no events.
+> **Not implemented.** `VB.Timer`, `VB.HScrollBar`, `VB.VScrollBar`, `VB.Shape`, `VB.Line` and `VB.Menu` have no control: `Create` returns `null` for them, and a form's window shows none of them. The form itself raises none of its events, such as Load, Resize, and its key and mouse events.
 
 ## Showing a form
 
@@ -72,3 +72,8 @@ The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinBut
 ## Errors
 
 A member that refuses a value throws a [`FormErrorException`](../api/RDCore.Forms.Model.FormErrorException.yml) that holds VB's error number and description, such as 380 for a `ListIndex` outside the items.
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | CONTROLS | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---

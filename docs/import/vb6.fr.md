@@ -66,6 +66,6 @@ Les fichiers de test ont été compilés et exécutés sous VB6, et les tests v�
 |Le `ScaleWidth` d'un formulaire, écrit `8000`|`7995`, la largeur cliente de sa fenêtre|La valeur écrite.|
 
 ---
-[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | IMPORTER • [IMPORT](vb6.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | IMPORTER • [IMPORT](vb6.md) | [CONTROLS](../controls/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---
