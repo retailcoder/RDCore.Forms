@@ -20,17 +20,20 @@ public sealed class PictureControlTests
     private static readonly Color Blue = Color.FromRgb(0, 0, 255), White = Color.FromRgb(255, 255, 255),
         Red = Color.FromRgb(255, 0, 0), Green = Color.FromRgb(0, 255, 0);
 
-    // A PNG of the size given, which Avalonia writes.
-    private static byte[] Png(int width, int height)
+    // A PNG of the size given, which Avalonia writes, its pixels the premultiplied BGRA values given row by row, transparent past them.
+    internal static byte[] Png(int width, int height, params uint[] pixels)
     {
         using var bitmap = new WriteableBitmap(new PixelSize(width, height), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Premul);
+        using (var buffer = bitmap.Lock())
+            for (var i = 0; i < width * height; i++)
+                Marshal.WriteInt32(buffer.Address, i / width * buffer.RowBytes + i % width * 4, i < pixels.Length ? (int)pixels[i] : 0);
         using var stream = new MemoryStream();
         bitmap.Save(stream);
         return stream.ToArray();
     }
 
     // The colour of a pixel of the window's next frame.
-    private static Color[] PixelsAt(Window window, params PixelPoint[] points)
+    internal static Color[] PixelsAt(Window window, params PixelPoint[] points)
     {
         using var frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("no frame was rendered");
         using var buffer = frame.Lock();
@@ -139,6 +142,27 @@ public sealed class PictureControlTests
 
         Assert.AreEqual(new PixelSize(2, 2), size);
         CollectionAssert.AreEqual(new[] { Blue, Green }, pixels);
+    }
+
+    [TestMethod]
+    public void APngsTransparentPixels_ShowWhatIsBehindThem_AndItsOpaqueOnesAreDrawn()
+    {
+        var pixels = UI.Run(() =>
+        {
+            // Opaque red, then transparent, then red at half its alpha.
+            var png = Png(3, 1, 0xFFFF0000, 0x00000000, 0x80800000);
+            var picture = new VBPictureBox(new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Picture, png)
+                .Set(P.BorderStyle, BorderStyle.None).Set(P.BackColor, FormColor.FromRgb(0, 0, 255)));
+            var (window, _) = ControlHost.Show((picture, new Rect(10, 5, 40, 40)));
+            var pixels = PixelsAt(window, new(10, 5), new(11, 5), new(12, 5));
+            window.Close();
+            return pixels;
+        });
+
+        Assert.AreEqual(Red, pixels[0]);
+        Assert.AreEqual(Blue, pixels[1]);
+        // Half red over the blue back colour.
+        Assert.IsTrue(pixels[2] is { R: >= 120 and <= 136, G: 0, B: >= 119 and <= 135 }, pixels[2].ToString());
     }
 
     [TestMethod]

@@ -215,6 +215,12 @@ public static class VBProperties
     public static readonly PropertyDefinition<IReadOnlyList<int>> ItemData = new("ItemData", PropertyCategory.Misc, []);
 
     /// <summary>
+    /// The picture shown before each item of a ListBox or ComboBox, in the order of <see cref="List"/>, as the bytes of its file, or
+    /// <see langword="null"/> for an item with none. An RD-VBA addition: VB6's ListBox and ComboBox show no pictures.
+    /// </summary>
+    public static readonly PropertyDefinition<IReadOnlyList<byte[]?>> ItemIcon = new("ItemIcon", PropertyCategory.List, []);
+
+    /// <summary>
     /// The milliseconds between a Timer's events. 0 stops the Timer.
     /// </summary>
     public static readonly PropertyDefinition<int> Interval = new("Interval", PropertyCategory.Misc);
