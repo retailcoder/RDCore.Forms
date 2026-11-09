@@ -256,6 +256,24 @@ public sealed class FormXamlTests
     }
 
     [TestMethod]
+    public void AFormNestedToTheLimit_IsWrittenAndReadBack()
+    {
+        var root = new ComponentInstance(VBClasses.Form, "Form1");
+        var container = root;
+        for (var i = 1; i < FormXaml.MaxNestingDepth; i++)
+        {
+            var frame = new ComponentInstance(VBClasses.Frame, $"Frame{i}");
+            frame.SetContainer(container);
+            container = frame;
+        }
+
+        var read = FormXaml.Read(FormXaml.Write(new FormDefinition(root)));
+
+        Assert.IsEmpty(read.Diagnostics);
+        Assert.AreEqual(FormXaml.MaxNestingDepth, read.Form!.Components.Count());
+    }
+
+    [TestMethod]
     public void APropertyElement_HoldsItsValueAsText_AndAPictureIsItsFileInBase64()
     {
         var read = Read(
@@ -309,6 +327,36 @@ public sealed class FormXamlTests
         }
 
         Assert.IsGreaterThan(2000, read);
+    }
+
+    [TestMethod]
+    public void TheFormatPagesExample_IsReadWithNothingReported()
+    {
+        var read = FormXaml.Read(
+            """
+            <Form FormatVersion="1" Name="Form1" Caption="Orders" Width="4800" Height="3600" xmlns="https://rubberduckvba.ca/schemas/rdforms">
+              <Form.Font>
+                <Font Name="Tahoma" Size="8.25" />
+              </Form.Font>
+              <Frame Name="Frame1" Caption="Ship by" Left="120" Top="120" Width="2400" Height="1200">
+                <OptionButton Name="optShip" Index="0" Caption="&amp;Air" Value="True" Left="120" Top="240" Width="1800" Height="300" />
+                <OptionButton Name="optShip" Index="1" Caption="&amp;Sea" Left="120" Top="600" Width="1800" Height="300" />
+              </Frame>
+              <ListBox Name="lstItems" Left="2640" Top="120" Width="2000" Height="1200">
+                <ListBox.List>
+                  <Item Text="Alpha" ItemData="1" />
+                  <Item Text="Beta" ItemData="20" ItemIcon="R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />
+                </ListBox.List>
+              </ListBox>
+              <CommandButton Name="cmdOK" Caption="OK" Left="3480" Top="2880" Width="1215" Height="495" />
+            </Form>
+            """);
+        var form = read.Form!;
+
+        Assert.IsEmpty(read.Diagnostics);
+        Assert.AreEqual("&Sea", form.Find("optShip", 1)!.Get(P.Caption));
+        Assert.AreEqual(new FormFont("Tahoma", 8.25), form.Root.Get(P.Font));
+        Assert.IsNull(FormPictures.Inspect(form.Find("lstItems")!.Get(P.ItemIcon)[1], out _));
     }
 
     private sealed class ByteArrayComparer : System.Collections.IComparer

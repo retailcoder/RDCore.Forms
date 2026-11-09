@@ -32,15 +32,45 @@ internal static class FormXamlWriter
         }
 
         WriteContents(writer, root);
-        writer.WriteEndElement();
     }
 
-    private static void WriteComponent(XmlWriter writer, ComponentInstance component)
+    // A component whose start tag is written: the components it holds, and the kept ones among them, each at the place it was read at.
+    private sealed class Open(ComponentInstance component)
     {
-        writer.WriteStartElement(component.Class.ClassName, Ns);
-        WriteAttributes(writer, component);
-        WriteContents(writer, component);
-        writer.WriteEndElement();
+        public ComponentInstance Component { get; } = component;
+        public List<UnmodelledComponent> Kept { get; } = [.. component.UnmodelledContents.OrderBy(c => c.Position)];
+        public int NextContent { get; set; }
+        public int NextKept { get; set; }
+    }
+
+    // The property elements and the contents of a component whose start tag is written, and its end tag: depth first, on an explicit
+    // stack, so that a deep nesting costs no call stack.
+    private static void WriteContents(XmlWriter writer, ComponentInstance top)
+    {
+        var pending = new Stack<Open>();
+        WritePropertyElements(writer, top);
+        pending.Push(new Open(top));
+        while (pending.TryPeek(out var open))
+        {
+            var contents = open.Component.Contents;
+            if (open.NextKept < open.Kept.Count && (open.NextContent >= contents.Count || open.Kept[open.NextKept].Position <= open.NextContent))
+            {
+                WriteKept(writer, open.Kept[open.NextKept++]);
+            }
+            else if (open.NextContent < contents.Count)
+            {
+                var component = contents[open.NextContent++];
+                writer.WriteStartElement(component.Class.ClassName, Ns);
+                WriteAttributes(writer, component);
+                WritePropertyElements(writer, component);
+                pending.Push(new Open(component));
+            }
+            else
+            {
+                writer.WriteEndElement();
+                pending.Pop();
+            }
+        }
     }
 
     // The name, the index, and each property set that is written as text, in the order of the class's properties.
@@ -56,8 +86,8 @@ internal static class FormXamlWriter
         }
     }
 
-    // The property elements, then the components it holds, each kept component at the place it was read at.
-    private static void WriteContents(XmlWriter writer, ComponentInstance component)
+    // The font, the list, and the properties the model does not have.
+    private static void WritePropertyElements(XmlWriter writer, ComponentInstance component)
     {
         var owner = component.Class.ClassName;
         if (component.IsSet(P.Font))
@@ -97,18 +127,6 @@ internal static class FormXamlWriter
 
             writer.WriteEndElement();
         }
-
-        var kept = component.UnmodelledContents.OrderBy(c => c.Position).ToList();
-        var next = 0;
-        for (var i = 0; i < component.Contents.Count; i++)
-        {
-            for (; next < kept.Count && kept[next].Position <= i; next++)
-                WriteKept(writer, kept[next]);
-            WriteComponent(writer, component.Contents[i]);
-        }
-
-        for (; next < kept.Count; next++)
-            WriteKept(writer, kept[next]);
     }
 
     private static void WriteList(XmlWriter writer, ComponentInstance component, string owner)

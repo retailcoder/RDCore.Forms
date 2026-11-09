@@ -55,12 +55,30 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
             diagnostics.Add(K.NewerFormatVersion, LineOf(attribute), version, FormXaml.FormatVersion);
     }
 
+    // Depth first, in the document's order, on an explicit stack: a deep nesting costs no call stack.
     private void ReadComponent(XElement element, ComponentInstance instance, int depth)
     {
-        foreach (var attribute in element.Attributes())
-            ReadAttribute(attribute, instance);
-        foreach (var child in element.Elements())
-            ReadChild(child, element, instance, depth);
+        var pending = new Stack<(IEnumerator<XElement> Children, XElement Element, ComponentInstance Instance, int Depth)>();
+        Open(element, instance, depth);
+        while (pending.TryPeek(out var top))
+        {
+            if (!top.Children.MoveNext())
+            {
+                top.Children.Dispose();
+                pending.Pop();
+                continue;
+            }
+
+            if (ReadChild(top.Children.Current, top.Element, top.Instance, top.Depth) is { } component)
+                Open(top.Children.Current, component, top.Depth + 1);
+        }
+
+        void Open(XElement element, ComponentInstance instance, int depth)
+        {
+            foreach (var attribute in element.Attributes())
+                ReadAttribute(attribute, instance);
+            pending.Push((element.Elements().GetEnumerator(), element, instance, depth));
+        }
     }
 
     private void ReadAttribute(XAttribute attribute, ComponentInstance instance)
@@ -102,13 +120,14 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
         instance.UnmodelledProperties.Add(new UnmodelledProperty(property, text));
     }
 
-    private void ReadChild(XElement child, XElement element, ComponentInstance instance, int depth)
+    // Reads a child element of a component, and returns the component it is, placed, whose own attributes and children are then read.
+    private ComponentInstance? ReadChild(XElement child, XElement element, ComponentInstance instance, int depth)
     {
         var local = child.Name.LocalName;
         if (child.Name.Namespace != Ns)
         {
             Unmodelled(child, instance);
-            return;
+            return null;
         }
 
         var dot = local.IndexOf('.');
@@ -118,21 +137,21 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
                 ReadPropertyElement(child, local[(dot + 1)..], instance);
             else
                 Unmodelled(child, instance);
-            return;
+            return null;
         }
 
         if (local == "UnmodelledComponent")
         {
             instance.UnmodelledContents.Add(new UnmodelledComponent((string?)child.Attribute("TypeName") ?? "", (string?)child.Attribute("Name") ?? "",
                 instance.Contents.Count, child.Value));
-            return;
+            return null;
         }
 
         var componentClass = ClassOf(local);
         if (componentClass is null || componentClass.Kind == ComponentKind.Root)
         {
             Unmodelled(child, instance);
-            return;
+            return null;
         }
 
         var name = (string?)child.Attribute("Name");
@@ -140,14 +159,14 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
         {
             diagnostics.Add(K.NamelessComponent, LineOf(child), componentClass.ClassName);
             Keep(child, componentClass.TypeName, "", instance);
-            return;
+            return null;
         }
 
         if (depth >= FormXaml.MaxNestingDepth)
         {
             diagnostics.Add(K.NestingTooDeep, LineOf(child), name, FormXaml.MaxNestingDepth);
             Keep(child, componentClass.TypeName, name, instance);
-            return;
+            return null;
         }
 
         var component = new ComponentInstance(componentClass, name);
@@ -157,7 +176,7 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
         if (!ReferenceEquals(container, instance))
             diagnostics.Add(K.MisplacedComponent, LineOf(child), name, instance.Name, container.Name);
         component.SetContainer(container);
-        ReadComponent(child, component, depth + 1);
+        return component;
     }
 
     // As ComponentInstance.SetContainer places: a menu item in a root or another menu item, a control in a container. A root holds
