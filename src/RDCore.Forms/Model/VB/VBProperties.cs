@@ -409,4 +409,10 @@ public static class VBProperties
     /// <c>Checked</c> to the program, as a VB6 menu does.
     /// </summary>
     public static readonly PropertyDefinition<bool> CheckOnClick = new("CheckOnClick", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// The name of the form's menu whose items pop up as the user releases the right mouse button over the component: an RD-VBA
+    /// addition. An empty name, the default, pops up none.
+    /// </summary>
+    public static readonly PropertyDefinition<string> ContextMenu = new("ContextMenu", PropertyCategory.Behavior, "");
 }

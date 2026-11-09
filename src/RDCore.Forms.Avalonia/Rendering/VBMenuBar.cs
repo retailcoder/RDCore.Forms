@@ -2,6 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
@@ -126,6 +128,9 @@ internal sealed class VBMenuItem : MenuItem
     private readonly VBMenuBar bar;
     private readonly FormMenuItem item;
     private bool isChecked;
+    private Bitmap? picture;
+
+    public FormMenuItem Item => item;
 
     public VBMenuItem(VBMenuBar bar, FormMenuItem item)
     {
@@ -181,7 +186,18 @@ internal sealed class VBMenuItem : MenuItem
             case nameof(P.Shortcut):
                 InputGesture = ShortcutKeys.GestureOf((MenuShortcut?)e.After);
                 break;
+            case nameof(P.Picture):
+                ShowPicture((byte[]?)e.After);
+                break;
         }
+    }
+
+    // The picture beside the caption. One the decoder refuses is not drawn.
+    private void ShowPicture(byte[]? bytes)
+    {
+        picture?.Dispose();
+        picture = VBPicture.Decode(bytes, out _);
+        Icon = picture is null ? null : new Image { Source = picture, Stretch = Stretch.Uniform };
     }
 }
 

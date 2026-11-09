@@ -204,6 +204,16 @@ public sealed class FormMenuItem
         set => Component.Set(P.CheckOnClick, value);
     }
 
+    /// <summary>
+    /// The picture shown beside the item's caption, as the bytes of its image file, or <see langword="null"/> for none: an RD-VBA
+    /// addition.
+    /// </summary>
+    public byte[]? Picture
+    {
+        get => Component.Get(P.Picture);
+        set => Component.Set(P.Picture, value);
+    }
+
     internal static IReadOnlyList<FormMenuItem> MenusIn(ComponentInstance container) =>
         [.. container.Contents.Where(IsMenu).Select(Of)];
 
