@@ -14,7 +14,7 @@ public static class VBControls
     /// </summary>
     /// <param name="instance">The component.</param>
     /// <returns>
-    /// The control, or <see langword="null"/> where its class has none yet: a Timer, a scroll bar, a Shape, a Line, a menu, and a
+    /// The control, or <see langword="null"/> where its class has none: a Timer, a scroll bar, a Shape, a Line, a menu, and a
     /// form's root.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> is <see langword="null"/>.</exception>

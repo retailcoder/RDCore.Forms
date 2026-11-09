@@ -15,7 +15,7 @@ Ce référentiel contient deux bibliothèques :
 | **RDCore.Forms.Avalonia** | Les contrôles et le rendu : les contrôles d'un formulaire, et la fenêtre construite à partir du modèle. |
 
 > [!NOTE]
-> **Non implémenté.** RDCore.Forms.Avalonia ne contient aucun contrôle ni aucun moteur de rendu : aucun formulaire n'est affiché à l'écran.
+> **Non implémenté.** RDCore.Forms.Avalonia ne construit aucune fenêtre à partir du modèle : aucun formulaire n'est affiché à l'écran. Il n'a aucun contrôle pour un Timer, une barre de défilement, un Shape, un Line ou un menu.
 
 ## État du projet
 

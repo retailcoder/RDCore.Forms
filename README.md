@@ -15,7 +15,7 @@ This repository holds two libraries:
 | **RDCore.Forms.Avalonia** | The controls and the renderer: the controls of a form, and the window built from the model. |
 
 > [!NOTE]
-> **Not implemented.** RDCore.Forms.Avalonia holds no controls and no renderer: no form is shown on screen.
+> **Not implemented.** RDCore.Forms.Avalonia builds no window from the model: no form is shown on screen. It has no control for a Timer, a scroll bar, a Shape, a Line or a menu.
 
 ## Project status
 

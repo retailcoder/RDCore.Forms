@@ -11,7 +11,7 @@ RDCore.Forms est la bibliothèque de formulaires de la plateforme [RDCore](https
 |`RDCore.Forms.Avalonia`|Les contrôles d'un formulaire, et la fenêtre construite à partir du modèle, rendue avec [Avalonia](https://avaloniaui.net).|
 
 > [!NOTE]
-> **Non implémenté.** `RDCore.Forms.Avalonia` ne contient aucun contrôle ni aucun moteur de rendu : aucun formulaire n'est affiché à l'écran.
+> **Non implémenté.** `RDCore.Forms.Avalonia` ne construit aucune fenêtre à partir du modèle : aucun formulaire n'est affiché à l'écran. Il n'a aucun contrôle pour un Timer, une barre de défilement, un Shape, un Line ou un menu.
 
 ## Comment RDCore l'utilise
 
