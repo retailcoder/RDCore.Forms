@@ -7,7 +7,7 @@ RDCore.Forms is the form library of the [RDCore](https://github.com/rubberduck-v
 
 |Library|What it holds|
 |---|---|
-|`RDCore.Forms`|The form model: the classes of components, their properties and events, the components of a form, and the reader that imports a Visual Basic 6.0 form into the model. It has no UI dependency.|
+|`RDCore.Forms`|The form model: the classes of components, their properties and events, the components of a form, the reader and writer of the [RDForms document](format/index.md), and the reader that imports a Visual Basic 6.0 form into the model. It has no UI dependency.|
 |`RDCore.Forms.Avalonia`|The controls of a form, and the window built from the model, rendered with [Avalonia](https://avaloniaui.net).|
 
 > [!NOTE]
