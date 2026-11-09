@@ -19,7 +19,7 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <remarks>
 /// <para>
 /// Every component of the form that <see cref="VBControls.Create"/> makes a control for is shown, in its container's canvas. A
-/// component it makes none for, a menu item, is not shown, and neither is anything placed in one. A Timer's control is on the form
+/// menu item, which it makes no control for, is not shown, and neither is anything placed in one. A Timer's control is on the form
 /// and draws nothing.
 /// </para>
 /// <para>

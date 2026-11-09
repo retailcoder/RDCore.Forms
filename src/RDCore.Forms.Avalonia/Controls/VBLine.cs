@@ -71,8 +71,8 @@ public sealed class VBLine : Control
     /// </summary>
     /// <param name="container">The container, or <see langword="null"/> for none.</param>
     /// <returns>
-    /// The scale's twips per unit and origin: twips from 0 in a container with no scale, such as a Frame, and where the scale has no
-    /// width or height.
+    /// The scale's twips per unit and origin. It is twips from 0, (1, 1, 0, 0), for no container, for a container with no scale such
+    /// as a Frame, and for a user scale whose <c>ScaleWidth</c> or <c>ScaleHeight</c> is 0.
     /// </returns>
     public static (double Across, double Down, double Left, double Top) ScaleOf(ComponentInstance? container)
     {
