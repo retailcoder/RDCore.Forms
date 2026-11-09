@@ -16,7 +16,8 @@ namespace RDCore.Forms.Import.VB6;
 /// The designer half, from <c>VERSION</c> to the root block's <c>End</c>, becomes the form; the rest of the file is returned as
 /// <see cref="VB6FormImport.ModuleText"/>. Property and class names are read without regard to case. A component's
 /// <c>Index</c> becomes its <see cref="ComponentInstance.Index"/>, and a root's <c>Client*</c> rectangle its position and size.
-/// Positions and sizes are read as written: in twips for a root, and in the container's scale for a control.
+/// Positions and sizes are read as written: in twips, whatever a container's <c>ScaleMode</c>. A Line's ends are in its container's
+/// scale.
 /// </para>
 /// <para>
 /// A read does not throw on what a file holds. A property the model does not have, or whose value it cannot hold, is kept as an

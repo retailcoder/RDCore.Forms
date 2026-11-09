@@ -21,22 +21,24 @@ namespace RDCore.Forms.Model.VB;
 public static class VBProperties
 {
     /// <summary>
-    /// A control's left edge, in its container's scale; a form's client area's left edge on the screen, in twips.
+    /// A control's left edge in its container, in twips whatever the container's scale; a form's client area's left edge on the
+    /// screen, in twips.
     /// </summary>
     public static readonly PropertyDefinition<double> Left = new("Left", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's top edge, in its container's scale; a form's client area's top edge on the screen, in twips.
+    /// A control's top edge in its container, in twips whatever the container's scale; a form's client area's top edge on the
+    /// screen, in twips.
     /// </summary>
     public static readonly PropertyDefinition<double> Top = new("Top", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's width, in its container's scale; a form's client area's width, in twips.
+    /// A control's width, in twips whatever its container's scale; a form's client area's width, in twips.
     /// </summary>
     public static readonly PropertyDefinition<double> Width = new("Width", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's height, in its container's scale; a form's client area's height, in twips.
+    /// A control's height, in twips whatever its container's scale; a form's client area's height, in twips.
     /// </summary>
     public static readonly PropertyDefinition<double> Height = new("Height", PropertyCategory.Position);
 
