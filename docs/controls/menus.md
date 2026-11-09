@@ -81,4 +81,4 @@ The menu raises its Click as it opens, as it does on the bar, and an item chosen
 |`ContextMenu`|On the form and on each control that raises mouse events: the name of one of the form's menus, compared without regard to case. A right release over the component pops it up at the pointer, after the component's MouseUp and Click. Empty, the default, or a name that is no menu of the form's pops up none.|
 
 > [!NOTE]
-> **Not implemented.** An event raised before a menu opens that can keep it closed. The `WindowList` of an MDI form's menu, and the `NegotiatePosition` and `HelpContextID` of a menu, which the model keeps as written. Menu control arrays: a menu with an `Index` is read, and has none of an array's members.
+> **Not implemented.** The `WindowList` of an MDI form's menu, and the `NegotiatePosition` and `HelpContextID` of a menu, which the model keeps as written. Menu control arrays: a menu with an `Index` is read, and has none of an array's members.
