@@ -53,12 +53,32 @@ A [`MenuShortcut`](../api/RDCore.Forms.Menus.MenuShortcut.yml) is a key, by its 
 
 The last visible item of the bar can be hidden, and the bar goes with it.
 
+## Pop-up menus
+
+A shown form's window is its root's [`IMenuHost`](../api/RDCore.Forms.Menus.IMenuHost.yml), registered with [`MenuHosts`](../api/RDCore.Forms.Menus.MenuHosts.yml) while it is open. Its `PopupMenu` is VB's `PopupMenu` method: it pops up the items of one of the form's menus, usually a hidden top-level one.
+
+```csharp
+var host = MenuHosts.Of(form.Root);
+var edit = FormMenu.Of(form.Root).Items.Single(item => item.Component.Name == "mnuEdit");
+await host!.PopupMenu(edit, x: 1200, y: 600, PopupMenuAlignment.Center);
+```
+
+|Argument|Meaning|
+|---|---|
+|`x`, `y`|The point, in the root's `ScaleMode`. A coordinate not given is the pointer's.|
+|`alignment`|`Left`, the default, puts the menu's left edge at the point; `Center` centres it; `Right` puts its right edge there.|
+|`boldItem`|An item of the menu, at any depth, shown in bold: VB's `BoldCommand`.|
+
+The menu raises its Click as it opens, as it does on the bar, and an item chosen from it raises its own. The task completes when the menu closes, after that Click. A menu that holds no items shows nothing and raises nothing. A menu that is not one of the form's is refused with an `ArgumentException`.
+
 ## RD-VBA additions
 
 |Member|Behaviour|
 |---|---|
 |`Shortcut`|Any key of the names above, with any modifiers. A VB6 menu's shortcut is one its Menu Editor lists, and is set only in the designer.|
 |`CheckOnClick`|True ticks or unticks the item as it is chosen, before its Click. False, the default, leaves `Checked` to the program, as a VB6 menu does.|
+|`Picture`|A picture shown beside the item's caption, as the bytes of its image file. One the decoder refuses is not drawn.|
+|`ContextMenu`|On the form and on each control that raises mouse events: the name of one of the form's menus, compared without regard to case. A right release over the component pops it up at the pointer, after the component's MouseUp and Click. Empty, the default, or a name that is no menu of the form's pops up none.|
 
 > [!NOTE]
-> **Not implemented.** The `PopupMenu` method, a control's context menu, and a picture on an item. The `WindowList` of an MDI form's menu, and the `NegotiatePosition` and `HelpContextID` of a menu, which the model keeps as written. Menu control arrays: a menu with an `Index` is read, and has none of an array's members.
+> **Not implemented.** An event raised before a menu opens that can keep it closed. The `WindowList` of an MDI form's menu, and the `NegotiatePosition` and `HelpContextID` of a menu, which the model keeps as written. Menu control arrays: a menu with an `Index` is read, and has none of an array's members.
