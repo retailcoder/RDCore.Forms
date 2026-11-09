@@ -16,7 +16,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <remarks>
 /// <para>
 /// The window's client area is the form's: its size is the root's <c>Width</c> and <c>Height</c>, in twips at 15 twips a pixel,
-/// and follows them. A user who resizes the window sets them. The window follows the root's <c>Caption</c>, <c>MaxButton</c>,
+/// and follows them. A user who resizes the window sets them. The form's menus are on its <see cref="MenuBar"/>, above the client area,
+/// and a menu item's shortcut chooses it before a control or the root sees the key. The window follows the root's <c>Caption</c>, <c>MaxButton</c>,
 /// <c>MinButton</c> and <c>ShowInTaskbar</c>. Its <c>StartUpPosition</c> chooses where it starts: CenterOwner and CenterScreen centre
 /// it, and Manual and Windows Default leave its place to the window system.
 /// </para>
@@ -76,7 +77,9 @@ public sealed class VBFormWindow : Window
         if (!ReferenceEquals(form.Root.Class, VBClasses.Form))
             throw new ArgumentException($"The form's root is a {form.Root.Class.TypeName}, not a VB.Form.", nameof(form));
         View = new VBFormView(form);
-        Content = View;
+        MenuBar = new VBMenuBar(form.Root);
+        DockPanel.SetDock(MenuBar, Dock.Top);
+        Content = new DockPanel { Children = { MenuBar, View } };
         SizeToContent = SizeToContent.WidthAndHeight;
         WindowStartupLocation = form.Root.Get(P.StartUpPosition) switch
         {
@@ -85,6 +88,7 @@ public sealed class VBFormWindow : Window
             _ => WindowStartupLocation.Manual,
         };
         Activated += (_, _) => OnWindowActivated();
+        AddHandler(KeyDownEvent, OnShortcut, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnKeyUp, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
@@ -95,6 +99,11 @@ public sealed class VBFormWindow : Window
     /// The form's client area.
     /// </summary>
     public VBFormView View { get; }
+
+    /// <summary>
+    /// The form's menu bar, above its client area: hidden while none of the bar's items is visible.
+    /// </summary>
+    public VBMenuBar MenuBar { get; }
 
     private ComponentInstance Root => View.Form.Root;
 
@@ -257,6 +266,17 @@ public sealed class VBFormWindow : Window
         return owner is not IRaisesKeyEvents && (owner is null || Root.Get(P.KeyPreview));
     }
 
+    // A menu item's shortcut chooses it before any control or the root sees the key. Where two items share one, the first in the
+    // form's order has it.
+    private void OnShortcut(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled || !View.IsEffectivelyEnabled || ShortcutKeys.Of(e.Key, e.KeyModifiers) is not { } pressed
+            || MenuBar.Menu.AllItems.FirstOrDefault(item => item.Shortcut == pressed && !item.IsSeparator) is not { } chosen)
+            return;
+        e.Handled = true;
+        MenuBar.Choose(chosen);
+    }
+
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Handled || !KeyIsTheRoots() || KeyCodes.Of(e) is not { } code)
@@ -291,5 +311,6 @@ public sealed class VBFormWindow : Window
         CanMinimize = Root.Get(P.MinButton);
         ShowInTaskbar = Root.Get(P.ShowInTaskbar);
         ShowActivated = Root.Get(P.Enabled);
+        MenuBar.IsEnabled = Root.Get(P.Enabled);
     }
 }

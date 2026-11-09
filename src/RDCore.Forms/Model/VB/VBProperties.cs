@@ -1,6 +1,8 @@
 ﻿// Derived from HexIDE (https://github.com/hexide-io/HexIDE), commit ae17f1db.
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
+using RDCore.Forms.Menus;
+
 namespace RDCore.Forms.Model.VB;
 
 /// <summary>
@@ -396,4 +398,15 @@ public static class VBProperties
     /// Whether a menu lists the open child windows of a multiple-document interface form.
     /// </summary>
     public static readonly PropertyDefinition<bool> WindowList = new("WindowList", PropertyCategory.Misc);
+
+    /// <summary>
+    /// The key that chooses a menu item from anywhere on its form, or <see langword="null"/> for none.
+    /// </summary>
+    public static readonly PropertyDefinition<MenuShortcut?> Shortcut = new("Shortcut", PropertyCategory.Misc);
+
+    /// <summary>
+    /// Whether choosing a menu item ticks or unticks it before its Click: an RD-VBA addition. False, the default, leaves
+    /// <c>Checked</c> to the program, as a VB6 menu does.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> CheckOnClick = new("CheckOnClick", PropertyCategory.Behavior);
 }

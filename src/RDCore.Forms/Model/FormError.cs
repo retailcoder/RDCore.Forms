@@ -88,6 +88,23 @@ public readonly record struct FormError(int Number, string Description)
     public static FormError SetNotSupportedReadOnly => Standard(383);
 
     /// <summary>
+    /// Error 387, "'<paramref name="property"/>' property can't be set on this control": a value the property takes, refused on
+    /// this component, such as <c>Checked</c> on a top-level menu.
+    /// </summary>
+    /// <param name="property">The property's name.</param>
+    /// <returns>The error.</returns>
+    public static FormError PropertyCantBeSetOnThisControl(string property)
+    {
+        var error = Standard(387);
+        return error with { Description = string.Format(CultureInfo.CurrentUICulture, error.Description, property) };
+    }
+
+    /// <summary>
+    /// Error 395, "Cannot use separator bar as menu name for this control": a menu's <c>Caption</c> set to a hyphen.
+    /// </summary>
+    public static FormError CantUseSeparatorBarAsMenuName => Standard(395);
+
+    /// <summary>
     /// Error 393, "Get not supported at runtime": a property a program cannot read while it runs.
     /// </summary>
     public static FormError GetNotSupportedAtRuntime => Standard(393);

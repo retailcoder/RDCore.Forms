@@ -175,10 +175,11 @@ public static class VBClasses
         Defaults((P.BorderColor, WindowForeground)), isWindowless: true);
 
     /// <summary>
-    /// <c>VB.Menu</c>: a menu item. It has no place or size; its submenu's items are its contents.
+    /// <c>VB.Menu</c>: a menu item. It has no place or size; its submenu's items are its contents. A form's menus, with VB's rules
+    /// for them, are its <see cref="Menus.FormMenu"/>.
     /// </summary>
     public static readonly ComponentClass Menu = new("VB.Menu", "mnu", ComponentKind.Menu,
-        [P.Caption, P.Enabled, P.Checked, P.WindowList, P.Visible, P.Tag], [Click], hasExtent: false);
+        [P.Caption, P.Enabled, P.Checked, P.WindowList, P.Visible, P.Shortcut, P.CheckOnClick, P.Tag], [Click], hasExtent: false);
 
     /// <summary>
     /// Every class of the catalog.

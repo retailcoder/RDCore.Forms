@@ -55,4 +55,14 @@ public sealed class FormErrorTests
         Assert.AreEqual("Valeur de propriété incorrecte", exception.Message);
         Assert.AreEqual(380, exception.Error.Number);
     }
+
+    [TestMethod]
+    public void Error387_NamesTheProperty_InEitherLanguage()
+    {
+        Assert.AreEqual("'Checked' property can't be set on this control",
+            InCulture("en-CA", () => FormError.PropertyCantBeSetOnThisControl("Checked").Description));
+        Assert.AreEqual("Impossible de définir la propriété 'Checked' pour ce contrôle",
+            InCulture("fr-CA", () => FormError.PropertyCantBeSetOnThisControl("Checked").Description));
+        Assert.AreEqual(387, FormError.PropertyCantBeSetOnThisControl("Visible").Number);
+    }
 }

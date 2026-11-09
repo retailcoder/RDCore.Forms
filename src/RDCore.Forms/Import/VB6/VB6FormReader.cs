@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Text.RegularExpressions;
+using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 
@@ -528,6 +529,10 @@ public static partial class VB6FormReader
                 case ValueLiteral.Number { IsIntegral: true, Value: >= int.MinValue and <= int.MaxValue } number when type == typeof(FormColor)
                     && FormColor.TryFromOle((int)number.Value, out var color):
                     value = color;
+                    return true;
+
+                case ValueLiteral.Word word when type == typeof(MenuShortcut?) && MenuShortcut.TryParse(word.Value.Trim(), out var shortcut):
+                    value = shortcut;
                     return true;
 
                 default:
