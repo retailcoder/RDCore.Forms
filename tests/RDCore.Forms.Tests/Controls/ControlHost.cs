@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
+using P = RDCore.Forms.Model.VB.VBProperties;
 
 namespace RDCore.Forms.Tests.Controls;
 
@@ -39,12 +40,11 @@ public static class ControlHost
     public static (Window Window, RecordingSink Sink) Show(params (Control Control, Rect Bounds)[] controls)
     {
         var canvas = new Canvas();
+        // Placed by their components, in twips, as a form places them.
         foreach (var (control, bounds) in controls)
         {
-            Canvas.SetLeft(control, bounds.X);
-            Canvas.SetTop(control, bounds.Y);
-            control.Width = bounds.Width;
-            control.Height = bounds.Height;
+            VBControl.GetInstance(control)!
+                .Set(P.Left, bounds.X * 15).Set(P.Top, bounds.Y * 15).Set(P.Width, bounds.Width * 15).Set(P.Height, bounds.Height * 15);
             canvas.Children.Add(control);
         }
         var sink = new RecordingSink();
