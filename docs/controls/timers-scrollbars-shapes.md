@@ -45,3 +45,8 @@ The interval is counted on the system's clock. [`VBControl.SetTimeProvider`](../
 - A one-pixel line covers every pixel from its first end up to its second, the second left out. Its `BorderStyle` dashes it from the first end: Dash is 18 pixels on and 6 off, and Dot 3 and 3.
 - A wider line is solid whatever its `BorderStyle`, and covers both ends. Across, it covers `BorderWidth` rows centred on the end's row, the extra one above where the width is even. A vertical line covers as many columns, the extra one to the left.
 - Inside Solid draws as Solid, and Transparent draws nothing. Every `DrawMode` draws as Copy Pen (13).
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---

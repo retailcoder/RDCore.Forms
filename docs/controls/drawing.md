@@ -46,3 +46,8 @@ The surface keeps what it draws whatever the component's `AutoRedraw`, and keeps
 
 > [!NOTE]
 > **Not implemented.** Every `DrawMode` draws as Copy Pen (13). `Point` reads the drawing and the `BackColor`; a PictureBox's `Picture` under the drawing is not read. The `Print` method, `PaintPicture`, `TextWidth` and `TextHeight` have no surface member.
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---
