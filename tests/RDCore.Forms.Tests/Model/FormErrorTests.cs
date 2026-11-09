@@ -61,7 +61,7 @@ public sealed class FormErrorTests
     {
         Assert.AreEqual("'Checked' property can't be set on this control",
             InCulture("en-CA", () => FormError.PropertyCantBeSetOnThisControl("Checked").Description));
-        Assert.AreEqual("Impossible de définir la propriété 'Checked' pour ce contrôle",
+        Assert.AreEqual("Impossible de définir la propriété « Checked » pour ce contrôle",
             InCulture("fr-CA", () => FormError.PropertyCantBeSetOnThisControl("Checked").Description));
         Assert.AreEqual(387, FormError.PropertyCantBeSetOnThisControl("Visible").Number);
     }

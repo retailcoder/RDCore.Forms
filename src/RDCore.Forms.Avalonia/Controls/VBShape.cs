@@ -15,7 +15,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A rectangle and an oval fill the control; a square and a circle are as wide as its shorter side, centred in it. A rounded figure's
+/// A rectangle and an oval fill the control; a square, a rounded square and a circle are as wide as its shorter side, centred in it. A rounded figure's
 /// corners have a radius of a tenth of its shorter side.
 /// </para>
 /// <para>

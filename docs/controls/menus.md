@@ -22,7 +22,7 @@ save.Enabled = false;
 
 ## Click
 
-The order is VB6's, as measured with native and p-code builds.
+The order is VB6's (measured with VB6).
 
 |Situation|Raised|
 |---|---|
@@ -30,7 +30,7 @@ The order is VB6's, as measured with native and p-code builds.
 |An item that holds none is chosen|Its Click, alone: the menus above it raise none.|
 |An item's shortcut is pressed|Each menu's Click from the bar down, then the item's.|
 
-A shortcut stops at the first item on its way that is hidden or disabled. Each is asked after the Click above it has run, so a menu's Click can enable the item below it in time.
+A shortcut stops at the first item on its way that is hidden or disabled. Each item's `Visible` and `Enabled` are read after the Click above it has run, so a menu's Click can enable the item below it in time.
 
 A shortcut chooses its item before the control that has the focus or the form sees the key, a TextBox included. Where two items have the same shortcut, the first in the form's order has it.
 
