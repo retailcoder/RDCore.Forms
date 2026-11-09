@@ -30,6 +30,12 @@ public static class VBControl
         AvaloniaProperty.RegisterAttached<Control, IComponentEventSink?>("EventSink", typeof(VBControl), inherits: true);
 
     /// <summary>
+    /// The clock a Timer counts its interval on, inherited from the control's ancestors.
+    /// </summary>
+    public static readonly AttachedProperty<TimeProvider?> TimeProviderProperty =
+        AvaloniaProperty.RegisterAttached<Control, TimeProvider?>("TimeProvider", typeof(VBControl), inherits: true);
+
+    /// <summary>
     /// Gets the component a control shows.
     /// </summary>
     /// <param name="control">The control.</param>
@@ -56,6 +62,20 @@ public static class VBControl
     /// <param name="control">The control, usually a form's window.</param>
     /// <param name="sink">The sink.</param>
     public static void SetEventSink(Control control, IComponentEventSink? sink) => control.SetValue(EventSinkProperty, sink);
+
+    /// <summary>
+    /// Gets the clock a Timer on a control counts its interval on.
+    /// </summary>
+    /// <param name="control">The control.</param>
+    /// <returns>The clock set on the control or its ancestors, or <see cref="TimeProvider.System"/> where none is set.</returns>
+    public static TimeProvider GetTimeProvider(Control control) => control.GetValue(TimeProviderProperty) ?? TimeProvider.System;
+
+    /// <summary>
+    /// Sets the clock the Timers on a control and on the controls it holds count their intervals on.
+    /// </summary>
+    /// <param name="control">The control, usually a form's window.</param>
+    /// <param name="clock">The clock, or <see langword="null"/> for <see cref="TimeProvider.System"/>.</param>
+    public static void SetTimeProvider(Control control, TimeProvider? clock) => control.SetValue(TimeProviderProperty, clock);
 
     // The arguments as the handlers left them, or null where the control has no component or no sink, and nothing is raised.
     internal static FormValue[]? Raise(Control control, EventDefinition definition, params FormValue[] arguments)

@@ -14,8 +14,7 @@ public static class VBControls
     /// </summary>
     /// <param name="instance">The component.</param>
     /// <returns>
-    /// The control, or <see langword="null"/> where its class has none: a Timer, a scroll bar, a Shape, a Line, a menu, and a
-    /// form's root.
+    /// The control, or <see langword="null"/> where its class has none: a menu and a form's root.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> is <see langword="null"/>.</exception>
     public static Control? Create(ComponentInstance instance)
@@ -42,6 +41,14 @@ public static class VBControls
             return new VBPictureBox(instance);
         if (ReferenceEquals(type, VBClasses.Image))
             return new VBImage(instance);
+        if (ReferenceEquals(type, VBClasses.Timer))
+            return new VBTimer(instance);
+        if (ReferenceEquals(type, VBClasses.HScrollBar) || ReferenceEquals(type, VBClasses.VScrollBar))
+            return new VBScrollBar(instance);
+        if (ReferenceEquals(type, VBClasses.Shape))
+            return new VBShape(instance);
+        if (ReferenceEquals(type, VBClasses.Line))
+            return new VBLine(instance);
         return null;
     }
 }
