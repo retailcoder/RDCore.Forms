@@ -41,7 +41,7 @@ The surface keeps what it draws whatever the component's `AutoRedraw`, and keeps
 
 |`AutoRedraw`|Paint|
 |---|---|
-|False, the default|Raised once the surface is shown, and each time the component's inside grows.|
+|False, the default|Raised once the surface is shown, and each time the component's inside grows. One is raised for the changes made before it comes, so a window grown across and down at once raises one.|
 |True|Not raised.|
 
 > [!NOTE]

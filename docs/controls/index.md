@@ -24,7 +24,7 @@
 |`VB.Line`|[`VBLine`](../api/RDCore.Forms.Avalonia.Controls.VBLine.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 
 > [!NOTE]
-> **Not implemented.** `VB.Menu` has no control: `Create` returns `null` for it, and a form's window shows no menu. The form itself raises only Paint, from its [drawing surface](drawing.md).
+> **Not implemented.** `VB.Menu` has no control: `Create` returns `null` for it, and a form's window shows no menu.
 
 ## Showing a form
 
@@ -51,7 +51,7 @@ sealed class PrintingSink : IComponentEventSink
 
 The sink is called with the component, the event, and its arguments in the order of the event's parameters. A handler's assignment to an argument, such as a `KeyAscii` set to 0, is written back into the array, and the control reads it there.
 
-The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinButton` and `ShowInTaskbar`. A `StartUpPosition` of CenterOwner or CenterScreen centres it; Manual and Windows Default leave its place to the window system.
+The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinButton` and `ShowInTaskbar`, and a user who resizes it sets the root's `Width` and `Height`. A `StartUpPosition` of CenterOwner or CenterScreen centres it; Manual and Windows Default leave its place to the window system. The root raises its own events, Resize, Activate, QueryUnload, Unload and its mouse and key events among them: see [Form events](form-events.md).
 
 ## Placement
 
