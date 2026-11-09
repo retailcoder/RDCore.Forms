@@ -4,6 +4,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
@@ -32,6 +33,15 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// entered and left, whether the combo or its edit box has the focus.
 /// </para>
 /// <para>
+/// <see cref="AddItem"/>, <see cref="RemoveItem"/> and <see cref="Clear"/> keep the component's <c>ItemData</c> and <c>ItemIcon</c>
+/// in step with its items. An added item's data is 0.
+/// </para>
+/// <para>
+/// An item's icon, its <c>ItemIcon</c>, is drawn before its text in the list, scaled to fit a square as tall as the text. Where any
+/// item has one, every item's text starts after that square, so that the text lines up. A Dropdown List draws its selected item's icon
+/// in its box too; a Dropdown Combo's edit box shows text only. A metafile icon is not drawn. Item icons are an RD-VBA addition.
+/// </para>
+/// <para>
 /// A <c>Style</c> of Simple Combo is shown as a Dropdown Combo, and <c>Locked</c> is not applied.
 /// </para>
 /// </remarks>
@@ -50,6 +60,7 @@ public sealed class VBComboBox : ComboBox
     private bool textFromComponent;
     private bool writingList;
     private TextBox? editBox;
+    private readonly ItemIcons icons = new();
 
     static VBComboBox()
     {
@@ -163,6 +174,7 @@ public sealed class VBComboBox : ComboBox
             throw new FormErrorException(FormError.InvalidProcedureCall);
         Items.Insert(at, item);
         WriteList();
+        ListItems.Inserted(instance, ItemCount - 1, at);
     }
 
     /// <summary>
@@ -176,6 +188,7 @@ public sealed class VBComboBox : ComboBox
             throw new FormErrorException(FormError.InvalidProcedureCall);
         Items.RemoveAt(index);
         WriteList();
+        ListItems.Removed(instance, ItemCount + 1, index);
     }
 
     /// <summary>
@@ -185,7 +198,43 @@ public sealed class VBComboBox : ComboBox
     {
         Items.Clear();
         WriteList();
+        ListItems.Cleared(instance);
     }
+
+    /// <summary>
+    /// Gets an item's data, the Long value attached to it.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <returns>The item's data.</returns>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the items: 381, Invalid property array index.</exception>
+    public int GetItemData(int index) => ListItems.GetData(instance, ItemCount, index);
+
+    /// <summary>
+    /// Sets an item's data, the Long value attached to it.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <param name="value">The value.</param>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the items: 381, Invalid property array index.</exception>
+    public void SetItemData(int index, int value) => ListItems.SetData(instance, ItemCount, index, value);
+
+    /// <summary>
+    /// Gets an item's icon, the picture drawn before its text. Item icons are an RD-VBA addition.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <returns>The picture, as the bytes of its file, or <see langword="null"/> where the item has none.</returns>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the items: 381, Invalid property array index.</exception>
+    public byte[]? GetItemIcon(int index) => ListItems.GetIcon(instance, ItemCount, index);
+
+    /// <summary>
+    /// Sets an item's icon, the picture drawn before its text. Item icons are an RD-VBA addition.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <param name="picture">The picture, as the bytes of its file; <see langword="null"/> or no bytes for none.</param>
+    /// <exception cref="FormErrorException">
+    /// <paramref name="index"/> is outside the items: 381, Invalid property array index. <paramref name="picture"/> is refused by
+    /// <see cref="FormPictures.Inspect"/>: 481, Invalid picture.
+    /// </exception>
+    public void SetItemIcon(int index, byte[]? picture) => ListItems.SetIcon(instance, ItemCount, index, picture);
 
     /// <inheritdoc/>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -233,7 +282,23 @@ public sealed class VBComboBox : ComboBox
             instance.Set(P.Text, base.Text ?? "");
         else if (change.Property == IsDropDownOpenProperty && change.GetNewValue<bool>())
             VBControl.Raise(this, VBEvents.DropDown);
+        if (change.Property == SelectedIndexProperty && icons.Any)
+            ShowSelectedIcon();
     }
+
+    /// <inheritdoc/>
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        base.PrepareContainerForItemOverride(container, item, index);
+        icons.Show(container, item, index);
+    }
+
+    // A Dropdown List's box shows the selected item's icon. A new template each time, so that the box is drawn again: two items of the
+    // same text are the same box item.
+    private void ShowSelectedIcon() =>
+        SelectionBoxItemTemplate = style == ComboBoxStyle.DropdownList && icons.Any
+            ? new FuncDataTemplate<object?>((item, _) => new ItemView(item as string ?? "", icons.At(SelectedIndex)))
+            : null;
 
     /// <inheritdoc/>
     public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
@@ -316,6 +381,12 @@ public sealed class VBComboBox : ComboBox
             Items.Clear();
             foreach (var item in (IReadOnlyList<string>)e.After!)
                 Items.Add(item);
+        }
+        else if (ReferenceEquals(e.Property, P.ItemIcon))
+        {
+            icons.Take((IReadOnlyList<byte[]?>)e.After!);
+            icons.ShowAll(this);
+            ShowSelectedIcon();
         }
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);

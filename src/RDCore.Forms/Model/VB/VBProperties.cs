@@ -21,27 +21,30 @@ namespace RDCore.Forms.Model.VB;
 public static class VBProperties
 {
     /// <summary>
-    /// A control's left edge, in its container's scale; a form's client area's left edge on the screen, in twips.
+    /// A control's left edge in its container, in twips whatever the container's scale; a form's client area's left edge on the
+    /// screen, in twips.
     /// </summary>
     public static readonly PropertyDefinition<double> Left = new("Left", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's top edge, in its container's scale; a form's client area's top edge on the screen, in twips.
+    /// A control's top edge in its container, in twips whatever the container's scale; a form's client area's top edge on the
+    /// screen, in twips.
     /// </summary>
     public static readonly PropertyDefinition<double> Top = new("Top", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's width, in its container's scale; a form's client area's width, in twips.
+    /// A control's width, in twips whatever its container's scale; a form's client area's width, in twips.
     /// </summary>
     public static readonly PropertyDefinition<double> Width = new("Width", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's height, in its container's scale; a form's client area's height, in twips.
+    /// A control's height, in twips whatever its container's scale; a form's client area's height, in twips.
     /// </summary>
     public static readonly PropertyDefinition<double> Height = new("Height", PropertyCategory.Position);
 
     /// <summary>
-    /// The unit of a form's or a PictureBox's scale, which its contents' positions and sizes are in.
+    /// The unit of a form's or a PictureBox's scale: the unit of its <c>ScaleLeft</c>, <c>ScaleTop</c>, <c>ScaleWidth</c> and
+    /// <c>ScaleHeight</c>, and of the ends of the Lines it holds. Its controls' positions and sizes are in twips whatever its scale.
     /// </summary>
     public static readonly PropertyDefinition<ScaleMode> ScaleMode = new("ScaleMode", PropertyCategory.Position, Model.ScaleMode.Twip);
 
@@ -210,6 +213,12 @@ public static class VBProperties
     /// The Long value attached to each item of a ListBox or ComboBox, in the order of <see cref="List"/>.
     /// </summary>
     public static readonly PropertyDefinition<IReadOnlyList<int>> ItemData = new("ItemData", PropertyCategory.Misc, []);
+
+    /// <summary>
+    /// The picture shown before each item of a ListBox or ComboBox, in the order of <see cref="List"/>, as the bytes of its file, or
+    /// <see langword="null"/> for an item with none. An RD-VBA addition: VB6's ListBox and ComboBox show no pictures.
+    /// </summary>
+    public static readonly PropertyDefinition<IReadOnlyList<byte[]?>> ItemIcon = new("ItemIcon", PropertyCategory.List, []);
 
     /// <summary>
     /// The milliseconds between a Timer's events. 0 stops the Timer.
