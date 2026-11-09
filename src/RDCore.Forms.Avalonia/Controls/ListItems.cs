@@ -8,7 +8,7 @@ using P = RDCore.Forms.Model.VB.VBProperties;
 namespace RDCore.Forms.Avalonia.Controls;
 
 // A ListBox's or ComboBox's ItemData and ItemIcon, kept in step with its items as AddItem, RemoveItem and Clear change them. Each holds
-// one value an item, the values a component lacks taken as 0 and no icon.
+// one value for each item; a value the component lacks is taken as 0, or as no icon.
 internal static class ListItems
 {
     // An item was added at the index, to a list of the count of items before it: its data is 0, and it has no icon.
@@ -51,7 +51,7 @@ internal static class ListItems
         return index < values.Count ? values[index] : null;
     }
 
-    // A picture the inspection refuses is refused here, so that an item's icon is always one that can be shown. No bytes are no icon.
+    // A picture the inspection refuses is refused here, with its error, so that an item never holds one. No bytes are no icon.
     public static void SetIcon(ComponentInstance instance, int count, int index, byte[]? picture)
     {
         Require(count, index);

@@ -22,7 +22,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </para>
 /// <para>
 /// An item's icon, its <c>ItemIcon</c>, is drawn before its text, scaled to fit a square as tall as the text. Where any item has one,
-/// every item's text starts after that square, so that the text lines up. Item icons are an RD-VBA addition.
+/// every item's text starts after that square, so that the text lines up. A metafile icon is not drawn. Item icons are an RD-VBA
+/// addition.
 /// </para>
 /// <para>
 /// Its Click comes from two places, as measured with VB6. A left press on an item raises Click at its release, before MouseUp, whether
