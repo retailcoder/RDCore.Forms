@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NoDesignerBlock" xml:space="preserve">
+    <value>Le fichier ne contient aucun formulaire : il n'a aucun bloc Begin.</value>
+  </data>
+  <data name="NotAFormRoot" xml:space="preserve">
+    <value>{0} n'est ni un formulaire, ni un MDIForm, ni un UserControl, ni une PropertyPage; le bloc du concepteur du fichier est donc conservé sous forme de texte.</value>
+  </data>
+  <data name="MalformedLine" xml:space="preserve">
+    <value>Cette ligne n'est ni un Begin, ni un End, ni une propriété : {0}</value>
+  </data>
+  <data name="UnbalancedBlock" xml:space="preserve">
+    <value>{0} n'est jamais fermé; il se termine donc là où se termine son conteneur ou le fichier.</value>
+  </data>
+  <data name="UnmatchedEnd" xml:space="preserve">
+    <value>Cette ligne ne ferme aucun groupe de propriétés ouvert; elle est donc ignorée : {0}</value>
+  </data>
+  <data name="NamelessComponent" xml:space="preserve">
+    <value>Ce bloc {0} n'a pas de nom; il est donc conservé sous forme de texte.</value>
+  </data>
+  <data name="NestingTooDeep" xml:space="preserve">
+    <value>{0} est imbriqué à plus de {1} blocs de profondeur; il est donc conservé sous forme de texte, avec son contenu.</value>
+  </data>
+  <data name="UnreadLibraryReference" xml:space="preserve">
+    <value>La bibliothèque de contrôles {0} n'est pas désignée par l'identifiant d'une bibliothèque de types; sa ligne est donc conservée sous forme de texte.</value>
+  </data>
+  <data name="UnmodelledHeaderLine" xml:space="preserve">
+    <value>La ligne d'en-tête {0} ne désigne aucune bibliothèque de contrôles; elle est donc conservée sous forme de texte.</value>
+  </data>
+  <data name="UnmodelledClass" xml:space="preserve">
+    <value>La classe {0} du contrôle {1} n'est pas modélisée; le contrôle est donc conservé sous forme de texte.</value>
+  </data>
+  <data name="MisplacedComponent" xml:space="preserve">
+    <value>{0} ne peut pas contenir {1}; {1} est donc placé dans {2}, où sa position est lue telle qu'elle est écrite.</value>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>La propriété {0} de {1} a une valeur non valide; elle est donc conservée sous forme de texte.</value>
+  </data>
+  <data name="MissingCompanion" xml:space="preserve">
+    <value>La propriété {0} de {1} renvoie à {2}, qui est introuvable; elle est donc conservée sous forme de texte.</value>
+  </data>
+  <data name="MissingRecord" xml:space="preserve">
+    <value>La propriété {0} de {1} renvoie au décalage {2} de {3}, qui ne contient aucun enregistrement que la propriété puisse lire; elle est donc conservée sous forme de texte.</value>
+  </data>
+</root>

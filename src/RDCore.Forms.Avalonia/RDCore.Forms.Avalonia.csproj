@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyTitle>RDCore.Forms.Avalonia</AssemblyTitle>
+    <Description>RDForms' controls and renderer for Avalonia: the controls of a VB6 or MSForms form, and a form's window built from the RDCore.Forms model.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RDCore.Forms\RDCore.Forms.csproj" />
+  </ItemGroup>
+
+</Project>

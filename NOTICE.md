@@ -15,6 +15,7 @@ Des parties de RDCore.Forms sont dérivées de [HexIDE](https://github.com/hexid
 
 - HexIDE est distribué sous la licence MIT.
 - Chaque fichier dérivé de HexIDE conserve, dans son en-tête, l'avis de droit d'auteur de HexIDE.
+- Les formulaires de test du dossier `tests/RDCore.Forms.Tests/Import/VB6/Fixtures/HexIDE` sont copiés tels quels du corpus de HexIDE, au _commit_ `ae17f1db`, sous la même licence.
 - La licence de HexIDE est reproduite à la fin de ce fichier, dans sa version anglaise originale, comme elle l'exige : voir [Licence de HexIDE](#hexide-licence).
 
 Les paquets NuGet dont dépend RDCore.Forms, dont Avalonia, demeurent sous leurs propres licences.
@@ -45,6 +46,7 @@ Parts of RDCore.Forms are derived from [HexIDE](https://github.com/hexide-io/Hex
 
 - HexIDE is licensed under the MIT licence.
 - Every file derived from HexIDE keeps HexIDE's copyright notice in its header.
+- The test forms in `tests/RDCore.Forms.Tests/Import/VB6/Fixtures/HexIDE` are copied as is from HexIDE's corpus, at commit `ae17f1db`, under the same licence.
 - HexIDE's licence is reproduced below, as it requires.
 
 The NuGet packages RDCore.Forms depends on, Avalonia among them, remain under their own licences.

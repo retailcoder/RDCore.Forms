@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Error5" xml:space="preserve">
+    <value>Invalid procedure call or argument</value>
+  </data>
+  <data name="Error6" xml:space="preserve">
+    <value>Overflow</value>
+  </data>
+  <data name="Error13" xml:space="preserve">
+    <value>Type mismatch</value>
+  </data>
+  <data name="Error53" xml:space="preserve">
+    <value>File not found</value>
+  </data>
+  <data name="Error94" xml:space="preserve">
+    <value>Invalid use of Null</value>
+  </data>
+  <data name="Error343" xml:space="preserve">
+    <value>Object not an array</value>
+  </data>
+  <data name="Error360" xml:space="preserve">
+    <value>Object already loaded</value>
+  </data>
+  <data name="Error361" xml:space="preserve">
+    <value>Can't load or unload this object</value>
+  </data>
+  <data name="Error362" xml:space="preserve">
+    <value>Can't unload controls created at design time</value>
+  </data>
+  <data name="Error380" xml:space="preserve">
+    <value>Invalid property value</value>
+  </data>
+  <data name="Error381" xml:space="preserve">
+    <value>Invalid property array index</value>
+  </data>
+  <data name="Error382" xml:space="preserve">
+    <value>Set not supported at runtime</value>
+  </data>
+  <data name="Error383" xml:space="preserve">
+    <value>Set not supported (read-only property)</value>
+  </data>
+  <data name="Error393" xml:space="preserve">
+    <value>Get not supported at runtime</value>
+  </data>
+  <data name="Error425" xml:space="preserve">
+    <value>Invalid object use</value>
+  </data>
+  <data name="Error438" xml:space="preserve">
+    <value>Object doesn't support this property or method</value>
+  </data>
+  <data name="Error448" xml:space="preserve">
+    <value>Named argument not found</value>
+  </data>
+  <data name="Error449" xml:space="preserve">
+    <value>Argument not optional</value>
+  </data>
+  <data name="Error450" xml:space="preserve">
+    <value>Wrong number of arguments or invalid property assignment</value>
+  </data>
+  <data name="Error461" xml:space="preserve">
+    <value>Method or data member not found</value>
+  </data>
+  <data name="Error481" xml:space="preserve">
+    <value>Invalid picture</value>
+  </data>
+</root>

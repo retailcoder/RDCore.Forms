@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NoDesignerBlock" xml:space="preserve">
+    <value>The file holds no form: it has no Begin block.</value>
+  </data>
+  <data name="NotAFormRoot" xml:space="preserve">
+    <value>{0} is not a form, an MDIForm, a UserControl or a PropertyPage, so the file's designer block is kept as text.</value>
+    <comment>{0} is the root block's class, such as VB.CommandButton.</comment>
+  </data>
+  <data name="MalformedLine" xml:space="preserve">
+    <value>This line is not a Begin, an End or a property: {0}</value>
+    <comment>{0} is the line.</comment>
+  </data>
+  <data name="UnbalancedBlock" xml:space="preserve">
+    <value>{0} is never closed, so it ends where its container or the file ends.</value>
+    <comment>{0} is the name of the block or the property bag, such as Command1 or Font.</comment>
+  </data>
+  <data name="UnmatchedEnd" xml:space="preserve">
+    <value>This line closes no open property bag, so it is skipped: {0}</value>
+    <comment>{0} is the line, such as EndProperty.</comment>
+  </data>
+  <data name="NamelessComponent" xml:space="preserve">
+    <value>This {0} block has no name, so it is kept as text.</value>
+    <comment>{0} is the block's class, such as VB.CommandButton.</comment>
+  </data>
+  <data name="NestingTooDeep" xml:space="preserve">
+    <value>{0} is nested more than {1} blocks deep, so it is kept as text, its contents included.</value>
+    <comment>{0} is the block's name; {1} is the deepest nesting read, 2,500.</comment>
+  </data>
+  <data name="UnreadLibraryReference" xml:space="preserve">
+    <value>The control library {0} is not named by a type library id, so its line is kept as text.</value>
+    <comment>{0} is the Object line's value.</comment>
+  </data>
+  <data name="UnmodelledHeaderLine" xml:space="preserve">
+    <value>Header line {0} does not name a control library, so it is kept as text.</value>
+    <comment>{0} is the line's name, such as Reference.</comment>
+  </data>
+  <data name="UnmodelledClass" xml:space="preserve">
+    <value>Class {0} of control {1} is not modelled, so the control is kept as text.</value>
+    <comment>{0} is the class, such as MSComctlLib.ListView; {1} is the control's name.</comment>
+  </data>
+  <data name="MisplacedComponent" xml:space="preserve">
+    <value>{0} cannot hold {1}, so {1} is placed in {2}, where its position is read as written.</value>
+    <comment>{0} is the name of the component the file places it in; {1} is the component's name; {2} is the name of the container it is placed in.</comment>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>Property {0} in {1} has an invalid value, so it is kept as text.</value>
+    <comment>{0} is the property's name; {1} is the component's name.</comment>
+  </data>
+  <data name="MissingCompanion" xml:space="preserve">
+    <value>Property {0} in {1} cites {2}, which was not found, so it is kept as text.</value>
+    <comment>{0} is the property's name; {1} is the component's name; {2} is the binary file looked for: its path beside the designer file, or its name, such as Form1.frx, when the designer file was read as text.</comment>
+  </data>
+  <data name="MissingRecord" xml:space="preserve">
+    <value>Property {0} in {1} cites offset {2} of {3}, which holds no record the property can read, so it is kept as text.</value>
+    <comment>{0} is the property's name; {1} is the component's name; {2} is the hexadecimal offset; {3} is the binary file's name.</comment>
+  </data>
+</root>

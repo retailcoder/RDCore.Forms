@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyTitle>RDCore.Forms Tests</AssemblyTitle>
+    <Description>The tests of RDCore.Forms and RDCore.Forms.Avalonia.</Description>
+    <IsPackable>false</IsPackable>
+    <!-- tests document themselves by their names. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- a test method that does not await what it asserts passes without asserting it: an async method with no await, and a call whose task is dropped. -->
+    <WarningsAsErrors>$(WarningsAsErrors);CS1998;CS4014</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.3.3" />
+    <PackageReference Include="Avalonia.Headless" Version="12.0.5" />
+    <PackageReference Include="Avalonia.Themes.Simple" Version="12.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RDCore.Forms\RDCore.Forms.csproj" />
+    <ProjectReference Include="..\..\src\RDCore.Forms.Avalonia\RDCore.Forms.Avalonia.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Import\VB6\Fixtures\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
