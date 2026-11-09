@@ -16,7 +16,7 @@
 |`VB.ListBox`|[`VBListBox`](../api/RDCore.Forms.Avalonia.Controls.VBListBox.yml)|Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp|[Lists](lists.md)|
 |`VB.ComboBox`|[`VBComboBox`](../api/RDCore.Forms.Avalonia.Controls.VBComboBox.yml)|Change, Click, DropDown, GotFocus, LostFocus|[Lists](lists.md)|
 |`VB.Frame`|[`VBFrame`](../api/RDCore.Forms.Avalonia.Controls.VBFrame.yml)|Click, DblClick, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
-|`VB.PictureBox`|[`VBPictureBox`](../api/RDCore.Forms.Avalonia.Controls.VBPictureBox.yml)|Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
+|`VB.PictureBox`|[`VBPictureBox`](../api/RDCore.Forms.Avalonia.Controls.VBPictureBox.yml)|Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp, Paint|[Containers and pictures](containers.md)|
 |`VB.Image`|[`VBImage`](../api/RDCore.Forms.Avalonia.Controls.VBImage.yml)|Click, DblClick, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
 |`VB.Timer`|[`VBTimer`](../api/RDCore.Forms.Avalonia.Controls.VBTimer.yml)|Timer|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 |`VB.HScrollBar`, `VB.VScrollBar`|[`VBScrollBar`](../api/RDCore.Forms.Avalonia.Controls.VBScrollBar.yml)|Change, GotFocus, LostFocus|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
@@ -24,7 +24,7 @@
 |`VB.Line`|[`VBLine`](../api/RDCore.Forms.Avalonia.Controls.VBLine.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 
 > [!NOTE]
-> **Not implemented.** `VB.Menu` has no control: `Create` returns `null` for it, and a form's window shows no menu. The form itself raises no events.
+> **Not implemented.** `VB.Menu` has no control: `Create` returns `null` for it, and a form's window shows no menu. The form itself raises only Paint, from its [drawing surface](drawing.md).
 
 ## Showing a form
 

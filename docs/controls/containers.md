@@ -16,6 +16,7 @@ Frame and PictureBox hold controls; PictureBox and Image draw pictures. The thre
 
 - Its border is a sunken edge when 3-D, and one pixel when flat. The controls it holds are placed inside the border, from its client origin.
 - Its `Picture` is drawn at its own size in pixels from the client origin, clipped, under the controls it holds.
+- Its drawing statements draw over its `Picture` and under its controls; see [Drawing](drawing.md). It raises Paint as its drawing surface does.
 - It takes the focus, whether or not it holds controls. It raises MouseUp before Click, and Click only where the release is over the PictureBox again. Its mouse events' X and Y are in twips.
 
 ## Image

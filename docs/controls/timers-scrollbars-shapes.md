@@ -7,7 +7,7 @@ A Timer raises an event at an interval, a scroll bar sets a value, and a Shape a
 [`VBTimer`](../api/RDCore.Forms.Avalonia.Controls.VBTimer.yml) draws nothing and takes no focus.
 
 - It raises Timer every `Interval` milliseconds while it is on a shown form, its own `Enabled` is True and its `Interval` is more than 0.
-- A new value for `Enabled` or `Interval` restarts the interval. Stopping it drops a tick not yet raised.
+- A new value for `Enabled` or `Interval` begins a new interval. Stopping it drops a tick still waiting to be raised.
 - A tick lands on the system timer's tick, as a VB6 Timer's does: on Windows, about every 15.6 milliseconds.
 - A tick is raised on the UI thread after input and rendering. A tick that comes while the one before it waits to be raised is dropped, so an event that takes longer than the interval is raised again once it returns, never several times in a row.
 
