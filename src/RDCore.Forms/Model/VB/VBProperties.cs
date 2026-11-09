@@ -412,7 +412,8 @@ public static class VBProperties
 
     /// <summary>
     /// The name of the form's menu whose items pop up as the user releases the right mouse button over the component: an RD-VBA
-    /// addition. An empty name, the default, pops up none.
+    /// addition. The name is compared without regard to case. An empty name, the default, or one that names none of the form's menus
+    /// pops up none.
     /// </summary>
     public static readonly PropertyDefinition<string> ContextMenu = new("ContextMenu", PropertyCategory.Behavior, "");
 }

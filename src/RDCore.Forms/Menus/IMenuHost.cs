@@ -45,7 +45,7 @@ public interface IMenuHost
     /// <param name="boldItem">An item of the menu to show in bold, as VB's <c>BoldCommand</c> argument, or <see langword="null"/>.</param>
     /// <returns>
     /// A task that completes when the menu closes, after the Click of an item chosen from it. A menu that holds no items shows nothing,
-    /// and its task has completed.
+    /// and the task returned has already completed.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="menu"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="menu"/> is not one of the form's menus.</exception>
