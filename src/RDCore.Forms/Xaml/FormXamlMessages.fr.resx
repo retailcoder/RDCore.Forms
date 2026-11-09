@@ -19,10 +19,10 @@
     <value>{0} n'est ni un Form, ni un MDIForm, ni un UserControl, ni une PropertyPage de l'espace de noms RDForms; le document ne contient donc aucun formulaire.</value>
   </data>
   <data name="NewerFormatVersion" xml:space="preserve">
-    <value>La version de format du document est {0}, postérieure à {1}. Il est lu quand même, et ce que cette version ne connaît pas est signalé.</value>
+    <value>La version du format du document est {0}, postérieure à la version {1}. Il est lu quand même, et ce que cette version ne connaît pas est signalé.</value>
   </data>
   <data name="NamelessComponent" xml:space="preserve">
-    <value>Cet élément {0} n'a pas de Name; il est donc conservé sous forme de texte.</value>
+    <value>Ce composant {0} n'a pas de Name; il est donc conservé sous forme de texte.</value>
   </data>
   <data name="NestingTooDeep" xml:space="preserve">
     <value>{0} est imbriqué à plus de {1} composants de profondeur; il est donc conservé sous forme de texte, avec son contenu.</value>
