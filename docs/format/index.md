@@ -103,3 +103,8 @@ The format's version is 1. A document of a later version is read anyway, with a 
 |[`FormXaml`](../api/RDCore.Forms.Xaml.FormXaml.yml)|Reads and writes documents.|
 |[`FormXamlRead`](../api/RDCore.Forms.Xaml.FormXamlRead.yml)|The form a read returns, its format version, and its diagnostics.|
 |[`FormXamlDiagnostic`](../api/RDCore.Forms.Xaml.FormXamlDiagnostic.yml)|One thing a read reports: its kind, severity, line and message.|
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](../controls/index.md) | FORMAT | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---

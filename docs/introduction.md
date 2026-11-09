@@ -28,6 +28,6 @@ What a form sets that the model does not have is kept as it was written: a prope
 RDCore.Forms is in **pre-alpha** development. No package is published: [Getting started](getting-started.md) builds it from source.
 
 ---
-[ACCUEIL](index.fr.md) • [HOME](index.md) | [BIENVENUE](introduction.fr.md) • WELCOME | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | [CONTROLS](controls/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+[ACCUEIL](index.fr.md) • [HOME](index.md) | [BIENVENUE](introduction.fr.md) • WELCOME | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | [CONTROLS](controls/index.md) | [FORMAT](format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 
 ---
