@@ -4,7 +4,8 @@
 namespace RDCore.Forms.Model;
 
 /// <summary>
-/// The unit a form or a container measures its contents' positions in, as VB's <c>ScaleMode</c> numbers them.
+/// The unit of a form's or a container's scale, as VB's <c>ScaleMode</c> numbers them. The ends of a Line it holds are in it; the
+/// positions and sizes of its controls are in twips whatever its scale.
 /// </summary>
 public enum ScaleMode
 {
