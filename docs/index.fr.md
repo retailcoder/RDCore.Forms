@@ -5,9 +5,6 @@ RDCore.Forms est RDForms, la bibliothèque de formulaires de la plateforme [RDCo
 
 Le _runtime_ de RDCore exécute le code d'un formulaire. RDCore.Forms affiche le formulaire et transmet à ce code les événements de ses contrôles.
 
-> [!NOTE]
-> **Non implémenté.** RDCore.Forms.Avalonia n'a aucun contrôle pour un Timer, une barre de défilement, un Shape, un Line ou un menu : la fenêtre d'un formulaire n'en affiche aucun.
-
 ---
 ACCUEIL • [HOME](index.md) | [BIENVENUE](introduction.fr.md) • [WELCOME](introduction.md) | [DÉMARRER](getting-started.fr.md) • [GET STARTED](getting-started.md) | [IMPORTER](import/vb6.fr.md) • [IMPORT](import/vb6.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
 

@@ -10,9 +10,6 @@ RDCore.Forms est la bibliothèque de formulaires de la plateforme [RDCore](https
 |`RDCore.Forms`|Le modèle des formulaires : les classes de composants, leurs propriétés et leurs événements, les composants d'un formulaire, et le lecteur qui importe un formulaire Visual Basic 6.0 dans le modèle. Elle n'a aucune dépendance d'interface.|
 |`RDCore.Forms.Avalonia`|Les contrôles d'un formulaire, et la fenêtre construite à partir du modèle, rendue avec [Avalonia](https://avaloniaui.net).|
 
-> [!NOTE]
-> **Non implémenté.** `RDCore.Forms.Avalonia` n'a aucun contrôle pour un Timer, une barre de défilement, un Shape, un Line ou un menu : la fenêtre d'un formulaire n'en affiche aucun.
-
 ## Comment RDCore l'utilise
 
 Le serveur de langage de RDCore lit un formulaire dans le modèle et l'analyse, sans charger Avalonia. Le _runtime_ de RDCore exécute le code d'un formulaire; RDCore.Forms affiche le formulaire et transmet à ce code les événements de ses contrôles.
