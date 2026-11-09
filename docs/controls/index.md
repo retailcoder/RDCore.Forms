@@ -18,9 +18,13 @@
 |`VB.Frame`|[`VBFrame`](../api/RDCore.Forms.Avalonia.Controls.VBFrame.yml)|Click, DblClick, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
 |`VB.PictureBox`|[`VBPictureBox`](../api/RDCore.Forms.Avalonia.Controls.VBPictureBox.yml)|Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
 |`VB.Image`|[`VBImage`](../api/RDCore.Forms.Avalonia.Controls.VBImage.yml)|Click, DblClick, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
+|`VB.Timer`|[`VBTimer`](../api/RDCore.Forms.Avalonia.Controls.VBTimer.yml)|Timer|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
+|`VB.HScrollBar`, `VB.VScrollBar`|[`VBScrollBar`](../api/RDCore.Forms.Avalonia.Controls.VBScrollBar.yml)|Change, GotFocus, LostFocus|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
+|`VB.Shape`|[`VBShape`](../api/RDCore.Forms.Avalonia.Controls.VBShape.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
+|`VB.Line`|[`VBLine`](../api/RDCore.Forms.Avalonia.Controls.VBLine.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 
 > [!NOTE]
-> **Not implemented.** `VB.Timer`, `VB.HScrollBar`, `VB.VScrollBar`, `VB.Shape`, `VB.Line` and `VB.Menu` have no control: `Create` returns `null` for them, and a form's window shows none of them. The form itself raises no events.
+> **Not implemented.** `VB.Menu` has no control: `Create` returns `null` for it, and a form's window shows no menu. The form itself raises no events.
 
 ## Showing a form
 
@@ -53,9 +57,9 @@ The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinBut
 
 |Rule|Behaviour|
 |---|---|
-|Units|A control's `Left`, `Top`, `Width` and `Height` are twips, whatever its container's `ScaleMode`: 15 twips a pixel.|
-|Containers|A control placed in a Frame or a PictureBox is shown in it. A control placed in a component with no control, such as a Timer, is not shown.|
-|Stacking|In each container, the first control the form holds is on top. A windowless control (a Label or an Image) is under every windowed one.|
+|Units|A control's `Left`, `Top`, `Width` and `Height` are twips, whatever its container's `ScaleMode`: 15 twips a pixel. A Line's ends are in its container's scale.|
+|Containers|A control placed in a Frame or a PictureBox is shown in it. A control placed in any other component is not shown.|
+|Stacking|In each container, the first control the form holds is on top. A windowless control (a Label, an Image, a Shape or a Line) is under every windowed one.|
 |Tab order|One order across the whole form, by `TabIndex`, the form's order deciding a tie. A `TabIndex` past the last place takes the first free place, in the form's order.|
 |Focus|Tab skips a control that takes no focus (a Label, a Frame or an Image), one whose `TabStop` is False, and one that is hidden or disabled or in a hidden or disabled container.|
 
