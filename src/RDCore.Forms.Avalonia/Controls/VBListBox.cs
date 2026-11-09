@@ -17,8 +17,12 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Its items are the component's <c>List</c>. <see cref="AddItem"/>, <see cref="RemoveItem"/> and <see cref="Clear"/> change it, and
-/// keep the selection on the items that stay.
+/// Its items are the component's <c>List</c>. <see cref="AddItem"/>, <see cref="RemoveItem"/> and <see cref="Clear"/> change it, keep
+/// its <c>ItemData</c> and <c>ItemIcon</c> in step, and keep the selection on the items that stay. An added item's data is 0.
+/// </para>
+/// <para>
+/// An item's icon, its <c>ItemIcon</c>, is drawn before its text, scaled to fit a square as tall as the text. Where any item has one,
+/// every item's text starts after that square, so that the text lines up. Item icons are an RD-VBA addition.
 /// </para>
 /// <para>
 /// Its Click comes from two places, as measured with VB6. A left press on an item raises Click at its release, before MouseUp, whether
@@ -52,6 +56,7 @@ public sealed class VBListBox : ListBox
     private bool shiftPressed;
     // Set while the list writes its own items to the component.
     private bool writingList;
+    private readonly ItemIcons icons = new();
 
     static VBListBox()
     {
@@ -228,6 +233,7 @@ public sealed class VBListBox : ListBox
             throw new FormErrorException(FormError.InvalidProcedureCall);
         Items.Insert(at, item);
         WriteList();
+        ListItems.Inserted(instance, ItemCount - 1, at);
     }
 
     /// <summary>
@@ -243,6 +249,7 @@ public sealed class VBListBox : ListBox
         if (focusIndex >= ItemCount)
             focusIndex = Math.Max(0, ItemCount - 1);
         WriteList();
+        ListItems.Removed(instance, ItemCount + 1, index);
     }
 
     /// <summary>
@@ -253,7 +260,43 @@ public sealed class VBListBox : ListBox
         Items.Clear();
         focusIndex = anchorIndex = 0;
         WriteList();
+        ListItems.Cleared(instance);
     }
+
+    /// <summary>
+    /// Gets an item's data, the Long value attached to it.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <returns>The item's data.</returns>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the items: 381, Invalid property array index.</exception>
+    public int GetItemData(int index) => ListItems.GetData(instance, ItemCount, index);
+
+    /// <summary>
+    /// Sets an item's data, the Long value attached to it.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <param name="value">The value.</param>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the items: 381, Invalid property array index.</exception>
+    public void SetItemData(int index, int value) => ListItems.SetData(instance, ItemCount, index, value);
+
+    /// <summary>
+    /// Gets an item's icon, the picture drawn before its text. Item icons are an RD-VBA addition.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <returns>The picture, as the bytes of its file, or <see langword="null"/> where the item has none.</returns>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the items: 381, Invalid property array index.</exception>
+    public byte[]? GetItemIcon(int index) => ListItems.GetIcon(instance, ItemCount, index);
+
+    /// <summary>
+    /// Sets an item's icon, the picture drawn before its text. Item icons are an RD-VBA addition.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <param name="picture">The picture, as the bytes of its file; <see langword="null"/> or no bytes for none.</param>
+    /// <exception cref="FormErrorException">
+    /// <paramref name="index"/> is outside the items: 381, Invalid property array index. <paramref name="picture"/> is refused by
+    /// <see cref="FormPictures.Inspect"/>: 481, Invalid picture.
+    /// </exception>
+    public void SetItemIcon(int index, byte[]? picture) => ListItems.SetIcon(instance, ItemCount, index, picture);
 
     /// <inheritdoc/>
     protected override void OnKeyDown(KeyEventArgs e)
@@ -279,8 +322,20 @@ public sealed class VBListBox : ListBox
                 Items.Add(item);
             focusIndex = anchorIndex = 0;
         }
+        else if (ReferenceEquals(e.Property, P.ItemIcon))
+        {
+            icons.Take((IReadOnlyList<byte[]?>)e.After!);
+            icons.ShowAll(this);
+        }
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
+    }
+
+    /// <inheritdoc/>
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        base.PrepareContainerForItemOverride(container, item, index);
+        icons.Show(container, item, index);
     }
 
     private void WriteList()

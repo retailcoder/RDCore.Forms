@@ -21,7 +21,7 @@ public sealed class PictureControlTests
         Red = Color.FromRgb(255, 0, 0), Green = Color.FromRgb(0, 255, 0);
 
     // A PNG of the size given, which Avalonia writes, its pixels the premultiplied BGRA values given row by row, transparent past them.
-    private static byte[] Png(int width, int height, params uint[] pixels)
+    internal static byte[] Png(int width, int height, params uint[] pixels)
     {
         using var bitmap = new WriteableBitmap(new PixelSize(width, height), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Premul);
         using (var buffer = bitmap.Lock())
@@ -33,7 +33,7 @@ public sealed class PictureControlTests
     }
 
     // The colour of a pixel of the window's next frame.
-    private static Color[] PixelsAt(Window window, params PixelPoint[] points)
+    internal static Color[] PixelsAt(Window window, params PixelPoint[] points)
     {
         using var frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("no frame was rendered");
         using var buffer = frame.Lock();
