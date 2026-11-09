@@ -95,7 +95,7 @@ public static class FormPictures
     /// </summary>
     public const int MaxPixels = 16 * 1024 * 1024;
 
-    // An icon's directory entries a picture's bytes could hold is bounded by its length; this bounds the walk as well.
+    // The bytes' length already bounds how many directory entries an icon can hold; this bounds the walk as well.
     private const int MaxIconImages = 1024;
 
     /// <summary>
@@ -173,7 +173,7 @@ public static class FormPictures
         return (width, icon ? height / 2 : height);
     }
 
-    // A 6-byte header (reserved, type, count), then 16 bytes an image: its width and height (0 for 256), and its size and offset in the
+    // A 6-byte header (reserved, type, count), then 16 bytes for each image: its width and height (0 for 256), and its size and offset in the
     // file. Each image is a PNG or a DIB. The size is the largest image's; every image must be within the bounds.
     private static PictureInfo? Icon(ReadOnlySpan<byte> b, PictureFormat format)
     {

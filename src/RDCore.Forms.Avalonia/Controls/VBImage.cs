@@ -17,8 +17,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <remarks>
 /// <para>
 /// Its single border is a sunken edge. Its <c>Picture</c> is drawn inside its border: stretched over the whole of it where
-/// <c>Stretch</c> is set, and otherwise at its own size in pixels from the top left corner, clipped. A picture
-/// <see cref="VBPicture.Decode"/> refuses is not drawn, and <see cref="PictureError"/> says why.
+/// <c>Stretch</c> is set, and otherwise at its own size in pixels from the top left corner, clipped. A metafile
+/// is not drawn. Neither is a picture <see cref="VBPicture.Decode"/> refuses, and <see cref="PictureError"/> says why.
 /// </para>
 /// <para>
 /// It takes no focus. It raises Click, DblClick, MouseDown, MouseMove and MouseUp, MouseUp before Click; Click only where the release
