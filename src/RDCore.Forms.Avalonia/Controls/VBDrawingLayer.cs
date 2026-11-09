@@ -37,6 +37,7 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
     private WriteableBitmap? readBack;
     private PixelSize inside;
     private bool attached;
+    private bool paintPending;
 
     /// <summary>
     /// Creates the drawing surface of a form's root or a PictureBox.
@@ -288,12 +289,16 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
         Height = inside.Height;
     }
 
+    // One Paint waits at a time, as Windows keeps one paint message for a window: a surface that grows across and down at once, as a
+    // window does under its user's drag, raises one.
     private void PostPaint()
     {
-        if (Component.Class.Has(P.AutoRedraw) && Component.Get(P.AutoRedraw))
+        if (paintPending || Component.Class.Has(P.AutoRedraw) && Component.Get(P.AutoRedraw))
             return;
+        paintPending = true;
         Dispatcher.UIThread.Post(() =>
         {
+            paintPending = false;
             if (attached)
                 VBControl.RaiseFor(this, Component, VBEvents.Paint);
         }, DispatcherPriority.Background);

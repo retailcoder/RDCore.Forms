@@ -28,7 +28,7 @@ public static class VBClasses
     public static readonly ComponentClass Form = Root("VB.Form", "Form",
         [P.Caption, P.BackColor, P.Enabled, P.ForeColor, P.Icon, P.MousePointer, P.ShowInTaskbar, P.Font, P.StartUpPosition, P.KeyPreview,
          P.MaxButton, P.MinButton, P.Visible, P.AutoRedraw, P.DrawMode, P.DrawStyle, P.DrawWidth, P.FillColor, P.FillStyle],
-        [.. KeyAndMouse, Load, Resize, Paint]);
+        [.. KeyAndMouse, Initialize, Load, Resize, Activate, Deactivate, GotFocus, LostFocus, Paint, QueryUnload, Unload, Terminate]);
 
     /// <summary>
     /// <c>VB.MDIForm</c>: an MDI form's designer root. Its background defaults to the application workspace's colour. It has no font
@@ -37,7 +37,7 @@ public static class VBClasses
     public static readonly ComponentClass MDIForm = new("VB.MDIForm", "MDIForm", ComponentKind.Root,
         [P.Caption, P.BackColor, P.Enabled, P.Icon, P.MousePointer, P.MouseIcon, P.Picture, P.StartUpPosition, P.Appearance, P.RightToLeft,
          P.HelpContextID, P.Visible, P.Left, P.Top, P.Width, P.Height, P.Tag],
-        [Click, DblClick, MouseDown, MouseMove, MouseUp, Load, Resize],
+        [Click, DblClick, MouseDown, MouseMove, MouseUp, Initialize, Load, Resize, Activate, Deactivate, QueryUnload, Unload, Terminate],
         Defaults((P.BackColor, FormColor.FromSystem(SystemColor.AppWorkspace))), isContainer: true);
 
     /// <summary>

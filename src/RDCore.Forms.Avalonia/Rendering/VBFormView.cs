@@ -40,11 +40,21 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <para>
 /// The root's drawing statements draw on its <see cref="Drawing"/>, under every control.
 /// </para>
+/// <para>
+/// A press on no control is the root's: it raises MouseDown, MouseMove and MouseUp with <c>X</c> and <c>Y</c> in the root's scale, and
+/// Click after MouseUp, for every button, where the release is over the root again and over none of its controls.
+/// </para>
 /// </remarks>
 public sealed class VBFormView : Canvas
 {
     // The windowless plane's top: a container would need a million windowed controls to reach it.
     private const int WindowlessTop = -1_000_000;
+
+    static VBFormView()
+    {
+        ControlEvents.AttachMouse<VBFormView>(inScale: true);
+        ControlEvents.AttachClick<VBFormView>(ClickRelease.OverTheControl);
+    }
 
     private readonly Dictionary<ComponentInstance, Control> controls = new(ReferenceEqualityComparer.Instance);
     // The shown components, in the order the form holds them.
