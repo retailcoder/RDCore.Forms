@@ -12,7 +12,7 @@ The behaviour below was measured with VB6.
 - An arrow key moves the focus to the previous or next control in its container, and raises no key event.
 - Space raises KeyDown, KeyPress and KeyUp, then Click: see [A control's key events](form-events.md#a-controls-key-events).
 - Enter on the button raises its Click and no key event.
-- `Default` True makes it the button Enter clicks, and `Cancel` True the button Esc clicks, wherever the focus is on the form: see [Enter and Esc](form-events.md#enter-and-esc).
+- `Default` True makes it the button Enter clicks, and `Cancel` True the button Esc clicks, from any control of the form: see [Enter and Esc](form-events.md#enter-and-esc).
 
 > [!NOTE]
 > **Not implemented.** A CommandButton's `Picture` is not drawn, and a default button is drawn as any other.

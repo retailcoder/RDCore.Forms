@@ -20,11 +20,11 @@ Once its window has been shown, the root raises Resize for a change of size whet
 |Situation|Raised|
 |---|---|
 |The window is shown for the first time|Activate, then GotFocus on the first control of the tab order that can take the focus.|
-|Another of the program's form windows becomes active|LostFocus on the control that has the focus, then Deactivate, on the one that was active; then Activate on the new one, and GotFocus on its control.|
+|Another of the program's form windows becomes active|On the form that was active, LostFocus on its focused control, then Deactivate; then, on the new one, Activate, then GotFocus on its control.|
 |Another application takes the activation and gives it back|Nothing.|
 |A window whose root is disabled is shown|No Activate: it is shown without being activated.|
 
-Each form keeps the control that last had the focus on it, and that control takes the focus again, with a GotFocus, as the form is activated again. A form with no control that can take the focus raises its own GotFocus after its Activate. Its own LostFocus comes before its Deactivate: VB6 was not measured with that one.
+Each form keeps the control that last had the focus on it: that control takes the focus again, with a GotFocus, when the form is activated again. A form with no control that can take the focus raises its own GotFocus after its Activate, and its own LostFocus before its Deactivate. That LostFocus was not measured with VB6: its place before the Deactivate is RDForms' own.
 
 ## Unloading
 
@@ -82,7 +82,7 @@ A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothin
 
 ## Enter and Esc
 
-A CommandButton whose `Default` is True is the form's default button, and one whose `Cancel` is True its cancel button. Enter clicks the default button and Esc the cancel button, wherever the focus is on the form.
+A CommandButton whose `Default` is True is the form's default button, and one whose `Cancel` is True its cancel button. Enter clicks the default button and Esc the cancel button from any control of the form, except that a focused CommandButton takes Enter itself and a ComboBox's open list keeps both keys.
 
 |Key|Raised|
 |---|---|
@@ -92,12 +92,12 @@ A CommandButton whose `Default` is True is the form's default button, and one wh
 |Enter or Esc in a ComboBox's open list|KeyDown and KeyPress on the combo, and the list closes. No button is clicked. The KeyUp is raised only where the form has no default button, for Enter, or no cancel button, for Esc.|
 |Enter or Esc on a form with no controls|The root's KeyDown, KeyPress 13 or 27, and KeyUp.|
 
-Where more than one CommandButton has `Default` or `Cancel` True, the first the form holds takes the key. A default or cancel button that is hidden or disabled takes no key: Enter and Esc go to the focused control as other keys do. These two rules are RDForms' own: VB6 was not measured in either case.
+Where more than one CommandButton has `Default` or `Cancel` True, the first the form holds takes the key. A default or cancel button that is hidden or disabled takes no key: Enter and Esc go to the focused control as other keys do. Neither case was measured with VB6: these two rules are RDForms' own.
 
 What a character typed in a ListBox selects is on the [Lists](lists.md) page.
 
 > [!NOTE]
-> **Not implemented.** A default button is drawn as any other button. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
+> **Not implemented.** A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
