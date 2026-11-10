@@ -3,21 +3,21 @@
 An RDForms document holds one form as a constrained XAML dialect: XML whose elements are the form's components, named for their classes, and whose attributes are the properties they set. [`FormXaml`](../api/RDCore.Forms.Xaml.FormXaml.yml) reads a document into the model and writes the model as a document.
 
 ```xml
-<Form FormatVersion="1" Name="Form1" Caption="Orders" Width="4800" Height="3600" xmlns="https://rubberduckvba.ca/schemas/rdforms">
+<Form FormatVersion="1" Name="Form1" Caption="Orders" Width="320" Height="240" xmlns="https://rubberduckvba.ca/schemas/rdforms">
   <Form.Font>
     <Font Name="Tahoma" Size="8.25" />
   </Form.Font>
-  <Frame Name="Frame1" Caption="Ship by" Left="120" Top="120" Width="2400" Height="1200">
-    <OptionButton Name="optShip" Index="0" Caption="&amp;Air" Value="True" Left="120" Top="240" Width="1800" Height="300" />
-    <OptionButton Name="optShip" Index="1" Caption="&amp;Sea" Left="120" Top="600" Width="1800" Height="300" />
+  <Frame Name="Frame1" Caption="Ship by" Left="8" Top="8" Width="160" Height="80">
+    <OptionButton Name="optShip" Index="0" Caption="&amp;Air" Value="True" Left="8" Top="16" Width="120" Height="20" />
+    <OptionButton Name="optShip" Index="1" Caption="&amp;Sea" Left="8" Top="40" Width="120" Height="20" />
   </Frame>
-  <ListBox Name="lstItems" Left="2640" Top="120" Width="2000" Height="1200">
+  <ListBox Name="lstItems" Left="176" Top="8" Width="134" Height="80">
     <ListBox.List>
       <Item Text="Alpha" ItemData="1" />
       <Item Text="Beta" ItemData="20" ItemIcon="R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />
     </ListBox.List>
   </ListBox>
-  <CommandButton Name="cmdOK" Caption="OK" Left="3480" Top="2880" Width="1215" Height="495" />
+  <CommandButton Name="cmdOK" Caption="OK" Left="232" Top="192" Width="81" Height="33" />
 </Form>
 ```
 
@@ -52,7 +52,7 @@ A component that its parent cannot hold, such as a control written in a CommandB
 |Colour|A system colour by its name, or `#RRGGBB`.|`BackColor="ButtonFace"`, `ForeColor="#1234AB"`|
 |Picture|The bytes of its file, in base64.|`Picture="iVBORw0KGgo..."`|
 
-Positions and sizes are in twips, as in the model: a control's `Left`, `Top`, `Width` and `Height` whatever its container's `ScaleMode`, and a Line's ends in its container's scale.
+Positions and sizes are as in the model: a control's `Left`, `Top`, `Width` and `Height` in pixels (1/96 inch) whatever its container's `ScaleMode`, and a Line's ends in its container's scale.
 
 ## Property elements
 
