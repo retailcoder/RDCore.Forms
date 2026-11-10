@@ -27,7 +27,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass Form = Root("VB.Form", "Form",
         [P.Caption, P.BackColor, P.Enabled, P.ForeColor, P.Icon, P.MousePointer, P.ShowInTaskbar, P.Font, P.StartUpPosition, P.KeyPreview,
-         P.MaxButton, P.MinButton, P.Visible, P.AutoRedraw, P.DrawMode, P.DrawStyle, P.DrawWidth, P.FillColor, P.FillStyle],
+         P.MaxButton, P.MinButton, P.Visible, P.AutoRedraw, P.DrawMode, P.DrawStyle, P.DrawWidth, P.FillColor, P.FillStyle, P.ContextMenu],
         [.. KeyAndMouse, Initialize, Load, Resize, Activate, Deactivate, GotFocus, LostFocus, Paint, QueryUnload, Unload, Terminate]);
 
     /// <summary>
@@ -175,10 +175,11 @@ public static class VBClasses
         Defaults((P.BorderColor, WindowForeground)), isWindowless: true);
 
     /// <summary>
-    /// <c>VB.Menu</c>: a menu item. It has no place or size; its submenu's items are its contents.
+    /// <c>VB.Menu</c>: a menu item. It has no place or size; its submenu's items are its contents. A form's menus, with VB's rules
+    /// for them, are its <see cref="Menus.FormMenu"/>.
     /// </summary>
     public static readonly ComponentClass Menu = new("VB.Menu", "mnu", ComponentKind.Menu,
-        [P.Caption, P.Enabled, P.Checked, P.WindowList, P.Visible, P.Tag], [Click], hasExtent: false);
+        [P.Caption, P.Enabled, P.Checked, P.WindowList, P.Visible, P.Shortcut, P.CheckOnClick, P.Picture, P.Tag], [Click], hasExtent: false);
 
     /// <summary>
     /// Every class of the catalog.
@@ -208,10 +209,12 @@ public static class VBClasses
         new(typeName, defaultName, ComponentKind.Root, [.. properties, P.Left, P.Top, P.Width, P.Height, .. ScaleProperties, P.Tag], events,
             isContainer: true);
 
+    // A control that takes the mouse also has the ContextMenu of RD-VBA.
     private static ComponentClass Control(string typeName, string defaultName, PropertyDefinition[] properties, EventDefinition[] events,
         IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null, bool isContainer = false, bool isWindowless = false) =>
-        new(typeName, defaultName, ComponentKind.Control, [.. properties, P.Left, P.Top, P.Width, P.Height, P.Visible, P.Tag], events, defaults,
-            isContainer, isWindowless);
+        new(typeName, defaultName, ComponentKind.Control,
+            [.. properties, P.Left, P.Top, P.Width, P.Height, P.Visible, P.Tag, .. events.Contains(MouseUp) ? [P.ContextMenu] : Array.Empty<PropertyDefinition>()],
+            events, defaults, isContainer, isWindowless);
 
     private static Dictionary<PropertyDefinition, object?> Defaults(params (PropertyDefinition Property, object? Value)[] defaults) =>
         defaults.ToDictionary(d => d.Property, d => d.Value);

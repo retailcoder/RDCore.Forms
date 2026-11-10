@@ -51,8 +51,14 @@
   <data name="Error383" xml:space="preserve">
     <value>Set non géré (propriété en lecture seule)</value>
   </data>
+  <data name="Error387" xml:space="preserve">
+    <value>Impossible de définir la propriété « {0} » pour ce contrôle</value>
+  </data>
   <data name="Error393" xml:space="preserve">
     <value>Get non géré au moment de l'exécution</value>
+  </data>
+  <data name="Error395" xml:space="preserve">
+    <value>Impossible d'utiliser une barre de séparation comme nom de menu pour ce contrôle</value>
   </data>
   <data name="Error425" xml:space="preserve">
     <value>Utilisation d'objet incorrecte</value>

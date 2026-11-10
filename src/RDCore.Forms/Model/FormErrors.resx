@@ -51,8 +51,14 @@
   <data name="Error383" xml:space="preserve">
     <value>Set not supported (read-only property)</value>
   </data>
+  <data name="Error387" xml:space="preserve">
+    <value>'{0}' property can't be set on this control</value>
+  </data>
   <data name="Error393" xml:space="preserve">
     <value>Get not supported at runtime</value>
+  </data>
+  <data name="Error395" xml:space="preserve">
+    <value>Cannot use separator bar as menu name for this control</value>
   </data>
   <data name="Error425" xml:space="preserve">
     <value>Invalid object use</value>

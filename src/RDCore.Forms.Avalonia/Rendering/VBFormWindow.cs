@@ -1,9 +1,13 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
+using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 using P = RDCore.Forms.Model.VB.VBProperties;
@@ -16,7 +20,10 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <remarks>
 /// <para>
 /// The window's client area is the form's: its size is the root's <c>Width</c> and <c>Height</c>, in twips at 15 twips a pixel,
-/// and follows them. A user who resizes the window sets them. The window follows the root's <c>Caption</c>, <c>MaxButton</c>,
+/// and follows them. A user who resizes the window sets them. The form's menus are on its <see cref="MenuBar"/>, above the client area,
+/// and a menu item's shortcut chooses it before a control or the root sees the key. While it is open, the window is its root's
+/// <see cref="IMenuHost"/>, registered with <see cref="MenuHosts"/>, and a right release over a component whose <c>ContextMenu</c> names
+/// one of the form's menus pops it up at the pointer, after the component's MouseUp and Click. The window follows the root's <c>Caption</c>, <c>MaxButton</c>,
 /// <c>MinButton</c> and <c>ShowInTaskbar</c>. Its <c>StartUpPosition</c> chooses where it starts: CenterOwner and CenterScreen centre
 /// it, and Manual and Windows Default leave its place to the window system.
 /// </para>
@@ -49,7 +56,7 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// Initialize, Load and Terminate are the program's to raise: the window raises none of them.
 /// </para>
 /// </remarks>
-public sealed class VBFormWindow : Window
+public sealed class VBFormWindow : Window, IMenuHost
 {
     // The window an Activate was last raised for: the program's active form.
     private static VBFormWindow? active;
@@ -63,6 +70,8 @@ public sealed class VBFormWindow : Window
     private bool following;
     // Set while QueryUnload and Unload are raised, and once the form has unloaded.
     private bool unloading;
+    // Where the pointer was last seen, in the client area's pixels: where a menu pops up when no point is given.
+    private Point pointer;
 
     /// <summary>
     /// Creates a window that shows a form.
@@ -76,7 +85,10 @@ public sealed class VBFormWindow : Window
         if (!ReferenceEquals(form.Root.Class, VBClasses.Form))
             throw new ArgumentException($"The form's root is a {form.Root.Class.TypeName}, not a VB.Form.", nameof(form));
         View = new VBFormView(form);
-        Content = View;
+        MenuBar = new VBMenuBar(form.Root);
+        DockPanel.SetDock(MenuBar, Dock.Top);
+        // A window of no pixels has no surface to draw: closing it fails as it renders a last frame. The window takes its content's size.
+        Content = new DockPanel { MinWidth = 1, MinHeight = 1, Children = { MenuBar, View } };
         SizeToContent = SizeToContent.WidthAndHeight;
         WindowStartupLocation = form.Root.Get(P.StartUpPosition) switch
         {
@@ -85,9 +97,13 @@ public sealed class VBFormWindow : Window
             _ => WindowStartupLocation.Manual,
         };
         Activated += (_, _) => OnWindowActivated();
+        AddHandler(KeyDownEvent, OnShortcut, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnKeyUp, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
+        AddHandler(PointerMovedEvent, (_, e) => pointer = e.GetPosition(View), RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(PointerPressedEvent, (_, e) => pointer = e.GetPosition(View), RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(PointerReleasedEvent, OnPointerReleasedOverForm, RoutingStrategies.Bubble, handledEventsToo: true);
         Apply();
     }
 
@@ -96,7 +112,79 @@ public sealed class VBFormWindow : Window
     /// </summary>
     public VBFormView View { get; }
 
-    private ComponentInstance Root => View.Form.Root;
+    /// <summary>
+    /// The form's menu bar, above its client area: hidden while none of the bar's items is visible.
+    /// </summary>
+    public VBMenuBar MenuBar { get; }
+
+    /// <summary>
+    /// The form's root.
+    /// </summary>
+    public ComponentInstance Root => View.Form.Root;
+
+    /// <summary>
+    /// Pops up the items of one of the form's menus, as VB's <c>PopupMenu</c> method does, at a point of the client area. The menu
+    /// raises its Click as it opens, as it does on the bar, and an item chosen from it raises its own.
+    /// </summary>
+    /// <param name="menu">The menu whose items pop up: a hidden top-level menu is the usual one.</param>
+    /// <param name="x">The point's horizontal coordinate in the root's scale, or <see langword="null"/> for the pointer's.</param>
+    /// <param name="y">The point's vertical coordinate in the root's scale, or <see langword="null"/> for the pointer's.</param>
+    /// <param name="alignment">Where the menu goes across from the point.</param>
+    /// <param name="boldItem">
+    /// An item of the menu, at any depth, to show in bold, as VB's <c>BoldCommand</c> argument, or <see langword="null"/>. An item
+    /// that is not in the menu bolds none.
+    /// </param>
+    /// <returns>
+    /// A task that completes when the menu closes, after the Click of an item chosen from it. A menu that holds no items shows nothing
+    /// and raises nothing, and the task returned has already completed.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="menu"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="menu"/> is not one of the form's menus.</exception>
+    public Task PopupMenu(FormMenuItem menu, double? x = null, double? y = null, PopupMenuAlignment alignment = PopupMenuAlignment.Left,
+        FormMenuItem? boldItem = null)
+    {
+        ArgumentNullException.ThrowIfNull(menu);
+        if (!MenuBar.Menu.AllItems.Contains(menu))
+            throw new ArgumentException($"'{menu.Component.Name}' is not one of the form's menus.", nameof(menu));
+        if (menu.Items.Count == 0)
+            return Task.CompletedTask;
+        var at = PointOf(x, y);
+        MenuBar.RaiseClick(menu);
+        var popup = new ContextMenu
+        {
+            Placement = PlacementMode.AnchorAndGravity,
+            PlacementAnchor = PopupAnchor.TopLeft,
+            PlacementGravity = alignment switch
+            {
+                PopupMenuAlignment.Center => PopupGravity.Bottom,
+                PopupMenuAlignment.Right => PopupGravity.BottomLeft,
+                _ => PopupGravity.BottomRight,
+            },
+            PlacementRect = new Rect(at, new Size(1, 1)),
+        };
+        foreach (var item in menu.Items)
+            popup.Items.Add(MenuBar.Create(item));
+        if (boldItem is not null)
+            foreach (var shown in popup.GetLogicalDescendants().OfType<VBMenuItem>().Where(shown => ReferenceEquals(shown.Item, boldItem)))
+                shown.FontWeight = FontWeight.Bold;
+        var closed = new TaskCompletionSource();
+        popup.Closed += (_, _) =>
+        {
+            // The items leave the popup, so that they stop following their components.
+            popup.Items.Clear();
+            if (ReferenceEquals(PoppedUpMenu, popup))
+                PoppedUpMenu = null;
+            closed.TrySetResult();
+        };
+        PoppedUpMenu = popup;
+        popup.Open(View);
+        return closed.Task;
+    }
+
+    /// <summary>
+    /// The menu <see cref="PopupMenu"/> last popped up, while it is open: <see langword="null"/> once it has closed.
+    /// </summary>
+    public ContextMenu? PoppedUpMenu { get; private set; }
 
     /// <summary>
     /// Unloads the form as VB's <c>Unload</c> statement does: raises the root's QueryUnload, with an <c>UnloadMode</c> of 1, then its
@@ -120,6 +208,7 @@ public sealed class VBFormWindow : Window
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
+        MenuHosts.Register(this);
         Root.PropertyChanged -= OnRootChanged;
         Root.PropertyChanged += OnRootChanged;
         Apply();
@@ -150,6 +239,7 @@ public sealed class VBFormWindow : Window
     protected override void OnClosed(EventArgs e)
     {
         Root.PropertyChanged -= OnRootChanged;
+        MenuHosts.Unregister(this);
         if (ReferenceEquals(active, this))
             active = null;
         base.OnClosed(e);
@@ -257,6 +347,51 @@ public sealed class VBFormWindow : Window
         return owner is not IRaisesKeyEvents && (owner is null || Root.Get(P.KeyPreview));
     }
 
+    // A menu item's shortcut chooses it before any control or the root sees the key. Where two items share one, the first in the
+    // form's order has it.
+    private void OnShortcut(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled || !View.IsEffectivelyEnabled || ShortcutKeys.Of(e.Key, e.KeyModifiers) is not { } pressed
+            || MenuBar.Menu.AllItems.FirstOrDefault(item => item.Shortcut == pressed && !item.IsSeparator) is not { } chosen)
+            return;
+        e.Handled = true;
+        MenuBar.Choose(chosen);
+    }
+
+    // A point in the root's scale as the client area's pixels, the pointer's coordinate for one not given.
+    private Point PointOf(double? x, double? y)
+    {
+        var (across, down) = VBDrawingLayer.ScaleOf(Root).ToTwips(x ?? 0, y ?? 0);
+        return new Point(x is null ? pointer.X : across / ScaleModeExtensions.TwipsPerPixel,
+            y is null ? pointer.Y : down / ScaleModeExtensions.TwipsPerPixel);
+    }
+
+    // A right release over a component whose ContextMenu names one of the form's menus pops it up, at the pointer, after the
+    // component's own MouseUp and Click.
+    private void OnPointerReleasedOverForm(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Right || !View.IsEffectivelyEnabled || ComponentUnder(e.Source) is not { } component
+            || !component.Class.Has(P.ContextMenu) || component.Get(P.ContextMenu) is not { Length: > 0 } name
+            || MenuBar.Menu.AllItems.FirstOrDefault(item => string.Equals(item.Component.Name, name, StringComparison.OrdinalIgnoreCase))
+                is not { } menu)
+            return;
+        pointer = e.GetPosition(View);
+        _ = PopupMenu(menu);
+    }
+
+    // The innermost component of the client area a pointer event came from: the root for the area itself, none outside it.
+    private ComponentInstance? ComponentUnder(object? source)
+    {
+        for (var visual = source as Visual; visual is not null; visual = visual.GetVisualParent())
+        {
+            if (ReferenceEquals(visual, View))
+                return Root;
+            if (visual is Control control && VBControl.GetInstance(control) is { } instance && !ReferenceEquals(instance, Root))
+                return View.IsVisualAncestorOf(control) ? instance : null;
+        }
+        return null;
+    }
+
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Handled || !KeyIsTheRoots() || KeyCodes.Of(e) is not { } code)
@@ -291,5 +426,6 @@ public sealed class VBFormWindow : Window
         CanMinimize = Root.Get(P.MinButton);
         ShowInTaskbar = Root.Get(P.ShowInTaskbar);
         ShowActivated = Root.Get(P.Enabled);
+        MenuBar.IsEnabled = Root.Get(P.Enabled);
     }
 }
