@@ -82,3 +82,8 @@ The menu raises its Click as it opens, as it does on the bar, and an item chosen
 
 > [!NOTE]
 > **Not implemented.** The `WindowList` of an MDI form's menu, and the `NegotiatePosition` and `HelpContextID` of a menu, which the model keeps as written. Menu control arrays: a menu with an `Index` is read, and has none of an array's members.
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---
