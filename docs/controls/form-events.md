@@ -74,13 +74,29 @@ The TextBox, CommandButton, CheckBox, OptionButton, ListBox and ComboBox raise t
 |An arrow on a CommandButton, a CheckBox or an OptionButton|No key event, not even the root's: the focus moves. The control that takes the focus raises its KeyUp alone, except a CommandButton, a CheckBox or an OptionButton, which raises none.|
 |An arrow in a ListBox or a ComboBox|KeyDown, the Click of the selection, then KeyUp.|
 |A character in a ListBox or a ComboBox|KeyDown, KeyPress, the Click of the selection or the Change of the text, then KeyUp.|
+|Enter or Esc that no button takes|KeyDown, KeyPress 13 or 27, then KeyUp. Enter on a CheckBox or an OptionButton changes no `Value`.|
+|Ctrl+Enter|KeyDown, KeyPress 10, then KeyUp. No button takes it.|
 
 A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothing, and another code is taken in place of the character.
+
+## Enter and Esc
+
+A CommandButton whose `Default` is True is the form's default button, and one whose `Cancel` is True its cancel button. Enter clicks the default button and Esc the cancel button, wherever the focus is on the form.
+
+|Key|Raised|
+|---|---|
+|Enter, with a default button|The default button's Click, and no key event anywhere, the root's included under `KeyPreview`. A handler cannot keep the key from the button.|
+|Esc, with a cancel button|The cancel button's Click, and no key event anywhere.|
+|Enter on a focused CommandButton|Its own Click, and no key event, whether or not the form has a default button.|
+|Enter or Esc in a ComboBox's open list|KeyDown and KeyPress on the combo, and the list closes. No button is clicked. The KeyUp is raised only where the form has no default button, for Enter, or no cancel button, for Esc.|
+|Enter or Esc on a form with no controls|The root's KeyDown, KeyPress 13 or 27, and KeyUp.|
+
+Where more than one CommandButton has `Default` or `Cancel` True, the first the form holds takes the key. A default or cancel button that is hidden or disabled takes no key: Enter and Esc go to the focused control as other keys do. These two rules are RDForms' own: VB6 was not measured in either case.
 
 What a character typed in a ListBox selects is on the [Lists](lists.md) page.
 
 > [!NOTE]
-> **Not implemented.** The root's GotFocus and LostFocus. Enter and Esc raise no key events, and a CommandButton has no `Default` or `Cancel`. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
+> **Not implemented.** The root's GotFocus and LostFocus. A default button is drawn as any other button. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
