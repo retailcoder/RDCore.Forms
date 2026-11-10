@@ -73,7 +73,7 @@ Every key such a list takes raises Click, whether or not anything changed.
 **RD-VBA addition.** Typing in a combo completes an item's text as RD-VBA's code completion completes a name. What is typed matches an item, without regard to case:
 
 - by its start: `mu` matches `MultiPlayer`;
-- or by its humps, each part of what is typed starting the next one: `MP` and `MuPl` match `MultiPlayer`, `Pl` does not. A hump starts at the first letter, at a capital after a lowercase letter or a digit, at a run of digits, and after an underscore.
+- or by its humps, each part of what is typed starting the next one, from the first hump: `MP` and `MuPl` match `MultiPlayer`, `Pl` does not. A hump starts at the first letter, at a capital after a lowercase letter or a digit, at the last capital of a run that a lowercase letter follows (`IOError` is `IO`, `Error`), at a run of digits (`Win32Api` is `Win`, `32`, `Api`), and after an underscore.
 
 An item matched by its start is a better match than one matched by its humps; between two equal matches, the first in the list is better.
 
