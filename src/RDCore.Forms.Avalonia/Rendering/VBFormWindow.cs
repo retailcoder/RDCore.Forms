@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Menus;
@@ -45,7 +46,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <item><description>
 /// QueryUnload, then Unload, as the user closes the window, with an <c>UnloadMode</c> of 0. A handler that sets <c>Cancel</c> to
 /// another value keeps the window open. <see cref="Unload"/> raises them as VB's <c>Unload</c> statement does, and
-/// <see cref="Window.Close()"/> closes the window and raises neither, as VB's <c>End</c> does.
+/// <see cref="Window.Close()"/> closes the window and raises neither, as VB's <c>End</c> does. A window whose
+/// <see cref="UnloadRequestHandler"/> is set raises neither as the user closes it: it stays open and hands the close to the handler.
 /// </description></item>
 /// <item><description>
 /// KeyDown, KeyPress and KeyUp, for a key pressed while none of the form's controls has the focus, and for every key first where
@@ -187,6 +189,19 @@ public sealed class VBFormWindow : Window, IMenuHost
     public ContextMenu? PoppedUpMenu { get; private set; }
 
     /// <summary>
+    /// What handles a close the user or the system asks for, in place of the window's own QueryUnload and Unload: <see langword="null"/>,
+    /// the default, for a window that raises them itself.
+    /// </summary>
+    /// <remarks>
+    /// A host whose program raises the form's QueryUnload and Unload itself, such as one whose program runs in another process, sets it.
+    /// The window then refuses the close, raises neither event, and calls the handler with the close's <c>UnloadMode</c>: 0 for the
+    /// close box or Alt+F4, 2 as the system shuts down, 5 as the window's owner closes. The handler is called on the UI thread after the
+    /// close is refused, never inside it. Once the program has unloaded the form, the host closes the window with
+    /// <see cref="Window.Close()"/>, which raises nothing; a program that cancelled leaves it open.
+    /// </remarks>
+    public Action<int>? UnloadRequestHandler { get; set; }
+
+    /// <summary>
     /// Unloads the form as VB's <c>Unload</c> statement does: raises the root's QueryUnload, with an <c>UnloadMode</c> of 1, then its
     /// Unload, and closes the window unless a handler set <c>Cancel</c>.
     /// </summary>
@@ -227,11 +242,20 @@ public sealed class VBFormWindow : Window, IMenuHost
     /// <inheritdoc/>
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        // Close from code raises nothing. The user's close is refused while QueryUnload and Unload run.
+        // Close from code raises nothing. The user's close is refused while QueryUnload and Unload run, and goes to the handler, outside
+        // the close, where one is set.
         if (unloading)
             e.Cancel |= !e.IsProgrammatic;
-        else if (!e.IsProgrammatic && UnloadModeOf(e.CloseReason) is { } mode && !Unloads(mode))
-            e.Cancel = true;
+        else if (!e.IsProgrammatic && UnloadModeOf(e.CloseReason) is { } mode)
+        {
+            if (UnloadRequestHandler is { } handler)
+            {
+                e.Cancel = true;
+                Dispatcher.UIThread.Post(() => handler(mode));
+            }
+            else if (!Unloads(mode))
+                e.Cancel = true;
+        }
         base.OnClosing(e);
     }
 

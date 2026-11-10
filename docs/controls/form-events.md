@@ -34,6 +34,8 @@ Once its window has been shown, the root raises Resize for a change of size whet
 
 A handler that sets `Cancel` to a value other than 0, in QueryUnload or in Unload, keeps the window open. A window closed for its owner closing raises them with an `UnloadMode` of 5, and one closed as Windows ends its session with 2.
 
+A host whose program raises QueryUnload and Unload itself sets the window's `UnloadRequestHandler`. The user's close then raises nothing and leaves the window open: the handler gets the `UnloadMode`, and the host closes the window with `Close` once the program has unloaded the form.
+
 ## Mouse
 
 A press on none of the form's controls is the root's.

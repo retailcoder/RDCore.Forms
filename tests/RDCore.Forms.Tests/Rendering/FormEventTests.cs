@@ -237,6 +237,31 @@ public sealed class FormEventTests
     }
 
     [TestMethod]
+    public void TheCloseBox_OfAWindowWithAnUnloadRequestHandler_RaisesNothing_KeepsItOpen_AndHandsTheHandlerMode0()
+    {
+        var (raised, modes, open, closed) = UI.Run(() =>
+        {
+            var sink = new RecordingSink();
+            var window = Open(Root(), sink);
+            sink.Raised.Clear();
+            var requested = new List<int>();
+            window.UnloadRequestHandler = requested.Add;
+            CloseBox(window);
+            Dispatcher.UIThread.RunJobs();
+            var stillOpen = window.IsVisible;
+            // The host closes the window once its program has unloaded the form.
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+            return (sink.Raised.ToList(), requested, stillOpen, !window.IsVisible);
+        });
+
+        Assert.IsEmpty(raised);
+        CollectionAssert.AreEqual(new[] { 0 }, modes);
+        Assert.IsTrue(open);
+        Assert.IsTrue(closed);
+    }
+
+    [TestMethod]
     public void Unload_RaisesQueryUnloadWithMode1_ThenUnload_AndAnUnloadInsideThemDoesNothing()
     {
         var (raised, unloaded, inner, open) = UI.Run(() =>
