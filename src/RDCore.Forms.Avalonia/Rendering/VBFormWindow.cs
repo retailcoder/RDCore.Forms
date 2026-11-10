@@ -46,6 +46,14 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// disabled is shown without being activated.
 /// </description></item>
 /// <item><description>
+/// The focus, as the window is activated: after the Activate, the control that last had the focus on the form takes it again, or the
+/// first control of the tab order that can take it, with a GotFocus. A form with none raises its own GotFocus. The control that has the
+/// focus raises its LostFocus before the form's Deactivate, and a form with none its own.
+/// </description></item>
+/// <item><description>
+/// DblClick, on a double click's second press on none of the form's controls, in place of its MouseDown.
+/// </description></item>
+/// <item><description>
 /// QueryUnload, then Unload, as the user closes the window, with an <c>UnloadMode</c> of 0. A handler that sets <c>Cancel</c> to
 /// another value keeps the window open. <see cref="Unload"/> raises them as VB's <c>Unload</c> statement does, and
 /// <see cref="Window.Close()"/> closes the window and raises neither, as VB's <c>End</c> does. A window whose
@@ -60,7 +68,7 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// Initialize, Load and Terminate are the program's to raise: the window raises none of them.
 /// </para>
 /// </remarks>
-public sealed class VBFormWindow : Window, IMenuHost
+public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
 {
     // The window an Activate was last raised for: the program's active form.
     private static VBFormWindow? active;
@@ -78,6 +86,12 @@ public sealed class VBFormWindow : Window, IMenuHost
     private Point pointer;
     // Enter or Esc, while a button took it, or an open list kept it, and its KeyUp is to raise nothing.
     private Key? keyUpTaken;
+    // The control that has VB's focus, while the form is the program's active one, and the control that last had it: VB's
+    // ActiveControl, which takes the focus again as the form is activated again. The root has the focus itself where the form had
+    // no control to take it.
+    private Control? focused;
+    private Control? activeControl;
+    private bool rootFocused;
 
     /// <summary>
     /// Creates a window that shows a form.
@@ -272,6 +286,8 @@ public sealed class VBFormWindow : Window, IMenuHost
         MenuHosts.Unregister(this);
         if (ReferenceEquals(active, this))
             active = null;
+        focused = null;
+        rootFocused = false;
         base.OnClosed(e);
     }
 
@@ -322,6 +338,8 @@ public sealed class VBFormWindow : Window, IMenuHost
             activatePending = true;
     }
 
+    // The focus as VB moves it between forms: the old form's control's LostFocus, the old form's Deactivate, the new form's Activate,
+    // then the new form's control's GotFocus. A form with no control to take the focus raises its own GotFocus and LostFocus.
     private void TakeActivation()
     {
         if (ReferenceEquals(active, this) || !Root.Get(P.Enabled))
@@ -329,8 +347,68 @@ public sealed class VBFormWindow : Window, IMenuHost
         var previous = active;
         active = this;
         if (previous is not null)
+        {
+            previous.LoseFocus();
             VBControl.Raise(previous.View, VBEvents.Deactivate);
+        }
         VBControl.Raise(View, VBEvents.Activate);
+        TakeFocus();
+    }
+
+    // The form's ActiveControl takes the focus again, or else the first control of the tab order, or else the root.
+    private void TakeFocus()
+    {
+        var control = activeControl is not null && VBControl.GetInstance(activeControl) is { } instance
+                      && ReferenceEquals(View.ControlOf(instance), activeControl) && VBFormView.CanTakeTheFocus(activeControl)
+            ? activeControl
+            : View.FirstToTakeTheFocus();
+        if (control is null)
+        {
+            rootFocused = true;
+            VBControl.Raise(View, VBEvents.GotFocus);
+            return;
+        }
+        // The window system's focus raises it, where it moves; where it already is on the control, the window raises it.
+        focused = null;
+        control.Focus();
+        if (focused is null)
+            ((IFormFocus)this).FocusMoved(control, got: true, toNone: false);
+    }
+
+    private void LoseFocus()
+    {
+        if (focused is { } control)
+        {
+            focused = null;
+            VBControl.Raise(control, VBEvents.LostFocus);
+        }
+        else if (rootFocused)
+        {
+            rootFocused = false;
+            VBControl.Raise(View, VBEvents.LostFocus);
+        }
+    }
+
+    // The window system moves the focus as it activates and deactivates windows, the program's or another application's, taking it
+    // to no element and giving it back; VB raises nothing for that. Between the controls of the active form, the focus raises
+    // LostFocus and GotFocus as it moves.
+    void IFormFocus.FocusMoved(Control control, bool got, bool toNone)
+    {
+        if (got)
+        {
+            activeControl = control;
+            if (!ReferenceEquals(active, this) || ReferenceEquals(control, focused))
+                return;
+            // The root, or a control that lost the window system's focus to none, as it was hidden or disabled.
+            LoseFocus();
+            focused = control;
+            VBControl.Raise(control, VBEvents.GotFocus);
+        }
+        else if (ReferenceEquals(control, focused) && !toNone && IsActive)
+        {
+            focused = null;
+            VBControl.Raise(control, VBEvents.LostFocus);
+        }
     }
 
     // VB's UnloadMode for a close the user or the system asks for: none for a close VB has no mode for.
