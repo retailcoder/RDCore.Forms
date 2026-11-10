@@ -278,7 +278,7 @@ public sealed class ControlKeyTests
     }
 
     [TestMethod]
-    [DataRow(ComboBoxStyle.DropdownCombo, "Combo1.Change")]
+    [DataRow(ComboBoxStyle.DropdownCombo, "Combo1.Change|Combo1.DropDown")]
     [DataRow(ComboBoxStyle.DropdownList, "Combo1.Click")]
     public void ALetterInAComboBox_RaisesItsChangeOrClick_BetweenItsKeyPressAndKeyUp(ComboBoxStyle style, string between)
     {
@@ -295,8 +295,165 @@ public sealed class ControlKeyTests
             return result;
         });
 
-        Expect.Lines(["Combo1.KeyDown(Integer 75, Integer 0)", "Combo1.KeyPress(Integer 107)", between, "Combo1.KeyUp(Integer 75, Integer 0)"],
-            raised);
+        // A Dropdown Combo's letter opens its list on the item it matches.
+        Expect.Lines(["Combo1.KeyDown(Integer 75, Integer 0)", "Combo1.KeyPress(Integer 107)", .. between.Split('|'),
+            "Combo1.KeyUp(Integer 75, Integer 0)"], raised);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ALetterThatGrowsTheWordOfADropdownListIntoNoMatch_SelectsTheNextItemItStarts_AsInAListBox_ListClosedOrOpen(bool open)
+    {
+        var (picked, clicks) = UI.Run(() =>
+        {
+            var root = Root();
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+                .Set(P.List, ["kiwi", "banana", "Kumquat", "apple"]);
+            var sink = new RecordingSink();
+            var window = Open(root, combo1, sink);
+            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            if (open)
+            {
+                combo.IsDropDownOpen = true;
+                Dispatcher.UIThread.RunJobs();
+            }
+            sink.Raised.Clear();
+            var indexes = new List<int>();
+            foreach (var (key, physical, text) in new[] { (Key.K, PhysicalKey.K, "k"), (Key.K, PhysicalKey.K, "k"), (Key.K, PhysicalKey.K, "k"),
+                         (Key.B, PhysicalKey.B, "b"), (Key.B, PhysicalKey.B, "b"), (Key.Z, PhysicalKey.Z, "z") })
+            {
+                Type(window, key, physical, text);
+                indexes.Add(combo.ListIndex);
+            }
+            var result = (indexes, Raised(sink).Count(e => e == "Combo1.Click"));
+            window.Close();
+            return result;
+        });
+
+        // No item matches kk, bb or bz: from none selected, kiwi, then Kumquat, then kiwi again from the top; banana, and banana again
+        // raises no Click; no item matches z.
+        CollectionAssert.AreEqual(new[] { 0, 2, 0, 1, 1, 1 }, picked);
+        Assert.AreEqual(4, clicks);
+    }
+
+    [TestMethod]
+    public void TheLettersTypedInADropdownList_AddUpIntoAWord_ThatSelectsAnItemItStarts_BeforeOneWhoseHumpsItMatches()
+    {
+        var (picked, clicks) = UI.Run(() =>
+        {
+            var root = Root();
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+                .Set(P.List, ["MultiPlayer", "banana", "Mango", "MPeg", "kiwi"]);
+            var sink = new RecordingSink();
+            var window = Open(root, combo1, sink);
+            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var indexes = new List<int>();
+            foreach (var (key, physical, text) in new[] { (Key.M, PhysicalKey.M, "m"), (Key.P, PhysicalKey.P, "p"), (Key.L, PhysicalKey.L, "l"),
+                         (Key.X, PhysicalKey.X, "x"), (Key.B, PhysicalKey.B, "b") })
+            {
+                Type(window, key, physical, text);
+                indexes.Add(combo.ListIndex);
+            }
+            var result = (indexes, Raised(sink).Count(e => e == "Combo1.Click"));
+            window.Close();
+            return result;
+        });
+
+        // m: MultiPlayer, the first item it starts; mp: MPeg, which it starts, before MultiPlayer, whose humps it matches; mpl:
+        // MultiPlayer's humps alone. No item matches mplx, or x: the word is forgotten, and b starts a new one.
+        CollectionAssert.AreEqual(new[] { 0, 3, 0, 0, 1 }, picked);
+        Assert.AreEqual(4, clicks);
+    }
+
+    // The items a combo's open list shows, from the top.
+    private static List<int> Shown(VBComboBox combo)
+    {
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+        Dispatcher.UIThread.RunJobs();
+        return [.. Enumerable.Range(0, combo.ItemCount).Select(combo.ContainerFromIndex).OfType<Control>().Where(item => item.IsVisible)
+            .OrderBy(item => item.Bounds.Y).Select(combo.IndexFromContainer)];
+    }
+
+    [TestMethod]
+    public void TypingInADropdownCombo_OpensItsListOnTheItemsItMatches_BestFirst_AndEnterChoosesTheHighlightedOne()
+    {
+        var (log, shown, typed, chosen) = UI.Run(() =>
+        {
+            var root = Root();
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d)
+                .Set(P.List, ["apple", "MultiPlayer", "banana", "MPeg", "Mango"]);
+            var sink = new RecordingSink();
+            var window = Open(root, combo1, sink);
+            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var log = Log(sink, root);
+            Type(window, Key.M, PhysicalKey.M, "m");
+            var afterM = Shown(combo);
+            Type(window, Key.P, PhysicalKey.P, "p");
+            var afterMP = Shown(combo);
+            var typed = (combo.Text, combo.ListIndex);
+            Type(window, Key.Down, PhysicalKey.ArrowDown, null);
+            Type(window, Key.Enter, PhysicalKey.Enter, null);
+            var result = (log.Where(e => !e.StartsWith("Key", StringComparison.Ordinal)).ToList(), (afterM, afterMP), typed,
+                (combo.Text, combo.ListIndex, combo.IsDropDownOpen));
+            window.Close();
+            return result;
+        });
+
+        // Down highlights MultiPlayer, whose humps mp matches, after MPeg, which it starts; the text stays mp until Enter.
+        Expect.Lines(["Change", "DropDown", "Change", "Click"], log);
+        CollectionAssert.AreEqual(new[] { 1, 3, 4 }, shown.afterM);
+        CollectionAssert.AreEqual(new[] { 3, 1 }, shown.afterMP);
+        Assert.AreEqual(("mp", -1), typed);
+        Assert.AreEqual(("MultiPlayer", 1, false), chosen);
+    }
+
+    [TestMethod]
+    public void ADropdownCombosList_ClosesWhereItsTextMatchesNoItem_AndTheTextGoesOnAsTyped()
+    {
+        var (log, text, open) = UI.Run(() =>
+        {
+            var root = Root();
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.List, ["kiwi", "Kumquat"]);
+            var sink = new RecordingSink();
+            var window = Open(root, combo1, sink);
+            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var log = Log(sink, root);
+            Type(window, Key.K, PhysicalKey.K, "k");
+            Type(window, Key.X, PhysicalKey.X, "x");
+            Type(window, Key.Y, PhysicalKey.Y, "y");
+            var result = (log.Where(e => !e.StartsWith("Key", StringComparison.Ordinal)).ToList(), combo.Text, combo.IsDropDownOpen);
+            window.Close();
+            return result;
+        });
+
+        Expect.Lines(["Change", "DropDown", "Change", "Change"], log);
+        Assert.AreEqual("kxy", text);
+        Assert.IsFalse(open);
+    }
+
+    [TestMethod]
+    public void TypingOverAnItemChosenInADropdownCombo_RaisesChange()
+    {
+        var (log, text, index) = UI.Run(() =>
+        {
+            var root = Root();
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.List, ["alpha", "beta"]);
+            var sink = new RecordingSink();
+            var window = Open(root, combo1, sink);
+            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var log = Log(sink, root);
+            Type(window, Key.Down, PhysicalKey.ArrowDown, null);
+            Type(window, Key.B, PhysicalKey.B, "b");
+            var result = (log.Where(e => !e.StartsWith("Key", StringComparison.Ordinal)).ToList(), combo.Text, combo.ListIndex);
+            window.Close();
+            return result;
+        });
+
+        // The chosen item's text is selected in the box, and the letter replaces it.
+        Expect.Lines(["Click", "Change", "DropDown"], log);
+        Assert.AreEqual("b", text);
+        Assert.AreEqual(-1, index);
     }
 
     [TestMethod]

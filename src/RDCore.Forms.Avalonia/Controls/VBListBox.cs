@@ -325,26 +325,18 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents
             return;
         e.Handled = true;
         foreach (var character in e.Text)
-            Search(char.ToUpperInvariant(character));
+            Search(character);
     }
 
-    // The next item that starts with a character, from the top again past the last: the selected one only where no other does. It
-    // takes the keyboard focus, so that an arrow moves on from it.
+    // The item a character selects takes the keyboard focus, so that an arrow moves on from it.
     private void Search(char character)
     {
-        for (var step = 1; step <= ItemCount; step++)
-        {
-            var index = (SelectedIndex + step) % ItemCount;
-            if (Items[index] is not string { Length: > 0 } text || char.ToUpperInvariant(text[0]) != character)
-                continue;
-            if (index == SelectedIndex)
-                return;
-            SelectedIndex = index;
-            ScrollIntoView(index);
-            ContainerFromIndex(index)?.Focus(NavigationMethod.Unspecified);
-            VBControl.Raise(this, VBEvents.Click);
+        if (ListItems.NextStartingWith(Items, SelectedIndex, character) is not { } index)
             return;
-        }
+        SelectedIndex = index;
+        ScrollIntoView(index);
+        ContainerFromIndex(index)?.Focus(NavigationMethod.Unspecified);
+        VBControl.Raise(this, VBEvents.Click);
     }
 
     private void Apply(ComponentPropertyChangedEventArgs e)
