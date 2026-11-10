@@ -18,7 +18,7 @@ namespace RDCore.Forms.Tests.Rendering;
 public sealed class FormEventTests
 {
     private static ComponentInstance Root(string name = "Form1", ScaleMode scaleMode = ScaleMode.Twip) =>
-        new ComponentInstance(VBClasses.Form, name).Set(P.Width, 4800d).Set(P.Height, 3600d).Set(P.ScaleMode, scaleMode);
+        new ComponentInstance(VBClasses.Form, name).Set(P.Width, 320d).Set(P.Height, 240d).Set(P.ScaleMode, scaleMode);
 
     private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double left, double top,
         double width, double height)
@@ -81,10 +81,10 @@ public sealed class FormEventTests
             var sink = new RecordingSink();
             var window = Open(root, sink);
             sink.Raised.Clear();
-            root.Set(P.Width, 6000d);
+            root.Set(P.Width, 400d);
             Dispatcher.UIThread.RunJobs();
-            root.Set(P.Width, 6000d);
-            root.Set(P.Height, 3000d);
+            root.Set(P.Width, 400d);
+            root.Set(P.Height, 200d);
             Dispatcher.UIThread.RunJobs();
             var result = (sink.Raised.ToList(), window.View.Bounds.Width);
             window.Close();
@@ -112,8 +112,8 @@ public sealed class FormEventTests
         });
 
         Expect.Lines(["Form1.Resize", "Form1.Paint"], raised);
-        Assert.AreEqual(6000d, width);
-        Assert.AreEqual(4500d, height);
+        Assert.AreEqual(400d, width);
+        Assert.AreEqual(300d, height);
     }
 
     [TestMethod]
@@ -376,7 +376,7 @@ public sealed class FormEventTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            Add(root, VBClasses.Label, "Label1", 150, 1200, 1200, 255);
+            Add(root, VBClasses.Label, "Label1", 10, 80, 80, 17);
             var sink = new RecordingSink();
             var window = Open(root, sink);
             sink.Raised.Clear();
@@ -425,7 +425,7 @@ public sealed class FormEventTests
         var (raised, after) = UI.Run(() =>
         {
             var root = Root().Set(P.KeyPreview, preview);
-            var text1 = Add(root, VBClasses.TextBox, "Text1", 120, 120, 1800, 315);
+            var text1 = Add(root, VBClasses.TextBox, "Text1", 8, 8, 120, 21);
             var sink = new RecordingSink();
             var window = Open(root, sink);
             var box = (VBTextBox)window.View.ControlOf(text1)!;
@@ -467,7 +467,7 @@ public sealed class FormEventTests
         var raised = UI.Run(() =>
         {
             var root = Root().Set(P.KeyPreview, preview);
-            var scroll1 = Add(root, VBClasses.HScrollBar, "HScroll1", 120, 120, 1800, 255);
+            var scroll1 = Add(root, VBClasses.HScrollBar, "HScroll1", 8, 8, 120, 17);
             var sink = new RecordingSink();
             var window = Open(root, sink);
             window.View.ControlOf(scroll1)!.Focus();

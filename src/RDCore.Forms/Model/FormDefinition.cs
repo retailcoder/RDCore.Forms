@@ -7,9 +7,10 @@ namespace RDCore.Forms.Model;
 /// A form's designer: its root component, with every control and menu item placed in it, and what the form declares about itself.
 /// </summary>
 /// <remarks>
-/// The form's code is not part of its definition. A control's position and size are in twips, whatever its container's
-/// <c>ScaleMode</c>. A VB Line's ends are in its container's scale: twips, unless its container (a form, a UserControl, a
-/// PropertyPage or a PictureBox) has a <c>ScaleMode</c> of its own. The root's own position and size are its client area's, in twips.
+/// The form's code is not part of its definition. A control's position and size are in pixels (device-independent pixels, 1/96
+/// inch), whatever its container's <c>ScaleMode</c>; a program's code reads them in its own unit (see <see cref="CodeUnits"/>). A VB
+/// Line's ends are in its container's scale: twips, unless its container (a form, a UserControl, a PropertyPage or a PictureBox) has a
+/// <c>ScaleMode</c> of its own. The root's own position and size are its client area's, in pixels.
 /// </remarks>
 public sealed class FormDefinition
 {

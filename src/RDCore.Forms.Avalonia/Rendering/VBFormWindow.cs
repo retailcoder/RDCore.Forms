@@ -20,8 +20,7 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The window's client area is the form's: its size is the root's <c>Width</c> and <c>Height</c>, in twips at 15 twips a pixel,
-/// and follows them. A user who resizes the window sets them. The form's menus are on its <see cref="MenuBar"/>, above the client area,
+/// The window's client area is the form's: its size is the root's <c>Width</c> and <c>Height</c>, in pixels, and follows them. A user who resizes the window sets them. The form's menus are on its <see cref="MenuBar"/>, above the client area,
 /// and a menu item's shortcut chooses it before a control or the root sees the key. Enter clicks the focused CommandButton, or else the
 /// form's first CommandButton whose <c>Default</c> is True, and Esc the first whose <c>Cancel</c> is True, with no key event, the root's
 /// included: a button that is hidden or disabled takes no key, and a combo's open list keeps both keys. While it is open, the window is its root's
@@ -300,8 +299,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
         following = true;
         try
         {
-            Root.Set(P.Width, Math.Round(e.ClientSize.Width) * ScaleModeExtensions.TwipsPerPixel)
-                .Set(P.Height, Math.Round(e.ClientSize.Height) * ScaleModeExtensions.TwipsPerPixel);
+            Root.Set(P.Width, Math.Round(e.ClientSize.Width)).Set(P.Height, Math.Round(e.ClientSize.Height));
         }
         finally
         {

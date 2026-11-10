@@ -16,11 +16,11 @@ namespace RDCore.Forms.Tests.Controls;
 public sealed class ControlKeyTests
 {
     private static ComponentInstance Root() =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 4800d).Set(P.Height, 3600d);
+        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
 
-    private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double top = 120)
+    private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double top = 8)
     {
-        var component = new ComponentInstance(type, name).Set(P.Left, 120d).Set(P.Top, top).Set(P.Width, 1800d).Set(P.Height, 1200d);
+        var component = new ComponentInstance(type, name).Set(P.Left, 8d).Set(P.Top, top).Set(P.Width, 120d).Set(P.Height, 80d);
         component.SetContainer(container);
         return component;
     }
@@ -117,7 +117,7 @@ public sealed class ControlKeyTests
         {
             var root = Root();
             var check1 = Add(root, VBClasses.CheckBox, "Check1");
-            var option1 = Add(root, VBClasses.OptionButton, "Option1", 1500).Set(P.OptionButtonValue, true);
+            var option1 = Add(root, VBClasses.OptionButton, "Option1", 100).Set(P.OptionButtonValue, true);
             var sink = new RecordingSink();
             var window = Open(root, check1, sink);
             Type(window, Key.Space, PhysicalKey.Space, " ");
@@ -146,7 +146,7 @@ public sealed class ControlKeyTests
         {
             var root = Root().Set(P.KeyPreview, preview);
             var button1 = Add(root, VBClasses.ByTypeName("VB." + type)!, "Button1");
-            var command2 = Add(root, VBClasses.CommandButton, "Command2", 1500);
+            var command2 = Add(root, VBClasses.CommandButton, "Command2", 100);
             var sink = new RecordingSink();
             var window = Open(root, button1, sink);
             Type(window, Key.Down, PhysicalKey.ArrowDown, null);
@@ -188,7 +188,7 @@ public sealed class ControlKeyTests
         var (raised, text) = UI.Run(() =>
         {
             var root = Root();
-            var text1 = Add(root, VBClasses.TextBox, "Text1").Set(P.Height, 315d);
+            var text1 = Add(root, VBClasses.TextBox, "Text1").Set(P.Height, 21d);
             var sink = new RecordingSink();
             var window = Open(root, text1, sink);
             var log = Log(sink, root);
@@ -208,7 +208,7 @@ public sealed class ControlKeyTests
         var (raised, text) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d);
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var log = Log(sink, root);
@@ -285,7 +285,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.ComboBoxStyle, style)
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, style)
                 .Set(P.List, ["alpha", "kappa"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
@@ -308,7 +308,7 @@ public sealed class ControlKeyTests
         var (picked, clicks) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
                 .Set(P.List, ["kiwi", "banana", "Kumquat", "apple"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
@@ -343,7 +343,7 @@ public sealed class ControlKeyTests
         var (picked, clicks) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
                 .Set(P.List, ["MultiPlayer", "banana", "Mango", "MPeg", "kiwi"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
@@ -381,7 +381,7 @@ public sealed class ControlKeyTests
         var (log, shown, typed, chosen) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d)
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d)
                 .Set(P.List, ["apple", "MultiPlayer", "banana", "MPeg", "Mango"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
@@ -414,7 +414,7 @@ public sealed class ControlKeyTests
         var (log, text, open) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.List, ["kiwi", "Kumquat"]);
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["kiwi", "Kumquat"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var combo = (VBComboBox)window.View.ControlOf(combo1)!;
@@ -438,7 +438,7 @@ public sealed class ControlKeyTests
         var (log, text, index) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.List, ["alpha", "beta"]);
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var combo = (VBComboBox)window.View.ControlOf(combo1)!;
@@ -464,7 +464,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
                 .Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
@@ -492,7 +492,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.List, ["alpha", "beta"]);
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var log = Log(sink, root);
@@ -515,7 +515,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d).Set(P.List, ["alpha", "beta"]);
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var log = Log(sink, root);
@@ -534,7 +534,7 @@ public sealed class ControlKeyTests
         var text = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d);
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             sink.Handler = (_, definition, arguments) =>
@@ -577,7 +577,7 @@ public sealed class ControlKeyTests
         var (raised, text) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 315d);
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             sink.Handler = (_, definition, arguments) =>

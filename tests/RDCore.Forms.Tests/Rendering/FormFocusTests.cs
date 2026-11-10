@@ -20,14 +20,14 @@ public sealed class FormFocusTests
     // A form holding a control of each class named, one under the other, each named for its class and its place (TextBox1, Label2).
     private static ComponentInstance Form(string name, params ComponentClass[] classes)
     {
-        var root = new ComponentInstance(VBClasses.Form, name).Set(P.Width, 4800d).Set(P.Height, 3600d);
-        var top = 120d;
+        var root = new ComponentInstance(VBClasses.Form, name).Set(P.Width, 320d).Set(P.Height, 240d);
+        var top = 8d;
         foreach (var (type, index) in classes.Select((type, index) => (type, index)))
         {
-            var control = new ComponentInstance(type, $"{type.ClassName}{index + 1}").Set(P.Left, 120d).Set(P.Top, top)
-                .Set(P.Width, 1800d).Set(P.Height, 315d);
+            var control = new ComponentInstance(type, $"{type.ClassName}{index + 1}").Set(P.Left, 8d).Set(P.Top, top)
+                .Set(P.Width, 120d).Set(P.Height, 21d);
             control.SetContainer(root);
-            top += 500;
+            top += 33;
         }
         return root;
     }

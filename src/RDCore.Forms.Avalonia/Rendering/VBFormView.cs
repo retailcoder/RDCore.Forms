@@ -23,8 +23,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// on its <see cref="VBFormWindow.MenuBar"/>. A Timer's control is on the form and draws nothing.
 /// </para>
 /// <para>
-/// A control's <c>Left</c>, <c>Top</c>, <c>Width</c> and <c>Height</c> are twips whatever its container's <c>ScaleMode</c>, as a
-/// designer file holds them: a control is placed at 15 twips a pixel. In each container the first control the form holds is on
+/// A control's <c>Left</c>, <c>Top</c>, <c>Width</c> and <c>Height</c> are pixels whatever its container's <c>ScaleMode</c>, and
+/// place it as they are. In each container the first control the form holds is on
 /// top, and a windowless control (a Label or an Image) is under every windowed one, whatever their order.
 /// </para>
 /// <para>

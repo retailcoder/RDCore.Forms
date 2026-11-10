@@ -46,6 +46,41 @@ public readonly record struct DrawingScale(double TwipsAcross, double TwipsDown,
     }
 
     /// <summary>
+    /// The scale of a container, over its inside as <see cref="InsideOf"/> measures it.
+    /// </summary>
+    /// <param name="container">The container, or <see langword="null"/> for none.</param>
+    /// <returns>The scale, as <see cref="Of(ComponentInstance?, double, double)"/> gives it.</returns>
+    public static DrawingScale Of(ComponentInstance? container)
+    {
+        if (container is null)
+            return Twips;
+        var (width, height) = InsideOf(container);
+        return Of(container, width, height);
+    }
+
+    /// <summary>
+    /// A component's inside, in twips: its <c>Width</c> and <c>Height</c>, within its border where it has a <c>BorderStyle</c>. A root's
+    /// <c>Width</c> and <c>Height</c> are its inside already.
+    /// </summary>
+    /// <param name="component">The component.</param>
+    /// <returns>The inside's width and height in twips, 0 where the component has no size.</returns>
+    /// <remarks>
+    /// A border is a pixel wide where the component's <c>Appearance</c> is Flat, and two pixels wide where it is 3D.
+    /// </remarks>
+    public static (double Width, double Height) InsideOf(ComponentInstance component)
+    {
+        ArgumentNullException.ThrowIfNull(component);
+        double width = component.Class.Has(P.Width) ? component.Get(P.Width) : 0, height = component.Class.Has(P.Height) ? component.Get(P.Height) : 0;
+        if (component.Class.Kind != ComponentKind.Root && component.Class.Has(P.Appearance) && component.Class.Has(P.BorderStyle)
+            && component.Get(P.BorderStyle) != Model.VB.BorderStyle.None)
+        {
+            var border = component.Get(P.Appearance) == Model.VB.Appearance.Flat ? 2 : 4;
+            (width, height) = (Math.Max(0, width - border), Math.Max(0, height - border));
+        }
+        return (width * ScaleModeExtensions.TwipsPerPixel, height * ScaleModeExtensions.TwipsPerPixel);
+    }
+
+    /// <summary>
     /// A point in the scale as twips from the inside's corner.
     /// </summary>
     /// <param name="x">The horizontal coordinate.</param>

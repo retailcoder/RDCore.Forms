@@ -16,11 +16,11 @@ namespace RDCore.Forms.Tests.Controls;
 public sealed class DefaultCancelTests
 {
     private static ComponentInstance Root() =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 4800d).Set(P.Height, 3600d);
+        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
 
     private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double top)
     {
-        var component = new ComponentInstance(type, name).Set(P.Left, 120d).Set(P.Top, top).Set(P.Width, 1800d).Set(P.Height, 495d);
+        var component = new ComponentInstance(type, name).Set(P.Left, 8d).Set(P.Top, top).Set(P.Width, 120d).Set(P.Height, 33d);
         component.SetContainer(container);
         return component;
     }
@@ -29,11 +29,11 @@ public sealed class DefaultCancelTests
     private static (ComponentInstance Root, ComponentInstance Control) Form(string type, bool buttons)
     {
         var root = Root();
-        var control = Add(root, VBClasses.ByTypeName("VB." + type)!, type == "CommandButton" ? "Command3" : "Control1", 120);
+        var control = Add(root, VBClasses.ByTypeName("VB." + type)!, type == "CommandButton" ? "Command3" : "Control1", 8);
         if (type == "OptionButton")
             control.Set(P.OptionButtonValue, true);
-        Add(root, VBClasses.CommandButton, "Command1", 1440).Set(P.Default, buttons);
-        Add(root, VBClasses.CommandButton, "Command2", 2400).Set(P.Cancel, buttons);
+        Add(root, VBClasses.CommandButton, "Command1", 96).Set(P.Default, buttons);
+        Add(root, VBClasses.CommandButton, "Command2", 160).Set(P.Cancel, buttons);
         return (root, control);
     }
 
@@ -192,10 +192,10 @@ public sealed class DefaultCancelTests
         var (raised, open) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1", 120).Set(P.Height, 315d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+            var combo1 = Add(root, VBClasses.ComboBox, "Combo1", 8).Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
                 .Set(P.List, ["alpha", "beta"]);
-            Add(root, VBClasses.CommandButton, "Command1", 1440).Set(P.Default, buttons);
-            Add(root, VBClasses.CommandButton, "Command2", 2400).Set(P.Cancel, buttons);
+            Add(root, VBClasses.CommandButton, "Command1", 96).Set(P.Default, buttons);
+            Add(root, VBClasses.CommandButton, "Command2", 160).Set(P.Cancel, buttons);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var combo = (VBComboBox)window.View.ControlOf(combo1)!;

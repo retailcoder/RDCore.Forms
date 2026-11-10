@@ -74,23 +74,10 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
         or nameof(P.BorderStyle) or nameof(P.Appearance);
 
     // A component's inside, in twips: a PictureBox's is within its border, and a root's Width and Height are its inside.
-    internal static (double Width, double Height) InsideTwips(ComponentInstance component)
-    {
-        double width = component.Class.Has(P.Width) ? component.Get(P.Width) : 0, height = component.Class.Has(P.Height) ? component.Get(P.Height) : 0;
-        if (component.Class.Kind == ComponentKind.Root || !component.Class.Has(P.Appearance) || !component.Class.Has(P.BorderStyle))
-            return (width, height);
-        var border = VBEdge.WidthOf(VBEdge.Of(component.Get(P.BorderStyle), component.Get(P.Appearance))) * 2 * ScaleModeExtensions.TwipsPerPixel;
-        return (Math.Max(0, width - border), Math.Max(0, height - border));
-    }
+    internal static (double Width, double Height) InsideTwips(ComponentInstance component) => DrawingScale.InsideOf(component);
 
     // The scale of a container, null for none.
-    internal static DrawingScale ScaleOf(ComponentInstance? container)
-    {
-        if (container is null)
-            return DrawingScale.Twips;
-        var (width, height) = InsideTwips(container);
-        return DrawingScale.Of(container, width, height);
-    }
+    internal static DrawingScale ScaleOf(ComponentInstance? container) => DrawingScale.Of(container);
 
     // A point in a scale as whole twips, rounded half to even, kept within what a pixel position can hold.
     internal static (double X, double Y) WholeTwips(DrawingScale scale, double x, double y)
