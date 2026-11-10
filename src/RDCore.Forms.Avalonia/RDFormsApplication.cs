@@ -8,7 +8,8 @@ namespace RDCore.Forms.Avalonia;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A host that has an Avalonia application keeps its own: the controls and <see cref="Rendering.VBFormWindow"/> need an application with a theme, not this one.
+/// A host that has an Avalonia application keeps it: the controls and <see cref="Rendering.VBFormWindow"/> need an application with a theme, whichever
+/// application it is.
 /// </para>
 /// <para>
 /// <see cref="Configure"/> builds it with Skia and the Inter font, so that text measures the same on every machine. The host adds the platform: Avalonia's desktop
