@@ -70,3 +70,8 @@ Every key such a list takes raises Click, whether or not anything changed.
 
 > [!NOTE]
 > **Not implemented.** A `Style` of Simple Combo is shown as a Dropdown Combo, and `Locked` is not applied.
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---

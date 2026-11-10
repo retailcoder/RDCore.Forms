@@ -32,3 +32,8 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 
 > [!NOTE]
 > **Not implemented.** `MultiLine`, `ScrollBars`, `PasswordChar` and `MaxLength` are not in the model, so a TextBox is one line, shows its text, and takes text of any length.
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---

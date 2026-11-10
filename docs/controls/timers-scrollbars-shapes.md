@@ -23,7 +23,7 @@ The interval is counted on the system's clock. [`VBControl.SetTimeProvider`](../
 - It takes the focus, and raises GotFocus and LostFocus.
 
 > [!NOTE]
-> **Not implemented.** The Scroll event: dragging the thumb raises Change at each whole number it passes. The keyboard does not move a scroll bar.
+> **Not implemented.** The Scroll event is not raised: dragging the thumb raises Change at each whole number it passes. The keyboard does not move a scroll bar.
 
 ## Shape
 
@@ -31,7 +31,7 @@ The interval is counted on the system's clock. [`VBControl.SetTimeProvider`](../
 
 |Property|Drawn|
 |---|---|
-|`Shape`|A rectangle or an oval fills the control. A square or a circle is as wide as the control's shorter side, centred. A rounded figure's corners have a radius of a tenth of its shorter side.|
+|`Shape`|A rectangle or an oval fills the control. A square, a rounded square or a circle is as wide as the control's shorter side, centred. A rounded figure's corners have a radius of a tenth of its shorter side.|
 |`BackStyle`, `BackColor`|Opaque fills the figure with `BackColor`, under its fill.|
 |`FillStyle`, `FillColor`|Solid fills the figure. A line style draws one-pixel lines eight pixels apart, from the control's top left corner.|
 |`BorderStyle`, `BorderColor`, `BorderWidth`|The border is drawn inside the control, `BorderWidth` pixels wide. A one-pixel border is dashed as GDI dashes it; a wider one is solid. Inside Solid draws as Solid, and Transparent draws no border.|
@@ -43,5 +43,10 @@ The interval is counted on the system's clock. [`VBControl.SetTimeProvider`](../
 - `X1`, `Y1`, `X2` and `Y2` are in the container's scale: the form's or a PictureBox's `ScaleMode`, and twips in a Frame. A user scale's unit is the container's inside over its `ScaleWidth` and `ScaleHeight`, in single precision, from `ScaleLeft` and `ScaleTop`.
 - Each end is held as whole twips, rounded half to even, and drawn on the nearest pixel. The line follows its ends and its container's scale as they change.
 - A one-pixel line covers every pixel from its first end up to its second, the second left out. Its `BorderStyle` dashes it from the first end: Dash is 18 pixels on and 6 off, and Dot 3 and 3.
-- A wider line is solid whatever its `BorderStyle`, and covers both ends. Across, it covers `BorderWidth` rows centred on the end's row, the extra one above where the width is even.
+- A wider line is solid whatever its `BorderStyle`, and covers both ends. Across, it covers `BorderWidth` rows centred on the end's row, the extra one above where the width is even. A vertical line covers as many columns, the extra one to the left.
 - Inside Solid draws as Solid, and Transparent draws nothing. Every `DrawMode` draws as Copy Pen (13).
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---

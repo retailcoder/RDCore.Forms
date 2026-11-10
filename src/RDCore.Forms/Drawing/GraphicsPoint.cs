@@ -5,7 +5,7 @@
 /// </summary>
 /// <param name="X">The horizontal coordinate, in the surface's scale.</param>
 /// <param name="Y">The vertical coordinate, in the surface's scale.</param>
-/// <param name="IsRelative">Whether the point is written with <c>Step</c>, as an offset rather than a position.</param>
+/// <param name="IsRelative">Whether the point is written with <c>Step</c>, and so is an offset.</param>
 public readonly record struct GraphicsPoint(double X, double Y, bool IsRelative = false);
 
 /// <summary>

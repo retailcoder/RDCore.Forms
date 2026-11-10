@@ -1,6 +1,6 @@
 # Form events
 
-A [`VBFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.VBFormWindow.yml) raises its root's own events to the window's sink, in the order VB6 raises them, as measured with native and p-code builds.
+A [`VBFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.VBFormWindow.yml) raises its root's own events to the window's sink, in the order VB6 raises them (measured with VB6).
 
 Initialize, Load and Terminate are the program's: the window raises none of them. A program raises Initialize and Load before it shows the window.
 
@@ -13,7 +13,7 @@ Initialize, Load and Terminate are the program's: the window raises none of them
 |The user resizes the window|The root's `Width` and `Height` take the client area's size, in twips, and one Resize is raised for both.|
 |The window is shown again after `Hide`|No Resize.|
 
-A Resize is raised for a root whose window was shown, hidden or not. With `AutoRedraw` False, Paint follows Resize as the window is shown and as its client area grows: see [Drawing](drawing.md).
+Once its window has been shown, the root raises Resize for a change of size whether the window is hidden or not. With `AutoRedraw` False, Paint follows Resize as the window is shown and as its client area grows: see [Drawing](drawing.md).
 
 ## Activation
 
@@ -55,7 +55,7 @@ A press on none of the form's controls is the root's.
 
 With `KeyPreview` True, the root's handlers decide what the control raises:
 
-- A `KeyCode` the root's KeyDown sets to 0 raises no KeyDown on the control, and the key still does what it does. Another code is not passed on.
+- A `KeyCode` the root's KeyDown sets to 0 raises no KeyDown on the control, and the key still does what it does. Another code is not passed on: the control's KeyDown has the key's own code.
 - The control's KeyPress has the `KeyAscii` the root's KeyPress left, and 0 raises none and types nothing.
 - The control's KeyUp has the key's own code.
 
@@ -79,3 +79,8 @@ A character typed in a ListBox whose `MultiSelect` is None selects the next item
 
 > [!NOTE]
 > **Not implemented.** The root's GotFocus and LostFocus. Enter and Esc raise no key events, and a CommandButton has no `Default` or `Cancel`. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
+
+---
+[ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
+
+---

@@ -66,6 +66,23 @@ public sealed class FormRenderingTests
     }
 
     [TestMethod]
+    [DataRow(0d, 0d)]
+    [DataRow(0d, 3600d)]
+    [DataRow(4800d, 0d)]
+    public void AFormOfNoWidthOrNoHeight_IsAWindowOfOnePixelAtLeast(double width, double height)
+    {
+        var client = UI.Run(() =>
+        {
+            var (window, _) = Show(new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, width).Set(P.Height, height));
+            var result = window.ClientSize;
+            window.Close();
+            return result;
+        });
+
+        Assert.IsTrue(client.Width >= 1 && client.Height >= 1, $"The window's client is {client}.");
+    }
+
+    [TestMethod]
     public void APositionIsTwips_OnAPixelForm_InAPixelPictureBox_AndInAFrame()
     {
         var (onForm, inPicture, inFrame) = UI.Run(() =>

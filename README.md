@@ -7,7 +7,7 @@ RDCore.Forms is RDForms, the form toolkit of the [RDCore](https://github.com/rub
 
 The RDCore runtime runs the code behind a form. RDCore.Forms shows the form and raises its controls' events to that code.
 
-This repository holds two libraries:
+This repository holds these libraries:
 
 | Package | Role |
 |---|---|

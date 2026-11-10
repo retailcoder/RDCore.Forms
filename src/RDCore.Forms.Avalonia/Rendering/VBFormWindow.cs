@@ -87,7 +87,8 @@ public sealed class VBFormWindow : Window, IMenuHost
         View = new VBFormView(form);
         MenuBar = new VBMenuBar(form.Root);
         DockPanel.SetDock(MenuBar, Dock.Top);
-        Content = new DockPanel { Children = { MenuBar, View } };
+        // A window of no pixels has no surface to draw: closing it fails as it renders a last frame. The window takes its content's size.
+        Content = new DockPanel { MinWidth = 1, MinHeight = 1, Children = { MenuBar, View } };
         SizeToContent = SizeToContent.WidthAndHeight;
         WindowStartupLocation = form.Root.Get(P.StartUpPosition) switch
         {
@@ -135,7 +136,7 @@ public sealed class VBFormWindow : Window, IMenuHost
     /// </param>
     /// <returns>
     /// A task that completes when the menu closes, after the Click of an item chosen from it. A menu that holds no items shows nothing
-    /// and raises nothing, and its task has completed.
+    /// and raises nothing, and the task returned has already completed.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="menu"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="menu"/> is not one of the form's menus.</exception>
