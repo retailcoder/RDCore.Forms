@@ -58,7 +58,7 @@ public sealed class FormEventTests
         };
 
     [TestMethod]
-    public void Shown_TheFormRaisesResizeThenActivate_ThenPaint()
+    public void Shown_TheFormRaisesResizeThenActivate_ThenItsGotFocus_WithNoControlToTakeIt_ThenPaint()
     {
         var raised = UI.Run(() =>
         {
@@ -69,7 +69,7 @@ public sealed class FormEventTests
             return result;
         });
 
-        Expect.Lines(["Form1.Resize", "Form1.Activate", "Form1.Paint"], raised);
+        Expect.Lines(["Form1.Resize", "Form1.Activate", "Form1.GotFocus", "Form1.Paint"], raised);
     }
 
     [TestMethod]
@@ -136,7 +136,7 @@ public sealed class FormEventTests
     }
 
     [TestMethod]
-    public void AnotherFormActivated_RaisesDeactivateOnTheActiveOne_ThenActivate()
+    public void AnotherFormActivated_RaisesLostFocusAndDeactivateOnTheActiveOne_ThenActivateAndGotFocus()
     {
         var raised = UI.Run(() =>
         {
@@ -151,9 +151,9 @@ public sealed class FormEventTests
             return result;
         });
 
-        Expect.Lines(["Form1.Resize", "Form1.Activate",
-            "Form2.Resize", "Form1.Deactivate", "Form2.Activate",
-            "Form2.Deactivate", "Form1.Activate"], raised);
+        Expect.Lines(["Form1.Resize", "Form1.Activate", "Form1.GotFocus",
+            "Form2.Resize", "Form1.LostFocus", "Form1.Deactivate", "Form2.Activate", "Form2.GotFocus",
+            "Form2.LostFocus", "Form2.Deactivate", "Form1.Activate", "Form1.GotFocus"], raised);
     }
 
     [TestMethod]
@@ -295,6 +295,38 @@ public sealed class FormEventTests
         });
 
         Assert.IsEmpty(raised);
+    }
+
+    // A left press and release on the view at a point, as the press's click count says: 2 for a double click's second. The count is
+    // given, so that no double-click time decides it.
+    private static void Click(VBFormWindow window, Point at, int clickCount)
+    {
+        var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, isPrimary: true);
+        var point = window.View.TranslatePoint(at, window) ?? at;
+        window.View.RaiseEvent(new PointerPressedEventArgs(window.View, pointer, window, point, 0,
+            new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed), KeyModifiers.None, clickCount));
+        window.View.RaiseEvent(new PointerReleasedEventArgs(window.View, pointer, window, point, 0,
+            new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased), KeyModifiers.None, MouseButton.Left));
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    [TestMethod]
+    public void ADoubleClickOnNoControl_RaisesTheFormsDblClick_InPlaceOfTheSecondMouseDown_AndNoSecondClick()
+    {
+        var raised = UI.Run(() =>
+        {
+            var sink = new RecordingSink();
+            var window = Open(Root(), sink);
+            sink.Raised.Clear();
+            Click(window, new Point(300, 10), 1);
+            Click(window, new Point(300, 10), 2);
+            var result = sink.WithoutMoves;
+            window.Close();
+            return result;
+        });
+
+        Expect.Lines(["Form1.MouseDown(Integer 1, Integer 0, Single 4500, Single 150)", "Form1.MouseUp(Integer 1, Integer 0, Single 4500, Single 150)",
+            "Form1.Click", "Form1.DblClick", "Form1.MouseUp(Integer 1, Integer 0, Single 4500, Single 150)"], raised);
     }
 
     [TestMethod]

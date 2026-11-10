@@ -63,7 +63,8 @@ public static class VBClasses
     /// <c>VB.CommandButton</c>.
     /// </summary>
     public static readonly ComponentClass CommandButton = Control("VB.CommandButton", "Command",
-        [P.Caption, P.BackColor, P.ForeColor, P.Appearance, P.Font, P.MousePointer, P.Picture, P.Enabled, P.TabStop, P.TabIndex, P.ToolTipText],
+        [P.Caption, P.BackColor, P.ForeColor, P.Appearance, P.Font, P.MousePointer, P.Picture, P.Enabled, P.TabStop, P.TabIndex, P.ToolTipText,
+         P.Default, P.Cancel],
         [Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp]);
 
     /// <summary>

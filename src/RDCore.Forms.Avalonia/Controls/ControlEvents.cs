@@ -31,6 +31,15 @@ internal enum DblClick
     AfterMouseDown,
 }
 
+// A form's window, which raises its controls' GotFocus and LostFocus as the program's active form changes, and as the focus moves
+// between its controls while it is the active one.
+internal interface IFormFocus
+{
+    // A control of the window took the focus, or lost it, in the window system: to no element, where toNone is true, as the window
+    // system takes the focus from the window.
+    void FocusMoved(Control control, bool got, bool toNone);
+}
+
 // The focus, click and mouse events VB raises for a control, as measured with VB6: native and p-code builds agree.
 internal static class ControlEvents
 {
@@ -40,21 +49,30 @@ internal static class ControlEvents
 
     // The control's own focus. GotFocus and LostFocus bubble, and the focus moving between a control and a part of it, such as a
     // ListBox's item or a ComboBox's text box, is neither: VB raises one GotFocus as the control is entered and one LostFocus as it
-    // is left. A control inside a container is its own, so a PictureBox loses the focus to a TextBox it holds.
+    // is left. A control inside a container is its own, so a PictureBox loses the focus to a TextBox it holds. In a form's window, the
+    // window decides what VB raises (IFormFocus): the window system's activation moves the focus too, where VB raises nothing.
     public static void AttachFocus<T>() where T : Control
     {
         InputElement.GotFocusEvent.AddClassHandler<T>((control, e) =>
         {
             if (e is FocusChangedEventArgs moved
                 && VBControl.Owns(control, moved.NewFocusedElement) && !VBControl.Owns(control, moved.OldFocusedElement))
-                VBControl.Raise(control, VBEvents.GotFocus);
+                FocusMoved(control, got: true);
         }, handledEventsToo: true);
         InputElement.LostFocusEvent.AddClassHandler<T>((control, e) =>
         {
             if (e is FocusChangedEventArgs moved
                 && VBControl.Owns(control, moved.OldFocusedElement) && !VBControl.Owns(control, moved.NewFocusedElement))
-                VBControl.Raise(control, VBEvents.LostFocus);
+                FocusMoved(control, got: false, toNone: moved.NewFocusedElement is null);
         }, handledEventsToo: true);
+    }
+
+    private static void FocusMoved(Control control, bool got, bool toNone = false)
+    {
+        if (TopLevel.GetTopLevel(control) is IFormFocus form)
+            form.FocusMoved(control, got, toNone);
+        else
+            VBControl.Raise(control, got ? VBEvents.GotFocus : VBEvents.LostFocus);
     }
 
     // Click on a release. A Button raises its own Click; this is for the others. A double click's second release raises none.

@@ -18,6 +18,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 //    Its KeyAscii is the space typed after it, where one is.
 //  - On a button, a check box and an option button, an arrow moves the focus and raises no key event, the form's included. A button,
 //    check box or option button that takes the focus raises no KeyUp for it either; another control raises its KeyUp alone.
+//  - Enter and Esc raise KeyPress 13 and 27, and Ctrl+Enter 10, where no button takes them (VBFormWindow).
 // The handlers go on the way down, so that they come before the control's own handling of the key.
 internal static class ControlKeys
 {
@@ -88,7 +89,22 @@ internal static class ControlKeys
         else if ((e.Key == Key.Back || e.Key == Key.A && e.KeyModifiers == KeyModifiers.Control)
                  && KeyPress(control, e.Key == Key.Back ? (short)8 : (short)1) is null)
             e.Handled = true;
+        else if (AsciiOf(e) is { } ascii)
+            KeyPress(control, ascii);
+        // Enter that no button took clicks no button, and toggles no check box or option button.
+        if (e.Key == Key.Enter && control is Button)
+            e.Handled = true;
     }
+
+    // The KeyAscii of Enter and Esc, which type no text: 13 for Enter, alone or with Shift, 10 with Ctrl, and 27 for Esc, alone or
+    // with Shift. Another modifier raises no KeyPress.
+    public static short? AsciiOf(KeyEventArgs e) => (e.Key, e.KeyModifiers) switch
+    {
+        (Key.Enter, KeyModifiers.None or KeyModifiers.Shift) => 13,
+        (Key.Enter, KeyModifiers.Control) => 10,
+        (Key.Escape, KeyModifiers.None or KeyModifiers.Shift) => 27,
+        _ => null,
+    };
 
     private static void TextInput(Control control, TextInputEventArgs e)
     {

@@ -96,15 +96,6 @@ public static class VBControl
     // Whether control is the innermost component under the pointer. A routed pointer event bubbles, so a press on a button inside a
     // Frame reaches the Frame too, where it is not the Frame's: VB raises the innermost control's event and nothing above it. The
     // walk stops at the first visual that shows a component. A template part shows none, so a press on a Label's text is the Label's.
-    internal static bool Owns(Control control, object? source)
-    {
-        for (var visual = source as Visual; visual is not null; visual = visual.GetVisualParent())
-        {
-            if (ReferenceEquals(visual, control))
-                return true;
-            if (visual is Control candidate && GetInstance(candidate) is not null)
-                return false;
-        }
-        return false;
-    }
+    // An open list's popup is its combo's, so that the focus going into the list and back raises no LostFocus and GotFocus.
+    internal static bool Owns(Control control, object? source) => ReferenceEquals(ControlKeys.Owner(source), control);
 }
