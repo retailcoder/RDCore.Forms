@@ -64,7 +64,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass CommandButton = Control("VB.CommandButton", "Command",
         [P.Caption, P.BackColor, P.ForeColor, P.Appearance, P.Font, P.MousePointer, P.Picture, P.Enabled, P.TabStop, P.TabIndex, P.ToolTipText],
-        [Click, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp]);
+        [Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp]);
 
     /// <summary>
     /// <c>VB.TextBox</c>. Its colours default to the window's (<c>Window</c>, <c>WindowText</c>), where most controls default to the
@@ -91,7 +91,7 @@ public static class VBClasses
     public static readonly ComponentClass CheckBox = Control("VB.CheckBox", "Check",
         [P.BackColor, P.Caption, P.Enabled, P.Font, P.ForeColor, P.MousePointer, P.RightToLeft, P.ToolTipText, P.CheckBoxValue, P.Appearance,
          P.TabStop, P.TabIndex],
-        [Click, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp]);
+        [Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp]);
 
     /// <summary>
     /// <c>VB.OptionButton</c>.
@@ -99,7 +99,7 @@ public static class VBClasses
     public static readonly ComponentClass OptionButton = Control("VB.OptionButton", "Option",
         [P.BackColor, P.Caption, P.Enabled, P.Font, P.ForeColor, P.MousePointer, P.RightToLeft, P.ToolTipText, P.OptionButtonValue,
          P.Appearance, P.TabStop, P.TabIndex],
-        [Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp]);
+        [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp]);
 
     /// <summary>
     /// <c>VB.Frame</c>, a container.
@@ -114,7 +114,7 @@ public static class VBClasses
     public static readonly ComponentClass ListBox = Control("VB.ListBox", "List",
         [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.DragIcon, P.MousePointer, P.RightToLeft,
          P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
-        [Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp],
+        [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
 
     /// <summary>
@@ -123,7 +123,7 @@ public static class VBClasses
     public static readonly ComponentClass ComboBox = Control("VB.ComboBox", "Combo",
         [P.Text, P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.Locked, P.ComboBoxStyle, P.MousePointer, P.RightToLeft,
          P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
-        [Change, Click, DblClick, DropDown, GotFocus, LostFocus],
+        [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
 
     /// <summary>

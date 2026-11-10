@@ -331,18 +331,15 @@ public sealed class VBFormWindow : Window, IMenuHost
 
     // Whether a key is the root's: none of the form's controls has the focus, or, where the root's KeyPreview is True, one that
     // raises no key events of its own does. A control that raises its own gives the root the key first itself.
-    private bool KeyIsTheRoots()
+    private bool KeyIsTheRoots(object? source)
     {
         if (!View.IsEffectivelyEnabled)
             return false;
-        Control? owner = null;
-        for (var visual = FocusManager?.GetFocusedElement() as Visual; visual is not null && !ReferenceEquals(visual, View);
-             visual = visual.GetVisualParent())
-            if (visual is Control control && VBControl.GetInstance(control) is not null)
-            {
-                owner = control;
-                break;
-            }
+        // The key's own element first: a combo's open list is in a popup, whose focus is not the window's, and whose element is the
+        // combo's.
+        var owner = ControlKeys.Owner(source) ?? ControlKeys.Owner(FocusManager?.GetFocusedElement());
+        if (ReferenceEquals(owner, View))
+            owner = null;
         return owner is not IRaisesKeyEvents && (owner is null || Root.Get(P.KeyPreview));
     }
 
@@ -393,7 +390,7 @@ public sealed class VBFormWindow : Window, IMenuHost
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Handled || !KeyIsTheRoots() || KeyCodes.Of(e) is not { } code)
+        if (e.Handled || !KeyIsTheRoots(e.Source) || KeyCodes.Of(e) is not { } code)
             return;
         FormKeys.Raise(View, VBEvents.KeyDown, code, ControlEvents.ShiftOf(e.KeyModifiers));
         // Backspace and Ctrl+A type a character with no text, as in a TextBox.
@@ -405,14 +402,14 @@ public sealed class VBFormWindow : Window, IMenuHost
 
     private void OnKeyUp(object? sender, KeyEventArgs e)
     {
-        if (!e.Handled && KeyIsTheRoots() && KeyCodes.Of(e) is { } code)
+        if (!e.Handled && KeyIsTheRoots(e.Source) && KeyCodes.Of(e) is { } code)
             FormKeys.Raise(View, VBEvents.KeyUp, code, ControlEvents.ShiftOf(e.KeyModifiers));
     }
 
     private void OnTextInput(object? sender, TextInputEventArgs e)
     {
         // A character outside ASCII raises no KeyPress, as in a TextBox.
-        if (e.Handled || string.IsNullOrEmpty(e.Text) || e.Text.Any(character => character > 127) || !KeyIsTheRoots())
+        if (e.Handled || string.IsNullOrEmpty(e.Text) || e.Text.Any(character => character > 127) || !KeyIsTheRoots(e.Source))
             return;
         foreach (var character in e.Text)
             FormKeys.Raise(View, VBEvents.KeyPress, (short)character);

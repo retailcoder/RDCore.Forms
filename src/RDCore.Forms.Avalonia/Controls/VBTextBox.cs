@@ -111,24 +111,12 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
 
     // The KeyAscii the handlers left, the form's first, the code typed where there are none. One outside a character's range types
     // nothing.
-    private int KeyPress(int ascii)
-    {
-        var previewed = FormKeys.Preview(this, VBEvents.KeyPress, (short)ascii);
-        if (previewed == 0)
-            return 0;
-        var after = VBControl.Raise(this, VBEvents.KeyPress, FormValue.FromInteger(previewed));
-        var code = after is { } args && args[0].Kind == FormValueKind.Integer ? args[0].AsInteger() : previewed;
-        return code is > 0 and <= 255 ? code : 0;
-    }
+    private int KeyPress(int ascii) => ControlKeys.KeyPress(this, (short)ascii) ?? 0;
 
     private void RaiseKey(KeyEventArgs e, EventDefinition definition)
     {
-        if (e.Handled || !VBControl.Owns(this, e.Source) || KeyCodes.Of(e) is not { } code)
-            return;
-        var shift = ControlEvents.ShiftOf(e.KeyModifiers);
-        var own = FormKeys.Preview(this, definition, code, shift);
-        if (own != 0)
-            VBControl.Raise(this, definition, FormValue.FromInteger(own), FormValue.FromInteger(shift));
+        if (!e.Handled && VBControl.Owns(this, e.Source) && KeyCodes.Of(e) is { } code)
+            ControlKeys.Raise(this, definition, code, ControlEvents.ShiftOf(e.KeyModifiers));
     }
 
     private void Apply(ComponentPropertyChangedEventArgs e)

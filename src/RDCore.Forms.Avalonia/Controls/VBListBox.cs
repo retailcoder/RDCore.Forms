@@ -40,10 +40,13 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// Every key such a list takes raises Click, whether or not anything changed.
 /// </para>
 /// <para>
-/// It raises DblClick, GotFocus, LostFocus, MouseDown, MouseMove and MouseUp.
+/// It raises DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp. A key's Click comes after its
+/// KeyDown, and its KeyPress where it types a character, and before its KeyUp. Where its <c>MultiSelect</c> is None, a character
+/// typed selects the next item that starts with it, after the selected one and from the top again past the last, compared without
+/// regard to case, and raises Click where the selection moved.
 /// </para>
 /// </remarks>
-public sealed class VBListBox : ListBox
+public sealed class VBListBox : ListBox, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
     private readonly ListBoxMultiSelect multiSelect;
@@ -61,6 +64,8 @@ public sealed class VBListBox : ListBox
 
     static VBListBox()
     {
+        // First, so that a key's KeyDown comes before the Click of the selection it moves.
+        ControlKeys.Attach<VBListBox>();
         // VB selects nothing for a right or middle press, where Avalonia's ListBox selects on a right one. Handled on the way down,
         // its own press handler never sees it; the mouse events take handled presses too. A left press on a multi-select list is
         // taken here, for the same reason.
@@ -310,6 +315,36 @@ public sealed class VBListBox : ListBox
         // An arrow that moves the selection raises Click; one that can go no further does not.
         if (SelectedIndex != before)
             VBControl.Raise(this, VBEvents.Click);
+    }
+
+    /// <inheritdoc/>
+    protected override void OnTextInput(TextInputEventArgs e)
+    {
+        base.OnTextInput(e);
+        if (e.Handled || IsMultiSelect || string.IsNullOrEmpty(e.Text) || ItemCount == 0)
+            return;
+        e.Handled = true;
+        foreach (var character in e.Text)
+            Search(char.ToUpperInvariant(character));
+    }
+
+    // The next item that starts with a character, from the top again past the last: the selected one only where no other does. It
+    // takes the keyboard focus, so that an arrow moves on from it.
+    private void Search(char character)
+    {
+        for (var step = 1; step <= ItemCount; step++)
+        {
+            var index = (SelectedIndex + step) % ItemCount;
+            if (Items[index] is not string { Length: > 0 } text || char.ToUpperInvariant(text[0]) != character)
+                continue;
+            if (index == SelectedIndex)
+                return;
+            SelectedIndex = index;
+            ScrollIntoView(index);
+            ContainerFromIndex(index)?.Focus(NavigationMethod.Unspecified);
+            VBControl.Raise(this, VBEvents.Click);
+            return;
+        }
     }
 
     private void Apply(ComponentPropertyChangedEventArgs e)

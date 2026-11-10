@@ -410,10 +410,10 @@ public sealed class FormEventTests
         var raised = UI.Run(() =>
         {
             var root = Root().Set(P.KeyPreview, preview);
-            var command1 = Add(root, VBClasses.CommandButton, "Command1", 120, 120, 1200, 495);
+            var scroll1 = Add(root, VBClasses.HScrollBar, "HScroll1", 120, 120, 1800, 255);
             var sink = new RecordingSink();
             var window = Open(root, sink);
-            window.View.ControlOf(command1)!.Focus();
+            window.View.ControlOf(scroll1)!.Focus();
             Dispatcher.UIThread.RunJobs();
             sink.Raised.Clear();
             window.KeyPress(Key.K, RawInputModifiers.None, PhysicalKey.K, "k");
