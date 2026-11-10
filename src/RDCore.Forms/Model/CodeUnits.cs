@@ -33,7 +33,7 @@ public enum CodeUnit
 /// In <see cref="CodeUnit.VB6"/>, a control in a form or a PictureBox has its <c>Left</c> and <c>Top</c> as coordinates of its container's
 /// scale, its <c>ScaleLeft</c> and <c>ScaleTop</c> included, and its <c>Width</c> and <c>Height</c> as lengths in the scale's units. A
 /// length has no sign, even in a scale that runs right to left or bottom to top. A root's position and size are its client area's, in
-/// twips.
+/// twips. These two rules were not measured with VB6: RDForms sets them.
 /// </para>
 /// <para>
 /// Any other property is in the same unit for code as in the model: a scale's own properties and a Line's ends are in the container's

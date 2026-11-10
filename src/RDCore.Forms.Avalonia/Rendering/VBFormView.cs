@@ -24,8 +24,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// </para>
 /// <para>
 /// A control's <c>Left</c>, <c>Top</c>, <c>Width</c> and <c>Height</c> are pixels whatever its container's <c>ScaleMode</c>, and
-/// place it as they are. In each container the first control the form holds is on
-/// top, and a windowless control (a Label or an Image) is under every windowed one, whatever their order.
+/// place it as they are. In each container the first control the form holds is on top, and a windowless control (a Label or an Image)
+/// is under every windowed one, whatever their order.
 /// </para>
 /// <para>
 /// Tab and Shift+Tab move the focus through one order across the whole form, a control in a Frame or a PictureBox included: by

@@ -59,7 +59,7 @@ public readonly record struct DrawingScale(double TwipsAcross, double TwipsDown,
     }
 
     /// <summary>
-    /// A component's inside, in twips: its <c>Width</c> and <c>Height</c>, within its border where it has a <c>BorderStyle</c>. A root's
+    /// A component's inside, in twips: its <c>Width</c> and <c>Height</c>, within its border where its <c>BorderStyle</c> draws one. A root's
     /// <c>Width</c> and <c>Height</c> are its inside already.
     /// </summary>
     /// <param name="component">The component.</param>
