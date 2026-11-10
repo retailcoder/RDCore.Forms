@@ -19,9 +19,12 @@ Once its window has been shown, the root raises Resize for a change of size whet
 
 |Situation|Raised|
 |---|---|
-|Another of the program's form windows becomes active|Deactivate on the one that was active, then Activate on the new one.|
+|The window is shown for the first time|Activate, then GotFocus on the first control of the tab order that can take the focus.|
+|Another of the program's form windows becomes active|LostFocus on the control that has the focus, then Deactivate, on the one that was active; then Activate on the new one, and GotFocus on its control.|
 |Another application takes the activation and gives it back|Nothing.|
 |A window whose root is disabled is shown|No Activate: it is shown without being activated.|
+
+Each form keeps the control that last had the focus on it, and that control takes the focus again, with a GotFocus, as the form is activated again. A form with no control that can take the focus raises its own GotFocus after its Activate. Its own LostFocus comes before its Deactivate: VB6 was not measured with that one.
 
 ## Unloading
 
@@ -43,9 +46,7 @@ A press on none of the form's controls is the root's.
 - It raises MouseDown, MouseMove and MouseUp. `X` and `Y` are in the root's scale: its `ScaleMode`, from its `ScaleLeft` and `ScaleTop`.
 - Click comes after MouseUp, for the right and middle buttons too, where the release is over the form again, wherever the press was.
 - A release over a control, or outside the window, raises the root's MouseUp and no Click.
-
-> [!NOTE]
-> **Not implemented.** The root's DblClick: a double click on the form is two clicks.
+- A double click's second press raises DblClick in place of its MouseDown, and its release raises MouseUp and no Click.
 
 ## Keyboard
 
@@ -96,7 +97,7 @@ Where more than one CommandButton has `Default` or `Cancel` True, the first the 
 What a character typed in a ListBox selects is on the [Lists](lists.md) page.
 
 > [!NOTE]
-> **Not implemented.** The root's GotFocus and LostFocus. A default button is drawn as any other button. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
+> **Not implemented.** A default button is drawn as any other button. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
