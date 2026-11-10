@@ -51,6 +51,18 @@ sealed class PrintingSink : IComponentEventSink
 
 The sink is called with the component, the event, and its arguments in the order of the event's parameters. A handler's assignment to an argument, such as a `KeyAscii` set to 0, is written back into the array, and the control reads it there.
 
+The window and the controls need an Avalonia application with a theme. A host that has none uses [`RDFormsApplication`](../api/RDCore.Forms.Avalonia.RDFormsApplication.yml): Avalonia's Simple theme, drawn with Skia, with Inter as its default font. Its `Configure` method returns the application's builder, and the host adds the platform:
+
+```csharp
+using Avalonia;
+using RDCore.Forms.Avalonia;
+
+// Avalonia's desktop platform, from the Avalonia.Desktop package.
+RDFormsApplication.Configure().UsePlatformDetect().StartWithClassicDesktopLifetime(args);
+```
+
+A host that has an Avalonia application of its own keeps it.
+
 The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinButton` and `ShowInTaskbar`, and a user who resizes it sets the root's `Width` and `Height`. A `StartUpPosition` of CenterOwner or CenterScreen centres it; Manual and Windows Default leave its place to the window system. The root raises its own events, Resize, Activate, QueryUnload, Unload and its mouse and key events among them: see [Form events](form-events.md).
 
 ## Placement
