@@ -7,7 +7,7 @@ RDCore.Forms est RDForms, la bibliothèque de formulaires de la plateforme [RDCo
 
 Le _runtime_ de RDCore exécute le code d'un formulaire. RDCore.Forms affiche le formulaire et transmet à ce code les événements de ses contrôles.
 
-Ce référentiel contient deux bibliothèques :
+Ce référentiel contient ces bibliothèques :
 
 | Paquet | Rôle |
 |---|---|

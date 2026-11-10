@@ -136,7 +136,7 @@ public sealed class VBFormWindow : Window, IMenuHost
     /// </param>
     /// <returns>
     /// A task that completes when the menu closes, after the Click of an item chosen from it. A menu that holds no items shows nothing
-    /// and raises nothing, and its task has completed.
+    /// and raises nothing, and the task returned has already completed.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="menu"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="menu"/> is not one of the form's menus.</exception>

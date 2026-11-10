@@ -52,7 +52,7 @@
     <value>Set non géré (propriété en lecture seule)</value>
   </data>
   <data name="Error387" xml:space="preserve">
-    <value>Impossible de définir la propriété '{0}' pour ce contrôle</value>
+    <value>Impossible de définir la propriété « {0} » pour ce contrôle</value>
   </data>
   <data name="Error393" xml:space="preserve">
     <value>Get non géré au moment de l'exécution</value>
