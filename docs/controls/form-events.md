@@ -81,7 +81,7 @@ A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothin
 
 ## Enter and Esc
 
-A CommandButton whose `Default` is True is the form's default button, and one whose `Cancel` is True its cancel button. Enter clicks the default button and Esc the cancel button, wherever the focus is on the form.
+A CommandButton whose `Default` is True is the form's default button, and one whose `Cancel` is True its cancel button. Enter clicks the default button and Esc the cancel button from any control of the form, except that a focused CommandButton takes Enter itself and a ComboBox's open list keeps both keys.
 
 |Key|Raised|
 |---|---|
@@ -91,12 +91,12 @@ A CommandButton whose `Default` is True is the form's default button, and one wh
 |Enter or Esc in a ComboBox's open list|KeyDown and KeyPress on the combo, and the list closes. No button is clicked. The KeyUp is raised only where the form has no default button, for Enter, or no cancel button, for Esc.|
 |Enter or Esc on a form with no controls|The root's KeyDown, KeyPress 13 or 27, and KeyUp.|
 
-Where more than one CommandButton has `Default` or `Cancel` True, the first the form holds takes the key. A default or cancel button that is hidden or disabled takes no key: Enter and Esc go to the focused control as other keys do. These two rules are RDForms' own: VB6 was not measured in either case.
+Where more than one CommandButton has `Default` or `Cancel` True, the first the form holds takes the key. A default or cancel button that is hidden or disabled takes no key: Enter and Esc go to the focused control as other keys do. Neither case was measured with VB6: these two rules are RDForms' own.
 
 What a character typed in a ListBox selects is on the [Lists](lists.md) page.
 
 > [!NOTE]
-> **Not implemented.** The root's GotFocus and LostFocus. A default button is drawn as any other button. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
+> **Not implemented.** The root's GotFocus and LostFocus. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

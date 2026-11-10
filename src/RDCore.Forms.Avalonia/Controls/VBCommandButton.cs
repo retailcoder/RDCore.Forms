@@ -15,7 +15,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// It raises Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp. Click comes before MouseUp, as in
 /// VB, and Space raises KeyDown, KeyPress and KeyUp, then Click. An arrow key moves the focus to the previous or next control in its
 /// container, and raises no key event. Enter on the button clicks it, with no key event, and its <c>Default</c> and <c>Cancel</c> make it
-/// the button that Enter and Esc click from anywhere on its form (<see cref="Rendering.VBFormWindow"/>). Its <c>Picture</c> is not drawn,
+/// the button that Enter and Esc click from the form's other controls (<see cref="Rendering.VBFormWindow"/>). Its <c>Picture</c> is not drawn,
 /// and a default button is drawn as any other.
 /// </remarks>
 public sealed class VBCommandButton : Button, IRaisesKeyEvents
