@@ -106,6 +106,9 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
                 return;
             }
         }
+        // Enter and Esc, where no button took them, type nothing in a single-line box.
+        else if (!e.Handled && ControlKeys.AsciiOf(e) is { } code)
+            KeyPress(code);
         base.OnKeyDown(e);
     }
 

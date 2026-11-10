@@ -6,8 +6,8 @@ using Avalonia.Input;
 namespace RDCore.Forms.Avalonia.Controls;
 
 // The KeyCode VB gives a key in KeyDown and KeyUp, as measured with VB6, native and p-code agreeing. A key VB6 was not measured with,
-// and a chord of several modifiers, has none, and raises nothing. Enter, Esc and Tab are not among them: they wait for the form's
-// Default and Cancel buttons and its tab order.
+// and a chord of several modifiers, has none, and raises nothing. Enter and Esc have theirs where no button takes them
+// (VBFormWindow); Esc with Ctrl or Alt has none. Tab is not among them: it waits for the form's tab order.
 internal static class KeyCodes
 {
     public static short? Of(KeyEventArgs e)
@@ -25,6 +25,8 @@ internal static class KeyCodes
             >= Key.F1 and <= Key.F12 when e.Key != Key.F10 && !(e.Key == Key.F4 && modifiers.HasFlag(KeyModifiers.Alt)) => 112 + (e.Key - Key.F1),
             Key.Space when !modifiers.HasFlag(KeyModifiers.Alt) => 32,
             Key.Back => 8,
+            Key.Enter => 13,
+            Key.Escape when (modifiers & ~KeyModifiers.Shift) == KeyModifiers.None => 27,
             Key.Insert => 45,
             Key.Delete => 46,
             Key.Home => 36,

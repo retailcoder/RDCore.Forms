@@ -95,9 +95,18 @@ public sealed class VB6FixtureTests
     }
 
     [TestMethod]
+    public void ACommandButtonsDefault_IsRead_AndItsCancelIsFalseWhereNotWritten()
+    {
+        var button = Component("cmdOK");
+
+        Assert.IsTrue(button.Get(VBProperties.Default));
+        Assert.IsFalse(button.Get(VBProperties.Cancel));
+        Assert.IsEmpty(button.UnmodelledProperties);
+    }
+
+    [TestMethod]
     public void APropertyTheModelHasNot_IsKeptAsWritten()
     {
-        Assert.Contains(new UnmodelledProperty("Default", "-1  'True"), Component("cmdOK").UnmodelledProperties);
         Assert.Contains(new UnmodelledProperty("MultiLine", "-1  'True"), Component("txtNotes").UnmodelledProperties);
         Assert.Contains(new UnmodelledProperty("LinkTopic", "\"Intrinsics\""), Intrinsics.Root.UnmodelledProperties);
     }

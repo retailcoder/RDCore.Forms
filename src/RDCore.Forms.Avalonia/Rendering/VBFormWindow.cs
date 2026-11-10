@@ -22,7 +22,9 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <para>
 /// The window's client area is the form's: its size is the root's <c>Width</c> and <c>Height</c>, in twips at 15 twips a pixel,
 /// and follows them. A user who resizes the window sets them. The form's menus are on its <see cref="MenuBar"/>, above the client area,
-/// and a menu item's shortcut chooses it before a control or the root sees the key. While it is open, the window is its root's
+/// and a menu item's shortcut chooses it before a control or the root sees the key. Enter clicks the focused CommandButton, or else the
+/// form's first CommandButton whose <c>Default</c> is True, and Esc the first whose <c>Cancel</c> is True, with no key event, the root's
+/// included: a button that is hidden or disabled takes no key, and a combo's open list keeps both keys. While it is open, the window is its root's
 /// <see cref="IMenuHost"/>, registered with <see cref="MenuHosts"/>, and a right release over a component whose <c>ContextMenu</c> names
 /// one of the form's menus pops it up at the pointer, after the component's MouseUp and Click. The window follows the root's <c>Caption</c>, <c>MaxButton</c>,
 /// <c>MinButton</c> and <c>ShowInTaskbar</c>. Its <c>StartUpPosition</c> chooses where it starts: CenterOwner and CenterScreen centre
@@ -74,6 +76,8 @@ public sealed class VBFormWindow : Window, IMenuHost
     private bool unloading;
     // Where the pointer was last seen, in the client area's pixels: where a menu pops up when no point is given.
     private Point pointer;
+    // Enter or Esc, while a button took it, or an open list kept it, and its KeyUp is to raise nothing.
+    private Key? keyUpTaken;
 
     /// <summary>
     /// Creates a window that shows a form.
@@ -100,7 +104,9 @@ public sealed class VBFormWindow : Window, IMenuHost
         };
         Activated += (_, _) => OnWindowActivated();
         AddHandler(KeyDownEvent, OnShortcut, RoutingStrategies.Tunnel);
+        AddHandler(KeyDownEvent, OnDialogKey, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
+        AddHandler(KeyUpEvent, OnDialogKeyUp, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnKeyUp, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
         AddHandler(PointerMovedEvent, (_, e) => pointer = e.GetPosition(View), RoutingStrategies.Tunnel, handledEventsToo: true);
@@ -418,12 +424,57 @@ public sealed class VBFormWindow : Window, IMenuHost
         if (e.Handled || !KeyIsTheRoots(e.Source) || KeyCodes.Of(e) is not { } code)
             return;
         FormKeys.Raise(View, VBEvents.KeyDown, code, ControlEvents.ShiftOf(e.KeyModifiers));
-        // Backspace and Ctrl+A type a character with no text, as in a TextBox.
+        // Backspace and Ctrl+A type a character with no text, as in a TextBox, and so do Enter and Esc.
         if (e.Key == Key.Back)
             FormKeys.Raise(View, VBEvents.KeyPress, 8);
         else if (e.Key == Key.A && e.KeyModifiers == KeyModifiers.Control)
             FormKeys.Raise(View, VBEvents.KeyPress, 1);
+        else if (ControlKeys.AsciiOf(e) is { } ascii)
+            FormKeys.Raise(View, VBEvents.KeyPress, ascii);
     }
+
+    // Enter clicks the focused CommandButton, or else the form's default button, and Esc the form's cancel button, before any key
+    // event, the root's included, and the key raises no KeyUp after it. An open list keeps both keys, and raises no KeyUp for one
+    // where the form has a button for it.
+    private void OnDialogKey(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is not (Key.Enter or Key.Escape))
+            return;
+        keyUpTaken = null;
+        if (e.Handled || e.KeyModifiers != KeyModifiers.None || !View.IsEffectivelyEnabled)
+            return;
+        var owner = ControlKeys.Owner(e.Source) ?? ControlKeys.Owner(FocusManager?.GetFocusedElement());
+        var button = ButtonFor(e.Key == Key.Enter ? P.Default : P.Cancel);
+        if (owner is VBComboBox { IsDropDownOpen: true })
+        {
+            if (button is not null)
+                keyUpTaken = e.Key;
+            return;
+        }
+        if (e.Key == Key.Enter && owner is VBCommandButton focused)
+            button = focused;
+        if (button is null)
+            return;
+        e.Handled = true;
+        keyUpTaken = e.Key;
+        button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    }
+
+    private void OnDialogKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (keyUpTaken != e.Key)
+            return;
+        keyUpTaken = null;
+        e.Handled = true;
+    }
+
+    // The button that Enter or Esc clicks: the first of the form's CommandButtons whose Default or Cancel is True, while it is shown
+    // and enabled. One that is hidden or disabled takes no key.
+    private VBCommandButton? ButtonFor(PropertyDefinition<bool> property) =>
+        View.Form.Components.FirstOrDefault(component => ReferenceEquals(component.Class, VBClasses.CommandButton) && component.Get(property))
+            is { } chosen && View.ControlOf(chosen) is VBCommandButton { IsEffectivelyEnabled: true, IsEffectivelyVisible: true } button
+            ? button
+            : null;
 
     private void OnKeyUp(object? sender, KeyEventArgs e)
     {
