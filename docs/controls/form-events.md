@@ -19,9 +19,12 @@ Once its window has been shown, the root raises Resize for a change of size whet
 
 |Situation|Raised|
 |---|---|
-|Another of the program's form windows becomes active|Deactivate on the one that was active, then Activate on the new one.|
+|The window is shown for the first time|Activate, then GotFocus on the first control of the tab order that can take the focus.|
+|Another of the program's form windows becomes active|On the form that was active, LostFocus on its focused control, then Deactivate; then, on the new one, Activate, then GotFocus on its control.|
 |Another application takes the activation and gives it back|Nothing.|
 |A window whose root is disabled is shown|No Activate: it is shown without being activated.|
+
+Each form keeps the control that last had the focus on it: that control takes the focus again, with a GotFocus, when the form is activated again. A form with no control that can take the focus raises its own GotFocus after its Activate, and its own LostFocus before its Deactivate. That LostFocus was not measured with VB6: its place before the Deactivate is RDForms' own.
 
 ## Unloading
 
@@ -43,9 +46,7 @@ A press on none of the form's controls is the root's.
 - It raises MouseDown, MouseMove and MouseUp. `X` and `Y` are in the root's scale: its `ScaleMode`, from its `ScaleLeft` and `ScaleTop`.
 - Click comes after MouseUp, for the right and middle buttons too, where the release is over the form again, wherever the press was.
 - A release over a control, or outside the window, raises the root's MouseUp and no Click.
-
-> [!NOTE]
-> **Not implemented.** The root's DblClick: a double click on the form is two clicks.
+- A double click's second press raises DblClick in place of its MouseDown, and its release raises MouseUp and no Click.
 
 ## Keyboard
 
@@ -74,13 +75,29 @@ The TextBox, CommandButton, CheckBox, OptionButton, ListBox and ComboBox raise t
 |An arrow on a CommandButton, a CheckBox or an OptionButton|No key event, not even the root's: the focus moves. The control that takes the focus raises its KeyUp alone, except a CommandButton, a CheckBox or an OptionButton, which raises none.|
 |An arrow in a ListBox or a ComboBox|KeyDown, the Click of the selection, then KeyUp.|
 |A character in a ListBox or a ComboBox|KeyDown, KeyPress, the Click of the selection or the Change of the text, then KeyUp.|
+|Enter or Esc that no button takes|KeyDown, KeyPress 13 or 27, then KeyUp. Enter on a CheckBox or an OptionButton changes no `Value`.|
+|Ctrl+Enter|KeyDown, KeyPress 10, then KeyUp. No button takes it.|
 
 A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothing, and another code is taken in place of the character.
+
+## Enter and Esc
+
+A CommandButton whose `Default` is True is the form's default button, and one whose `Cancel` is True its cancel button. Enter clicks the default button and Esc the cancel button from any control of the form, except that a focused CommandButton takes Enter itself and a ComboBox's open list keeps both keys.
+
+|Key|Raised|
+|---|---|
+|Enter, with a default button|The default button's Click, and no key event anywhere, the root's included under `KeyPreview`. A handler cannot keep the key from the button.|
+|Esc, with a cancel button|The cancel button's Click, and no key event anywhere.|
+|Enter on a focused CommandButton|Its own Click, and no key event, whether or not the form has a default button.|
+|Enter or Esc in a ComboBox's open list|KeyDown and KeyPress on the combo, and the list closes. No button is clicked. The KeyUp is raised only where the form has no default button, for Enter, or no cancel button, for Esc.|
+|Enter or Esc on a form with no controls|The root's KeyDown, KeyPress 13 or 27, and KeyUp.|
+
+Where more than one CommandButton has `Default` or `Cancel` True, the first the form holds takes the key. A default or cancel button that is hidden or disabled takes no key: Enter and Esc go to the focused control as other keys do. Neither case was measured with VB6: these two rules are RDForms' own.
 
 What a character typed in a ListBox selects is on the [Lists](lists.md) page.
 
 > [!NOTE]
-> **Not implemented.** The root's GotFocus and LostFocus. Enter and Esc raise no key events, and a CommandButton has no `Default` or `Cancel`. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
+> **Not implemented.** A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

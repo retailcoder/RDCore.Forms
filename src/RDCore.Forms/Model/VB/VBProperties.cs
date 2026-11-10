@@ -375,6 +375,17 @@ public static class VBProperties
     public static readonly PropertyDefinition<bool> TabStop = new("TabStop", PropertyCategory.Behavior, true);
 
     /// <summary>
+    /// Whether Enter clicks the CommandButton from any control of its form but another CommandButton or a combo's open list: the form's default
+    /// button.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> Default = new("Default", PropertyCategory.Misc);
+
+    /// <summary>
+    /// Whether Esc clicks the CommandButton from any control of its form but a combo's open list: the form's cancel button.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> Cancel = new("Cancel", PropertyCategory.Misc);
+
+    /// <summary>
     /// Whether a form receives keyboard events before the control that has the focus.
     /// </summary>
     public static readonly PropertyDefinition<bool> KeyPreview = new("KeyPreview", PropertyCategory.Behavior);

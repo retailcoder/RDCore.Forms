@@ -1,6 +1,6 @@
 # Lists
 
-ListBox and ComboBox. Their items are the component's `List`, with an `ItemData` value and an `ItemIcon` picture for each item. The behaviour below was measured with VB6, except for item icons, which VB6 does not have.
+ListBox and ComboBox. Their items are the component's `List`, with an `ItemData` value and an `ItemIcon` picture for each item. The behaviour below was measured with VB6, except for item icons and a combo's completion, which VB6 does not have.
 
 ## Items
 
@@ -58,15 +58,29 @@ Every key such a list takes raises Click, whether or not anything changed.
 |Style|Behaviour|
 |---|---|
 |Dropdown Combo|The component's `Text` is the edit box's. Typing sets it; `Text` from code selects no item; choosing an item puts its text in the box. The edit box shows text only, with no icon.|
-|Dropdown List|No edit box. `Text` is the selected item's. `SetText` selects the first item whose whole text it is, without regard to case, and raises Click; it throws 383 where no item has that text. The box draws the selected item's icon.|
+|Dropdown List|No edit box. `Text` is the selected item's. `SetText` selects the first item whose whole text it is, without regard to case, and raises Click; it throws 383 where no item has that text. The box draws the selected item's icon. Characters typed select an item: see [Completion](#completion).|
 
 |Event|Raised|
 |---|---|
-|Click|For every pick of an item by the mouse, the one already selected too; for every arrow key that moves the selection, the list open or closed; for a Dropdown List's letter key; and for `ListIndex` from code when it moves.|
+|Click|For every pick of an item by the mouse, the one already selected too; for every arrow key that moves the selection, the list open or closed; for a Dropdown List's character that selects another item; for Enter on a Dropdown Combo's highlighted item; and for `ListIndex` from code when it moves.|
 |Change|From the edit box's text, by typing or by code, and never from choosing an item.|
 |DropDown|As the list opens.|
 |GotFocus, LostFocus|Once as the combo is entered and left, whether the combo or its edit box has the focus.|
 |KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list. The form raises its own for them only where its `KeyPreview` is True. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
+
+### Completion
+
+**RD-VBA addition.** Typing in a combo completes an item's text as RD-VBA's code completion completes a name. What is typed matches an item, without regard to case:
+
+- by its start: `mu` matches `MultiPlayer`;
+- or by its humps, each part of what is typed starting the next one, from the first hump: `MP` and `MuPl` match `MultiPlayer`, `Pl` does not. A hump starts at the first letter, at a capital after a lowercase letter or a digit, at the last capital of a run that a lowercase letter follows (`IOError` is `IO`, `Error`), at a run of digits (`Win32Api` is `Win`, `32`, `Api`), and after an underscore.
+
+An item matched by its start is a better match than one matched by its humps; between two equal matches, the first in the list is better.
+
+|Style|Typing|
+|---|---|
+|Dropdown Combo|Opens the list on the items the text matches, best first, and highlights the best. Up and Down move the highlight; Enter chooses the highlighted item, as a click does, and raises Click. Until then the text stays what was typed, and no item is selected. Where no item matches, the list closes.|
+|Dropdown List|The characters typed add up into a word, which selects its best match and raises Click. A character that no item matches with the word starts a new word, which selects the next item it matches after the selected one, as a ListBox's character does. The word starts again after any other change of the selection.|
 
 > [!NOTE]
 > **Not implemented.** A `Style` of Simple Combo is shown as a Dropdown Combo, and `Locked` is not applied.

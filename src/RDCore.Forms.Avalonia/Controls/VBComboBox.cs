@@ -10,6 +10,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Threading;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 using P = RDCore.Forms.Model.VB.VBProperties;
@@ -27,8 +28,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </para>
 /// <para>
 /// Its events, as measured with VB6: Click is a choice, raised for every pick of an item by the mouse (the one already selected too),
-/// every arrow key that moves the selection with the list open or closed, a Dropdown List's letter key, and code's
-/// <see cref="ListIndex"/> when it moves. Change is the edit box's, raised from the component's <c>Text</c>, from typing and from
+/// every arrow key that moves the selection with the list open or closed, a Dropdown List's character that selects another item,
+/// and code's <see cref="ListIndex"/> when it moves. Change is the edit box's, raised from the component's <c>Text</c>, from typing and from
 /// code, never from choosing an item. DropDown is raised as the list opens. It raises GotFocus and LostFocus once as the combo is
 /// entered and left, whether the combo or its edit box has the focus. KeyDown, KeyPress and KeyUp are raised for the keys of the combo,
 /// of its edit box and of its open list, and the form raises none of its own for them where its <c>KeyPreview</c> is False. A key's
@@ -42,6 +43,15 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// An item's icon, its <c>ItemIcon</c>, is drawn before its text in the list, scaled to fit a square as tall as the text. Where any
 /// item has one, every item's text starts after that square, so that the text lines up. A Dropdown List draws its selected item's icon
 /// in its box too; a Dropdown Combo's edit box shows text only. A metafile icon is not drawn. Item icons are an RD-VBA addition.
+/// </para>
+/// <para>
+/// Typing completes an item's text as RD-VBA's code completion completes a name (an RD-VBA addition): an item whose text starts with
+/// what is typed matches first, then one whose humps it matches (<c>MP</c> matches <c>MultiPlayer</c>), without regard to case. A
+/// Dropdown List adds up the characters typed into a word while an item matches it, and selects the best match; a character that no item matches with the
+/// word starts a new one, which selects the next item it matches after the selected one. A Dropdown Combo's typing opens its list and
+/// shows only the items its text matches, best first and highlighted: Up and Down move the highlight, and Enter chooses the
+/// highlighted item, as a click on an item does. The text stays what was typed until an item is chosen, and the list closes where no
+/// item matches.
 /// </para>
 /// <para>
 /// A <c>Style</c> of Simple Combo is shown as a Dropdown Combo, and <c>Locked</c> is not applied.
@@ -60,6 +70,14 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     // Set while the box takes the selected item's text, or the component's.
     private bool textFromSelection;
     private bool textFromComponent;
+    private bool textFromTyping;
+    // A Dropdown List's typing: the word its characters add up, and set while it selects an item.
+    private string word = "";
+    private bool searching;
+    // A Dropdown Combo's typing: the items its text matches, best first, while they narrow its open list, and the highlighted one's place.
+    private List<int>? narrowed;
+    private int highlighted;
+    private CompletionPanel? panel;
     private bool writingList;
     private TextBox? editBox;
     private readonly ItemIcons icons = new();
@@ -88,7 +106,10 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         Padding = new Thickness(2, 0);
         VerticalContentAlignment = VerticalAlignment.Center;
         if (IsEditable)
+        {
             TextSearch.SetTextBinding(this, noItemMatches);
+            ItemsPanel = new FuncTemplate<Panel?>(() => panel = new CompletionPanel(this));
+        }
         // On the way down, so that the edit box does not take them first.
         AddHandler(KeyDownEvent, TakeKey, RoutingStrategies.Tunnel);
         ComponentBinding.Bind(this, instance!, VBClasses.ComboBox, Apply);
@@ -257,7 +278,8 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     /// <inheritdoc/>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (change.Property == SelectedItemProperty && IsEditable && !textFromSelection)
+        // Typing clears the selection, and the box keeps what was typed: the Change is the text's.
+        if (change.Property == SelectedItemProperty && IsEditable && !textFromSelection && !textFromTyping)
         {
             // The selected item's own text goes in the box, so the guard is off while Avalonia reads it.
             var chosen = SelectedIndex;
@@ -280,13 +302,37 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
             }
             return;
         }
-        base.OnPropertyChanged(change);
         if (change.Property == TextProperty && IsEditable && !textFromSelection && !textFromComponent)
+        {
+            textFromTyping = true;
+            try
+            {
+                base.OnPropertyChanged(change);
+            }
+            finally
+            {
+                textFromTyping = false;
+            }
             instance.Set(P.Text, base.Text ?? "");
-        else if (change.Property == IsDropDownOpenProperty && change.GetNewValue<bool>())
-            VBControl.Raise(this, VBEvents.DropDown);
-        if (change.Property == SelectedIndexProperty && icons.Any)
-            ShowSelectedIcon();
+            if (editBox?.IsKeyboardFocusWithin == true)
+                Narrow(base.Text ?? "");
+            return;
+        }
+        base.OnPropertyChanged(change);
+        if (change.Property == IsDropDownOpenProperty)
+        {
+            if (change.GetNewValue<bool>())
+                VBControl.Raise(this, VBEvents.DropDown);
+            else
+                EndNarrowing();
+        }
+        else if (change.Property == SelectedIndexProperty)
+        {
+            if (!searching)
+                word = "";
+            if (icons.Any)
+                ShowSelectedIcon();
+        }
     }
 
     /// <inheritdoc/>
@@ -294,6 +340,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     {
         base.PrepareContainerForItemOverride(container, item, index);
         icons.Show(container, item, index);
+        ShowNarrowing(container, index);
     }
 
     // A Dropdown List's box shows the selected item's icon. A new template each time, so that the box is drawn again: two items of the
@@ -317,11 +364,142 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     /// <inheritdoc/>
     protected override void OnTextInput(TextInputEventArgs e)
     {
-        var before = SelectedIndex;
-        base.OnTextInput(e);
-        // A Dropdown List takes a letter as a pick of the first item starting with it.
-        if (style == ComboBoxStyle.DropdownList && SelectedIndex != before)
-            Picked();
+        // A Dropdown List completes the word its characters add up; Avalonia's own search would match them as a prefix only.
+        if (style != ComboBoxStyle.DropdownList)
+        {
+            base.OnTextInput(e);
+            return;
+        }
+        if (e.Handled || string.IsNullOrEmpty(e.Text) || ItemCount == 0)
+            return;
+        e.Handled = true;
+        foreach (var character in e.Text)
+            Search(character);
+    }
+
+    // The word grown by the character selects its best match. Where no item matches the grown word, the character starts a new one, which
+    // selects the next item it matches after the selected one, as a ListBox's character does; where none matches the character either,
+    // the word is forgotten and the selection stays.
+    private void Search(char character)
+    {
+        var matches = word.Length > 0 ? ItemCompletion.Matches(Items, word + character) : [];
+        int index;
+        if (matches.Count > 0)
+        {
+            word += character;
+            index = matches[0];
+        }
+        else
+        {
+            word = character.ToString();
+            matches = ItemCompletion.Matches(Items, word);
+            if (matches.Count == 0)
+            {
+                word = "";
+                return;
+            }
+            index = matches[(matches.IndexOf(SelectedIndex) + 1) % matches.Count];
+        }
+        if (index == SelectedIndex)
+            return;
+        searching = true;
+        try
+        {
+            SelectedIndex = index;
+        }
+        finally
+        {
+            searching = false;
+        }
+        if (IsDropDownOpen)
+            ContainerFromIndex(index)?.Focus(NavigationMethod.Directional);
+        Picked();
+    }
+
+    // A Dropdown Combo's typed text narrows its list to the items it matches, opening it. Where none matches, the list closes once the
+    // box has taken the key, so that the closing does not select the text of the box.
+    private void Narrow(string text)
+    {
+        var matches = ItemCompletion.Matches(Items, text);
+        if (matches.Count == 0)
+        {
+            if (narrowed is not null)
+                Dispatcher.UIThread.Post(CloseUnmatched);
+            return;
+        }
+        narrowed = matches;
+        highlighted = 0;
+        if (!IsDropDownOpen)
+            SetCurrentValue(IsDropDownOpenProperty, true);
+        ShowNarrowing();
+    }
+
+    private void CloseUnmatched()
+    {
+        if (narrowed is null || !IsDropDownOpen || ItemCompletion.Matches(Items, base.Text ?? "").Count > 0)
+            return;
+        var (start, end) = editBox is { } box ? (box.SelectionStart, box.SelectionEnd) : (0, 0);
+        SetCurrentValue(IsDropDownOpenProperty, false);
+        if (editBox is { } closed)
+        {
+            closed.SelectionStart = start;
+            closed.SelectionEnd = end;
+        }
+    }
+
+    private void EndNarrowing()
+    {
+        if (narrowed is null)
+            return;
+        narrowed = null;
+        ShowNarrowing();
+    }
+
+    private void ShowNarrowing()
+    {
+        foreach (var container in GetRealizedContainers())
+            ShowNarrowing(container, IndexFromContainer(container));
+        panel?.InvalidateArrange();
+        if (narrowed is { } matches && ContainerFromIndex(matches[highlighted]) is { } best)
+            best.BringIntoView();
+    }
+
+    // An item the text does not match is hidden; the highlighted match is drawn in the highlight's colours.
+    private void ShowNarrowing(Control container, int index)
+    {
+        if (narrowed is null || narrowed.Contains(index))
+            container.ClearValue(IsVisibleProperty);
+        else
+            container.IsVisible = false;
+        if (container is not TemplatedControl item)
+            return;
+        if (narrowed is { } matches && matches[highlighted] == index)
+        {
+            item.Background = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.Highlight));
+            item.Foreground = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.HighlightText));
+        }
+        else
+        {
+            item.ClearValue(BackgroundProperty);
+            item.ClearValue(ForegroundProperty);
+        }
+    }
+
+    // Where an item goes in the open list: a narrowed list's matches first, best first, then the items in their order.
+    internal int RankOf(Control container)
+    {
+        var index = IndexFromContainer(container);
+        if (narrowed is not { } matches)
+            return index;
+        var rank = matches.IndexOf(index);
+        return rank >= 0 ? rank : matches.Count + index;
+    }
+
+    private void Choose(int index)
+    {
+        SetCurrentValue(IsDropDownOpenProperty, false);
+        SelectedIndex = index;
+        Picked();
     }
 
     // Up and Down move the selection at once, list open or closed, and raise Click when they move it; Enter in the open list only
@@ -331,6 +509,21 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     {
         if (e.KeyModifiers.HasFlag(KeyModifiers.Alt) || ItemCount == 0)
             return;
+        // A narrowed list's keys move its highlight and choose, and leave the text as typed until then.
+        if (narrowed is { } matches && IsDropDownOpen)
+        {
+            if (e.Key == Key.Enter)
+                Choose(matches[highlighted]);
+            else if (e.Key is Key.Up or Key.Down)
+            {
+                highlighted = Math.Clamp(highlighted + (e.Key == Key.Down ? 1 : -1), 0, matches.Count - 1);
+                ShowNarrowing();
+            }
+            else
+                return;
+            e.Handled = true;
+            return;
+        }
         if (e.Key == Key.Enter && IsDropDownOpen)
         {
             SetCurrentValue(IsDropDownOpenProperty, false);
@@ -406,5 +599,32 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         {
             writingList = false;
         }
+    }
+}
+
+// A Dropdown Combo's open list: its items one under the other, in the combo's order of them, a narrowed list's matches first.
+internal sealed class CompletionPanel(VBComboBox combo) : Panel
+{
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var (width, height) = (0d, 0d);
+        foreach (var child in Children)
+        {
+            child.Measure(new Size(availableSize.Width, double.PositiveInfinity));
+            width = Math.Max(width, child.DesiredSize.Width);
+            height += child.DesiredSize.Height;
+        }
+        return new Size(width, height);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var top = 0d;
+        foreach (var child in Children.OrderBy(combo.RankOf))
+        {
+            child.Arrange(new Rect(0, top, finalSize.Width, child.DesiredSize.Height));
+            top += child.DesiredSize.Height;
+        }
+        return finalSize;
     }
 }

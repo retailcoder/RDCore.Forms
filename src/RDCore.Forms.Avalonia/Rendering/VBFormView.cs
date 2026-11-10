@@ -42,7 +42,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// </para>
 /// <para>
 /// A press on no control is the root's: it raises MouseDown, MouseMove and MouseUp with <c>X</c> and <c>Y</c> in the root's scale, and
-/// Click after MouseUp, for every button, where the release is over the root again and over none of its controls.
+/// Click after MouseUp, for every button, where the release is over the root again and over none of its controls. A double click's
+/// second press raises DblClick in place of its MouseDown, and its release raises MouseUp and no Click.
 /// </para>
 /// </remarks>
 public sealed class VBFormView : Canvas
@@ -52,7 +53,7 @@ public sealed class VBFormView : Canvas
 
     static VBFormView()
     {
-        ControlEvents.AttachMouse<VBFormView>(inScale: true);
+        ControlEvents.AttachMouse<VBFormView>(DblClick.InPlaceOfMouseDown, inScale: true);
         ControlEvents.AttachClick<VBFormView>(ClickRelease.OverTheControl);
     }
 
@@ -181,6 +182,9 @@ public sealed class VBFormView : Canvas
         return null;
     }
 
-    private static bool CanTakeTheFocus(Control control) =>
+    // The first control of the tab order that Tab could give the focus to, or none.
+    internal Control? FirstToTakeTheFocus() => TabOrderOf().Select(c => controls[c]).FirstOrDefault(CanTakeTheFocus);
+
+    internal static bool CanTakeTheFocus(Control control) =>
         control is { Focusable: true, IsEffectivelyEnabled: true, IsEffectivelyVisible: true } && KeyboardNavigation.GetIsTabStop(control);
 }
