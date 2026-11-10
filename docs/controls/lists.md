@@ -66,7 +66,7 @@ Every key such a list takes raises Click, whether or not anything changed.
 |Change|From the edit box's text, by typing or by code, and never from choosing an item.|
 |DropDown|As the list opens.|
 |GotFocus, LostFocus|Once as the combo is entered and left, whether the combo or its edit box has the focus.|
-|KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list, and never for the form as well where its `KeyPreview` is False. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
+|KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list. The form raises its own for them only where its `KeyPreview` is True. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
 
 > [!NOTE]
 > **Not implemented.** A `Style` of Simple Combo is shown as a Dropdown Combo, and `Locked` is not applied.

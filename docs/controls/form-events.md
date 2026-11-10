@@ -69,13 +69,13 @@ The TextBox, CommandButton, CheckBox, OptionButton, ListBox and ComboBox raise t
 |---|---|
 |Space on a CommandButton or a CheckBox|KeyDown, KeyPress 32 and KeyUp, then Click.|
 |Space on the selected OptionButton|KeyDown, KeyPress 32 and KeyUp, and no Click.|
-|An arrow on a CommandButton, a CheckBox or an OptionButton|No key event, the root's included: the focus moves. A CommandButton, CheckBox or OptionButton that takes it raises no KeyUp; another control raises its KeyUp alone.|
+|An arrow on a CommandButton, a CheckBox or an OptionButton|No key event, not even the root's: the focus moves. The control that takes the focus raises its KeyUp alone, except a CommandButton, a CheckBox or an OptionButton, which raises none.|
 |An arrow in a ListBox or a ComboBox|KeyDown, the Click of the selection, then KeyUp.|
 |A character in a ListBox or a ComboBox|KeyDown, KeyPress, the Click of the selection or the Change of the text, then KeyUp.|
 
 A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothing, and another code is taken in place of the character.
 
-A character typed in a ListBox whose `MultiSelect` is None selects the next item that starts with it, after the selected one and from the top again past the last, without regard to case.
+What a character typed in a ListBox selects is on the [Lists](lists.md) page.
 
 > [!NOTE]
 > **Not implemented.** The root's GotFocus and LostFocus. Enter and Esc raise no key events, and a CommandButton has no `Default` or `Cancel`. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
