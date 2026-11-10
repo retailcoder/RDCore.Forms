@@ -61,8 +61,24 @@ With `KeyPreview` True, the root's handlers decide what the control raises:
 
 The root's KeyPress follows the TextBox's rules: a character outside ASCII raises none, Backspace is 8 and Ctrl+A is 1.
 
+## A control's key events
+
+The TextBox, CommandButton, CheckBox, OptionButton, ListBox and ComboBox raise their own KeyDown, KeyPress and KeyUp, in the order measured with VB6: KeyDown, KeyPress for a key that types a character, then what the key does, then KeyUp. With `KeyPreview` True, each of the root's events comes just before the control's.
+
+|Key|Raised|
+|---|---|
+|Space on a CommandButton or a CheckBox|KeyDown, KeyPress 32 and KeyUp, then Click.|
+|Space on the selected OptionButton|KeyDown, KeyPress 32 and KeyUp, and no Click.|
+|An arrow on a CommandButton, a CheckBox or an OptionButton|No key event, not even the root's: the focus moves. The control that takes the focus raises its KeyUp alone, except a CommandButton, a CheckBox or an OptionButton, which raises none.|
+|An arrow in a ListBox or a ComboBox|KeyDown, the Click of the selection, then KeyUp.|
+|A character in a ListBox or a ComboBox|KeyDown, KeyPress, the Click of the selection or the Change of the text, then KeyUp.|
+
+A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothing, and another code is taken in place of the character.
+
+What a character typed in a ListBox selects is on the [Lists](lists.md) page.
+
 > [!NOTE]
-> **Not implemented.** The root's GotFocus and LostFocus. A TextBox is the only control that raises its own key events; with `KeyPreview` True, a key on another control raises the root's events alone.
+> **Not implemented.** The root's GotFocus and LostFocus. Enter and Esc raise no key events, and a CommandButton has no `Default` or `Cancel`. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

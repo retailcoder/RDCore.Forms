@@ -30,7 +30,9 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// every arrow key that moves the selection with the list open or closed, a Dropdown List's letter key, and code's
 /// <see cref="ListIndex"/> when it moves. Change is the edit box's, raised from the component's <c>Text</c>, from typing and from
 /// code, never from choosing an item. DropDown is raised as the list opens. It raises GotFocus and LostFocus once as the combo is
-/// entered and left, whether the combo or its edit box has the focus.
+/// entered and left, whether the combo or its edit box has the focus. KeyDown, KeyPress and KeyUp are raised for the keys of the combo,
+/// of its edit box and of its open list, and the form raises none of its own for them where its <c>KeyPreview</c> is False. A key's
+/// Click, Change or DropDown comes after its KeyDown, and its KeyPress where it types a character, and before its KeyUp.
 /// </para>
 /// <para>
 /// <see cref="AddItem"/>, <see cref="RemoveItem"/> and <see cref="Clear"/> keep the component's <c>ItemData</c> and <c>ItemIcon</c>
@@ -45,7 +47,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// A <c>Style</c> of Simple Combo is shown as a Dropdown Combo, and <c>Locked</c> is not applied.
 /// </para>
 /// </remarks>
-public sealed class VBComboBox : ComboBox
+public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
 {
     // Avalonia's editable combo selects the first item its Text matches, without regard to case, whether code or typing put the Text
     // there; VB's selects none. So every item reads as this, which no Text can be, and none matches; but not while Avalonia puts the
@@ -64,6 +66,7 @@ public sealed class VBComboBox : ComboBox
 
     static VBComboBox()
     {
+        ControlKeys.Attach<VBComboBox>();
         ControlEvents.AttachFocus<VBComboBox>();
     }
 

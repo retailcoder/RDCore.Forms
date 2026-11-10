@@ -20,18 +20,20 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// way it changed, and only when it changed.
 /// </para>
 /// <para>
-/// It raises GotFocus, LostFocus, MouseDown, MouseMove and MouseUp, Click before MouseUp. An arrow key moves the focus to the previous
-/// or next control in its container, and changes no Value. The whole rectangle takes the pointer, as a VB CheckBox's window does,
-/// whatever part of it the theme draws.
+/// It raises GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp, Click before MouseUp. Space raises
+/// KeyDown, KeyPress and KeyUp, then Click. An arrow key moves the focus to the previous or next control in its container, changes no
+/// Value, and raises no key event. The whole rectangle takes the pointer, as a VB CheckBox's window does, whatever part of it the theme
+/// draws.
 /// </para>
 /// </remarks>
-public sealed class VBCheckBox : CheckBox, ICustomHitTest
+public sealed class VBCheckBox : CheckBox, ICustomHitTest, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
     private bool showing;
 
     static VBCheckBox()
     {
+        ControlKeys.Attach<VBCheckBox>(arrowsMoveTheFocus: true);
         ControlEvents.AttachMouse<VBCheckBox>();
         ControlEvents.AttachFocus<VBCheckBox>();
         ArrowNavigation.Attach<VBCheckBox>();
