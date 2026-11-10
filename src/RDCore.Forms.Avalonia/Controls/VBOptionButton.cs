@@ -24,12 +24,13 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <para>
 /// A button that takes the focus by the keyboard or from code is selected before its GotFocus, and its Click comes after the GotFocus.
 /// A group is one tab stop: its selected button, or each of them where none is selected. An arrow key moves the focus to the previous
-/// or next control in the container, which selects a button it lands on. It raises GotFocus, LostFocus, MouseDown, MouseMove and
-/// MouseUp; a double click's second press raises MouseDown, then DblClick. The whole rectangle takes the pointer, as a VB
-/// OptionButton's window does, whatever part of it the theme draws.
+/// or next control in the container, which selects a button it lands on, and raises no key event. It raises GotFocus, LostFocus,
+/// KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp. Space on the selected button raises its key events and no Click. A double
+/// click's second press raises MouseDown, then DblClick. The whole rectangle takes the pointer, as a VB OptionButton's window does,
+/// whatever part of it the theme draws.
 /// </para>
 /// </remarks>
-public sealed class VBOptionButton : RadioButton, ICustomHitTest
+public sealed class VBOptionButton : RadioButton, ICustomHitTest, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
     private bool showing;
@@ -41,6 +42,7 @@ public sealed class VBOptionButton : RadioButton, ICustomHitTest
 
     static VBOptionButton()
     {
+        ControlKeys.Attach<VBOptionButton>(arrowsMoveTheFocus: true);
         ControlEvents.AttachMouse<VBOptionButton>(DblClick.AfterMouseDown);
         // Before the GotFocus raised: the focus by the keyboard or from code selects the button. A press selects it on its own path.
         GotFocusEvent.AddClassHandler<VBOptionButton>((option, e) =>

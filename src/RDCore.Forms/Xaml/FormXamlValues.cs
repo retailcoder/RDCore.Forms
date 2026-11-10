@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
 
 namespace RDCore.Forms.Xaml;
@@ -18,6 +19,7 @@ internal static class FormXamlValues
             : Convert.ToInt64(member, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture),
         FormColor color => Format(color),
         byte[] bytes => Convert.ToBase64String(bytes),
+        MenuShortcut shortcut => shortcut.ToString(),
         _ => null,
     };
 
@@ -48,6 +50,9 @@ internal static class FormXamlValues
             value = ParseColor(text);
         else if (type == typeof(byte[]))
             value = ParsePicture(text);
+        // A shortcut as VB writes it, as ^O or +{F2}.
+        else if ((type == typeof(MenuShortcut?) || type == typeof(MenuShortcut)) && MenuShortcut.TryParse(text.Trim(), out var shortcut))
+            value = shortcut;
         return value is not null;
     }
 

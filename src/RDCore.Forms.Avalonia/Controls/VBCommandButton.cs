@@ -12,13 +12,15 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// A VB CommandButton: a <see cref="Button"/> that shows a <see cref="VBClasses.CommandButton"/> component.
 /// </summary>
 /// <remarks>
-/// It raises Click, GotFocus, LostFocus, MouseDown, MouseMove and MouseUp. Click comes before MouseUp, as in VB. An arrow key moves
-/// the focus to the previous or next control in its container. Its <c>Picture</c> is not drawn.
+/// It raises Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp. Click comes before MouseUp, as in
+/// VB, and Space raises KeyDown, KeyPress and KeyUp, then Click. An arrow key moves the focus to the previous or next control in its
+/// container, and raises no key event. Its <c>Picture</c> is not drawn.
 /// </remarks>
-public sealed class VBCommandButton : Button
+public sealed class VBCommandButton : Button, IRaisesKeyEvents
 {
     static VBCommandButton()
     {
+        ControlKeys.Attach<VBCommandButton>(arrowsMoveTheFocus: true);
         ControlEvents.AttachFocus<VBCommandButton>();
         ArrowNavigation.Attach<VBCommandButton>();
         // Avalonia's Button raises Click in its own release handler, registered first, so MouseUp follows it.

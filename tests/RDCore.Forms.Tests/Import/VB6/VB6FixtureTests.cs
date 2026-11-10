@@ -1,4 +1,5 @@
 ﻿using RDCore.Forms.Import.VB6;
+using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 
@@ -98,8 +99,14 @@ public sealed class VB6FixtureTests
     {
         Assert.Contains(new UnmodelledProperty("Default", "-1  'True"), Component("cmdOK").UnmodelledProperties);
         Assert.Contains(new UnmodelledProperty("MultiLine", "-1  'True"), Component("txtNotes").UnmodelledProperties);
-        Assert.Contains(new UnmodelledProperty("Shortcut", "^O"), Component("mnuFileOpen").UnmodelledProperties);
         Assert.Contains(new UnmodelledProperty("LinkTopic", "\"Intrinsics\""), Intrinsics.Root.UnmodelledProperties);
+    }
+
+    [TestMethod]
+    public void AMenusShortcut_IsReadAsItsKeyAndModifiers()
+    {
+        Assert.AreEqual(new MenuShortcut(79, ShortcutModifiers.Ctrl), Component("mnuFileOpen").Get(VBProperties.Shortcut));
+        Assert.IsEmpty(Component("mnuFileOpen").UnmodelledProperties);
     }
 
     [TestMethod]
