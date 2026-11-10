@@ -45,9 +45,9 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// in its box too; a Dropdown Combo's edit box shows text only. A metafile icon is not drawn. Item icons are an RD-VBA addition.
 /// </para>
 /// <para>
-/// Typing completes as RD-VBA's code completion does, an RD-VBA addition: an item whose text starts with what is typed matches
-/// first, then one whose humps it matches (<c>MP</c> matches <c>MultiPlayer</c>), without regard to case. A Dropdown List adds the
-/// characters typed up into a word while an item matches it, and selects the best match; a character that no item matches with the
+/// Typing completes an item's text as RD-VBA's code completion completes a name (an RD-VBA addition): an item whose text starts with
+/// what is typed matches first, then one whose humps it matches (<c>MP</c> matches <c>MultiPlayer</c>), without regard to case. A
+/// Dropdown List adds up the characters typed into a word while an item matches it, and selects the best match; a character that no item matches with the
 /// word starts a new one, which selects the next item it matches after the selected one. A Dropdown Combo's typing opens its list and
 /// shows only the items its text matches, best first and highlighted: Up and Down move the highlight, and Enter chooses the
 /// highlighted item, as a click on an item does. The text stays what was typed until an item is chosen, and the list closes where no
