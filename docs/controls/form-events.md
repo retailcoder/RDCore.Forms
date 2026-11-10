@@ -61,5 +61,21 @@ With `KeyPreview` True, the root's handlers decide what the control raises:
 
 The root's KeyPress follows the TextBox's rules: a character outside ASCII raises none, Backspace is 8 and Ctrl+A is 1.
 
+## A control's key events
+
+The TextBox, CommandButton, CheckBox, OptionButton, ListBox and ComboBox raise their own KeyDown, KeyPress and KeyUp, in the order measured with VB6: KeyDown, KeyPress for a key that types a character, then what the key does, then KeyUp. With `KeyPreview` True, each of the root's events comes just before the control's.
+
+|Key|Raised|
+|---|---|
+|Space on a CommandButton or a CheckBox|KeyDown, KeyPress 32 and KeyUp, then Click.|
+|Space on the selected OptionButton|KeyDown, KeyPress 32 and KeyUp, and no Click.|
+|An arrow on a CommandButton, a CheckBox or an OptionButton|No key event, the root's included: the focus moves. A CommandButton, CheckBox or OptionButton that takes it raises no KeyUp; another control raises its KeyUp alone.|
+|An arrow in a ListBox or a ComboBox|KeyDown, the Click of the selection, then KeyUp.|
+|A character in a ListBox or a ComboBox|KeyDown, KeyPress, the Click of the selection or the Change of the text, then KeyUp.|
+
+A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothing, and another code is taken in place of the character.
+
+A character typed in a ListBox whose `MultiSelect` is None selects the next item that starts with it, after the selected one and from the top again past the last, without regard to case.
+
 > [!NOTE]
-> **Not implemented.** The root's GotFocus and LostFocus. A TextBox is the only control that raises its own key events; with `KeyPreview` True, a key on another control raises the root's events alone.
+> **Not implemented.** The root's GotFocus and LostFocus. Enter and Esc raise no key events, and a CommandButton has no `Default` or `Cancel`. A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.

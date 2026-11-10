@@ -9,7 +9,8 @@ The behaviour below was measured with VB6.
 [`VBCommandButton`](../api/RDCore.Forms.Avalonia.Controls.VBCommandButton.yml)
 
 - Click comes before MouseUp.
-- An arrow key moves the focus to the previous or next control in its container.
+- An arrow key moves the focus to the previous or next control in its container, and raises no key event.
+- Space raises KeyDown, KeyPress and KeyUp, then Click: see [A control's key events](form-events.md#a-controls-key-events).
 
 > [!NOTE]
 > **Not implemented.** A CommandButton's `Picture` is not drawn.

@@ -34,7 +34,8 @@ list.SetItemIcon(0, File.ReadAllBytes("open.png"));
 |---|---|
 |A left press on an item|Selects it at once; the selection follows the pointer over the items while the button is held. Click is raised at the release, before MouseUp, whether or not the selection changed and wherever the release lands.|
 |A press below the items, a right or middle press|Selects nothing and raises no Click.|
-|A key or code that moves the selection|Raises Click, with `ListIndex` already the new value. Setting it again, a key that can go no further, and a change to the items raise none.|
+|A key or code that moves the selection|Raises Click, with `ListIndex` already the new value. Setting it again, a key that can go no further, and a change to the items raise none. A key's Click comes before its KeyUp: see [A control's key events](form-events.md#a-controls-key-events).|
+|A character typed|Where `MultiSelect` is None, selects the next item that starts with it, after the selected one and from the top again past the last, without regard to case.|
 |`GetSelected`, `SetSelected`|Read and set an item's selection; 381 for an index outside the items. `SetSelected` raises Click when it changes something.|
 |`SelCount`|The number of items selected.|
 |`Text`|The text of the item at `ListIndex`, or "". `SetText` selects the first item whose whole text it is, without regard to case, and raises Click; on a multi-select list it raises Click and changes nothing.|
@@ -65,6 +66,7 @@ Every key such a list takes raises Click, whether or not anything changed.
 |Change|From the edit box's text, by typing or by code, and never from choosing an item.|
 |DropDown|As the list opens.|
 |GotFocus, LostFocus|Once as the combo is entered and left, whether the combo or its edit box has the focus.|
+|KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list, and never for the form as well where its `KeyPreview` is False. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
 
 > [!NOTE]
 > **Not implemented.** A `Style` of Simple Combo is shown as a Dropdown Combo, and `Locked` is not applied.
