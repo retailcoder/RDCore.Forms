@@ -25,7 +25,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// who resizes the window sets them. The form's menus are on its <see cref="MenuBar"/>, above the client area, and a menu item's shortcut
 /// chooses it before a control or the root sees the key. Enter clicks the focused CommandButton, or else the
 /// form's first CommandButton whose <c>Default</c> is True, and Esc the first whose <c>Cancel</c> is True, with no key event, the root's
-/// included: a button that is hidden or disabled takes no key, and a combo's open list keeps both keys. While it is open, the window is its root's
+/// included: a button that is hidden or disabled takes no key, and a combo's open list keeps both keys. The button Enter clicks has the
+/// default look, and no other (see <see cref="VBCommandButton"/>). While it is open, the window is its root's
 /// <see cref="IMenuHost"/>, registered with <see cref="MenuHosts"/>, and a right release over a component whose <c>ContextMenu</c> names
 /// one of the form's menus pops it up at the pointer, after the component's MouseUp and Click. The window follows the root's <c>Caption</c>, <c>MaxButton</c>,
 /// <c>MinButton</c> and <c>ShowInTaskbar</c>. Its <c>StartUpPosition</c> chooses where it starts: CenterOwner and CenterScreen centre
@@ -403,7 +404,13 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
         MenuHosts.Register(this);
         Root.PropertyChanged -= OnRootChanged;
         Root.PropertyChanged += OnRootChanged;
+        foreach (var component in Controls)
+        {
+            component.PropertyChanged -= OnControlChanged;
+            component.PropertyChanged += OnControlChanged;
+        }
         Apply();
+        ShowTheDefault();
         if (opened)
             return;
         opened = true;
@@ -440,6 +447,8 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     protected override void OnClosed(EventArgs e)
     {
         Root.PropertyChanged -= OnRootChanged;
+        foreach (var component in Controls)
+            component.PropertyChanged -= OnControlChanged;
         MenuHosts.Unregister(this);
         if (ReferenceEquals(active, this))
             active = null;
@@ -466,9 +475,32 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
         RaiseResize();
     }
 
+    // The form's components other than its root.
+    private IEnumerable<ComponentInstance> Controls => View.Form.Components.Where(component => !ReferenceEquals(component, Root));
+
+    // A Default, an Enabled or a Visible can move the default look.
+    private void OnControlChanged(object? sender, ComponentPropertyChangedEventArgs e)
+    {
+        if (e.Property.Name is nameof(P.Default) or nameof(P.Enabled) or nameof(P.Visible))
+            ShowTheDefault();
+    }
+
+    // The button Enter clicks has the default look: the focused CommandButton, or else the form's default button.
+    private void ShowTheDefault()
+    {
+        var wearer = ControlKeys.Owner(FocusManager?.GetFocusedElement()) as VBCommandButton ?? ButtonFor(P.Default);
+        foreach (var component in Controls.Where(component => ReferenceEquals(component.Class, VBClasses.CommandButton)))
+        {
+            if (View.ControlOf(component) is VBCommandButton button)
+                button.ShowAsDefault(ReferenceEquals(button, wearer));
+        }
+    }
+
     private void OnRootChanged(object? sender, ComponentPropertyChangedEventArgs e)
     {
         Apply();
+        if (e.Property.Name is nameof(P.Enabled) or nameof(P.Visible))
+            ShowTheDefault();
         if (following || e.Property.Name is not (nameof(P.Width) or nameof(P.Height)))
             return;
         // A size set from code is the window's again, after the user resized it.
@@ -550,6 +582,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     // LostFocus and GotFocus as it moves.
     void IFormFocus.FocusMoved(Control control, bool got, bool toNone)
     {
+        ShowTheDefault();
         if (got)
         {
             activeControl = control;
