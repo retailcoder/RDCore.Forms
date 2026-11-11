@@ -16,9 +16,10 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Its ends, <c>X1</c>, <c>Y1</c>, <c>X2</c> and <c>Y2</c>, are in its container's scale, as <see cref="DrawingScale.Of"/> gives it:
-/// the form's or a PictureBox's <c>ScaleMode</c>, and twips in a Frame. Each end is held as whole twips, rounded half to even, and
-/// drawn on the pixel nearest them. The line follows its ends and its container's scale as they change.
+/// Its ends, <c>X1</c>, <c>Y1</c>, <c>X2</c> and <c>Y2</c>, are in its container's scale, as
+/// <see cref="DrawingScale.Of(ComponentInstance?)"/> gives it: the form's or a PictureBox's <c>ScaleMode</c>, and twips in a Frame.
+/// Each end is held as whole twips, rounded half to even, and drawn on the pixel nearest them. The line follows its ends and its
+/// container's scale as they change.
 /// </para>
 /// <para>
 /// A line one pixel wide is GDI's: every pixel from the first end up to the second, the second left out, stepping as a midpoint line

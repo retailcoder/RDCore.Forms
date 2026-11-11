@@ -23,30 +23,32 @@ namespace RDCore.Forms.Model.VB;
 public static class VBProperties
 {
     /// <summary>
-    /// A control's left edge in its container, in twips whatever the container's scale; a form's client area's left edge on the
-    /// screen, in twips.
+    /// A control's left edge in its container, in pixels whatever the container's scale; a form's client area's left edge on the
+    /// screen, in pixels. A program's code reads it in its own unit: see <see cref="CodeUnits"/>.
     /// </summary>
     public static readonly PropertyDefinition<double> Left = new("Left", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's top edge in its container, in twips whatever the container's scale; a form's client area's top edge on the
-    /// screen, in twips.
+    /// A control's top edge in its container, in pixels whatever the container's scale; a form's client area's top edge on the
+    /// screen, in pixels. A program's code reads it in its own unit: see <see cref="CodeUnits"/>.
     /// </summary>
     public static readonly PropertyDefinition<double> Top = new("Top", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's width, in twips whatever its container's scale; a form's client area's width, in twips.
+    /// A control's width, in pixels whatever its container's scale; a form's client area's width, in pixels. A program's code reads it
+    /// in its own unit: see <see cref="CodeUnits"/>.
     /// </summary>
     public static readonly PropertyDefinition<double> Width = new("Width", PropertyCategory.Position);
 
     /// <summary>
-    /// A control's height, in twips whatever its container's scale; a form's client area's height, in twips.
+    /// A control's height, in pixels whatever its container's scale; a form's client area's height, in pixels. A program's code reads
+    /// it in its own unit: see <see cref="CodeUnits"/>.
     /// </summary>
     public static readonly PropertyDefinition<double> Height = new("Height", PropertyCategory.Position);
 
     /// <summary>
     /// The unit of a form's or a PictureBox's scale: the unit of its <c>ScaleLeft</c>, <c>ScaleTop</c>, <c>ScaleWidth</c> and
-    /// <c>ScaleHeight</c>, and of the ends of the Lines it holds. Its controls' positions and sizes are in twips whatever its scale.
+    /// <c>ScaleHeight</c>, and of the ends of the Lines it holds. Its controls' positions and sizes are in pixels whatever its scale.
     /// </summary>
     public static readonly PropertyDefinition<ScaleMode> ScaleMode = new("ScaleMode", PropertyCategory.Position, Model.ScaleMode.Twip);
 

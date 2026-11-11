@@ -92,7 +92,7 @@ public sealed class FormXamlTests
     [TestMethod]
     public void AForm_IsWrittenAsTheFormatHasIt()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Caption, "Hello").Set(P.Width, 4800.0)
+        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Caption, "Hello").Set(P.Width, 320.0)
             .Set(P.BackColor, FormColor.FromSystem(SystemColor.ButtonFace)).Set(P.ForeColor, FormColor.FromRgb(0x12, 0x34, 0xAB));
         var form = new FormDefinition(root);
         var button = new ComponentInstance(VBClasses.CommandButton, "Command1").Set(P.Caption, "&OK").Set(P.Font, new FormFont("Tahoma", 9, FormFont.BoldWeight));
@@ -108,7 +108,7 @@ public sealed class FormXamlTests
 
         Assert.AreEqual(
             $"""
-            <Form FormatVersion="1" Name="Form1" Caption="Hello" BackColor="ButtonFace" ForeColor="#1234AB" Width="4800" xmlns="{Ns}">
+            <Form FormatVersion="1" Name="Form1" Caption="Hello" BackColor="ButtonFace" ForeColor="#1234AB" Width="320" xmlns="{Ns}">
               <CommandButton Name="Command1" Caption="&amp;OK">
                 <CommandButton.Font>
                   <Font Name="Tahoma" Size="9" Weight="700" />
@@ -360,21 +360,21 @@ public sealed class FormXamlTests
     {
         var read = FormXaml.Read(
             """
-            <Form FormatVersion="1" Name="Form1" Caption="Orders" Width="4800" Height="3600" xmlns="https://rubberduckvba.ca/schemas/rdforms">
+            <Form FormatVersion="1" Name="Form1" Caption="Orders" Width="320" Height="240" xmlns="https://rubberduckvba.ca/schemas/rdforms">
               <Form.Font>
                 <Font Name="Tahoma" Size="8.25" />
               </Form.Font>
-              <Frame Name="Frame1" Caption="Ship by" Left="120" Top="120" Width="2400" Height="1200">
-                <OptionButton Name="optShip" Index="0" Caption="&amp;Air" Value="True" Left="120" Top="240" Width="1800" Height="300" />
-                <OptionButton Name="optShip" Index="1" Caption="&amp;Sea" Left="120" Top="600" Width="1800" Height="300" />
+              <Frame Name="Frame1" Caption="Ship by" Left="8" Top="8" Width="160" Height="80">
+                <OptionButton Name="optShip" Index="0" Caption="&amp;Air" Value="True" Left="8" Top="16" Width="120" Height="20" />
+                <OptionButton Name="optShip" Index="1" Caption="&amp;Sea" Left="8" Top="40" Width="120" Height="20" />
               </Frame>
-              <ListBox Name="lstItems" Left="2640" Top="120" Width="2000" Height="1200">
+              <ListBox Name="lstItems" Left="176" Top="8" Width="134" Height="80">
                 <ListBox.List>
                   <Item Text="Alpha" ItemData="1" />
                   <Item Text="Beta" ItemData="20" ItemIcon="R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />
                 </ListBox.List>
               </ListBox>
-              <CommandButton Name="cmdOK" Caption="OK" Left="3480" Top="2880" Width="1215" Height="495" />
+              <CommandButton Name="cmdOK" Caption="OK" Left="232" Top="192" Width="81" Height="33" />
             </Form>
             """);
         var form = read.Form!;

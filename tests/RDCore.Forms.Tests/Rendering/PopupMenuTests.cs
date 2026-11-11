@@ -31,7 +31,7 @@ public sealed class PopupMenuTests
     // A form that keeps a hidden top-level menu to pop up: mnuEdit holds Cut, Copy and More, which holds Paste. mnuEmpty holds none.
     private static ComponentInstance Probe()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 4500d).Set(P.Height, 3000d);
+        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d);
         var edit = Menu(root, "mnuEdit", "&Edit").Set(P.Visible, false);
         Menu(edit, "mnuCut", "Cu&t");
         Menu(edit, "mnuCopy", "&Copy");
@@ -260,7 +260,7 @@ public sealed class PopupMenuTests
         var (right, left) = UI.Run(() =>
         {
             var root = Probe().Set(P.ContextMenu, "mnuEmpty");
-            var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Width, 1500d).Set(P.Height, 1500d)
+            var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Width, 100d).Set(P.Height, 100d)
                 .Set(P.ContextMenu, "mnuEdit");
             picture.SetContainer(root);
             var window = Open(root, new RecordingSink());

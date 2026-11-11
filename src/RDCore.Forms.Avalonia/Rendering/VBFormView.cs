@@ -23,9 +23,9 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// on its <see cref="VBFormWindow.MenuBar"/>. A Timer's control is on the form and draws nothing.
 /// </para>
 /// <para>
-/// A control's <c>Left</c>, <c>Top</c>, <c>Width</c> and <c>Height</c> are twips whatever its container's <c>ScaleMode</c>, as a
-/// designer file holds them: a control is placed at 15 twips a pixel. In each container the first control the form holds is on
-/// top, and a windowless control (a Label or an Image) is under every windowed one, whatever their order.
+/// A control's <c>Left</c>, <c>Top</c>, <c>Width</c> and <c>Height</c> are pixels whatever its container's <c>ScaleMode</c>, and
+/// place it as they are. In each container the first control the form holds is on top until a <c>ZOrder</c> call moves one, and a
+/// windowless control (a Label or an Image) is under every windowed one, whatever their order.
 /// </para>
 /// <para>
 /// Tab and Shift+Tab move the focus through one order across the whole form, a control in a Frame or a PictureBox included: by
@@ -180,6 +180,23 @@ public sealed class VBFormView : Canvas
             if (visual is Control control && order.Contains(control))
                 return control;
         return null;
+    }
+
+    // ZOrder: the control goes to the front or the back of its plane in its container, and what it holds goes with it.
+    internal void ZOrder(Control control, bool toFront)
+    {
+        if (control.Parent is not Panel host || VBControl.GetInstance(control) is not { } component)
+            return;
+        var windowless = component.Class.IsWindowless;
+        var plane = host.Children
+            .Where(child => !ReferenceEquals(child, control) && VBControl.GetInstance(child) is { } other
+                            && controls.TryGetValue(other, out var shownAs) && ReferenceEquals(shownAs, child) && other.Class.IsWindowless == windowless)
+            .OrderByDescending(child => child.ZIndex)
+            .ToList();
+        plane.Insert(toFront ? 0 : plane.Count, control);
+        var top = windowless ? WindowlessTop : 0;
+        for (var place = 0; place < plane.Count; place++)
+            plane[place].ZIndex = top - place;
     }
 
     // The first control of the tab order that Tab could give the focus to, or none.
