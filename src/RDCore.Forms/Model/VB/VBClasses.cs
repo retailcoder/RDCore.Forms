@@ -207,7 +207,7 @@ public static class VBClasses
     private static PropertyDefinition[] ScrollBarProperties =>
         [P.CausesValidation, P.Enabled, P.SmallChange, P.MousePointer, P.LargeChange, P.Min, P.ScrollBarValue, P.Max, P.TabStop, P.TabIndex];
 
-    private static EventDefinition[] ScrollBarEvents => [Change, GotFocus, LostFocus];
+    private static EventDefinition[] ScrollBarEvents => [Change, GotFocus, LostFocus, Scroll];
 
     private static PropertyDefinition[] ScaleProperties => [P.ScaleMode, P.ScaleLeft, P.ScaleTop, P.ScaleWidth, P.ScaleHeight];
 

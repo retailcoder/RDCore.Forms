@@ -14,9 +14,6 @@ This repository holds these libraries:
 | **RDCore.Forms** | The form model, with no UI dependency: component classes, their properties and events, the instances of a form, and the readers that import a form into the model. The language server reads and analyses a form with it, without loading Avalonia. |
 | **RDCore.Forms.Avalonia** | The controls and the renderer: the controls of a form, and the window built from the model. |
 
-> [!NOTE]
-> **Not implemented.** RDCore.Forms.Avalonia has no control for a Timer, a scroll bar, a Shape, a Line or a menu: a form's window shows none of them.
-
 ## Project status
 
 RDCore.Forms is in **pre-alpha** development. No package is published.

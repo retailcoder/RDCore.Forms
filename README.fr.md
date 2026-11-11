@@ -14,9 +14,6 @@ Ce référentiel contient ces bibliothèques :
 | **RDCore.Forms** | Le modèle des formulaires, sans dépendance d'interface : les classes de composants, leurs propriétés et leurs événements, les instances d'un formulaire, et les lecteurs qui importent un formulaire dans le modèle. Le serveur de langage lit et analyse un formulaire avec elle, sans charger Avalonia. |
 | **RDCore.Forms.Avalonia** | Les contrôles et le rendu : les contrôles d'un formulaire, et la fenêtre construite à partir du modèle. |
 
-> [!NOTE]
-> **Non implémenté.** RDCore.Forms.Avalonia n'a aucun contrôle pour un Timer, une barre de défilement, un Shape, un Line ou un menu : la fenêtre d'un formulaire n'en affiche aucun.
-
 ## État du projet
 
 RDCore.Forms est en développement **pré-alpha**. Aucun paquet n'est publié.
