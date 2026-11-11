@@ -31,9 +31,9 @@ An argument left out is `null`, and the list ends at the last one given. A `Vari
 |---|---|
 |Unit|The call's unit ([Units](index.md#placement)). In VB6's, a control's values are in its container's scale, and a form's are twips whatever its `ScaleMode`.|
 |Rounding|In VB6's unit, each value is a whole number of twips, rounded half to even.|
-|Checks|Every value is checked before any is set. A negative width or height is error 5, a value past a Long in twips error 6, and Null error 94.|
+|Checks|Every value is checked before any is set. A negative width or height is error 5, a value past a Long in twips is error 6, and Null is error 94.|
 |Arguments|`Left` is required (449). An argument left out before one given, as in `Move 600, , 4800`, is error 448.|
-|Resize|On the root, a `Move` that changes the size raises one Resize, where setting `Width` and then `Height` raises two. The size the form has raises none.|
+|Resize|On the root, a `Move` that changes the size raises one Resize, where setting `Width` and then `Height` raises two. A `Move` to the size the form already has raises none.|
 
 The window system's smallest size for a window is not modelled: a form takes the size asked for.
 
@@ -61,7 +61,7 @@ The window system's smallest size for a window is not modelled: a form takes the
 |1|To the back.|
 |An Integer, rounded half to even|0.6 and `"1"` are 1; -0.5 and Empty are 0.|
 |Another number, such as 2, -1 or 1.5|Error 5.|
-|A string that is no number, or Null|Error 13.|
+|A string that is not a number, or Null|Error 13.|
 |Past an Integer, such as 32768|Error 6.|
 
 ## Refresh

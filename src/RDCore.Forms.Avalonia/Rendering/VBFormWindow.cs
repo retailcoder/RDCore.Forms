@@ -269,7 +269,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// The call is refused with VB's error, and changes nothing:
     /// <list type="bullet">
     /// <item><description>450 for too many arguments, 449 for a required one left out, 448 for one left out before one given;</description></item>
-    /// <item><description>13 for a value that is no number, 94 for Null where <c>Move</c> takes a number, and 6 for a number out of range;</description></item>
+    /// <item><description>13 for a value that is not a number, 94 for Null where <c>Move</c> takes a number, and 6 for a number out of range;</description></item>
     /// <item><description>5 for a value the method refuses, and for <c>SetFocus</c> where nothing can take the focus;</description></item>
     /// <item><description>438 for a method of the class that the window does not run.</description></item>
     /// </list>
@@ -278,7 +278,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// <para>
     /// <c>Move</c> sets <c>Left</c>, then <c>Top</c>, <c>Width</c> and <c>Height</c>, as many as it is given, in <paramref name="unit"/>
     /// (see <see cref="CodeUnits"/>). It checks every value before it sets one: a negative size is error 5, and a value past a Long in
-    /// twips error 6. In <see cref="CodeUnit.VB6"/>, a value is rounded to a whole twip, half to even. On the root, a <c>Move</c> that
+    /// twips is error 6. In <see cref="CodeUnit.VB6"/>, a value is rounded to a whole twip, half to even. On the root, a <c>Move</c> that
     /// changes the size raises one Resize, where setting <c>Width</c> and then <c>Height</c> raises two.
     /// </para>
     /// <para>
@@ -292,7 +292,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// <para>
     /// <c>ZOrder</c> brings a control to the front of its plane in its container, for a <c>Position</c> of 0 or none, and sends it to the
     /// back for 1. A windowless control stays under every windowed one, and a container takes its controls with it. The position is an
-    /// Integer, rounded half to even: another number is error 5, a string that is no number and Null error 13.
+    /// Integer, rounded half to even: another number is error 5, and a string that is not a number, or Null, is error 13.
     /// </para>
     /// <para>
     /// <c>Refresh</c> draws the component and its contents again. On the root or a PictureBox whose <c>AutoRedraw</c> is False, it raises
