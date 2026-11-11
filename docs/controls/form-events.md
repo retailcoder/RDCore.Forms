@@ -80,6 +80,8 @@ The TextBox, CommandButton, CheckBox, OptionButton, ListBox and ComboBox raise t
 
 A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothing, and another code is taken in place of the character.
 
+A PictureBox raises its own key events too, by rules that are RDForms' own: see [PictureBox](containers.md#picturebox).
+
 ## Enter and Esc
 
 A CommandButton whose `Default` is True is the form's default button, and one whose `Cancel` is True its cancel button. Enter clicks the default button and Esc the cancel button from any control of the form, except that a focused CommandButton takes Enter itself and a ComboBox's open list keeps both keys.

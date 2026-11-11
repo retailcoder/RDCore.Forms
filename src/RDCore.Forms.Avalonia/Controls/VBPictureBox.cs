@@ -27,7 +27,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// control's. Its mouse events' X and Y are in twips.
 /// </para>
 /// <para>
-/// With the focus, it raises KeyDown, KeyPress and KeyUp for every key, the arrow keys included: an arrow does not move the focus. A key
+/// With the focus, it raises KeyDown and KeyUp for every key, the arrow keys included, and KeyPress for a key that types a character. An
+/// arrow does not move the focus. A key
 /// pressed in a control it holds is that control's. These key rules were not measured with VB6: RDForms sets them.
 /// </para>
 /// </remarks>
