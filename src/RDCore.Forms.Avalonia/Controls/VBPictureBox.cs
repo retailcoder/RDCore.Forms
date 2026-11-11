@@ -26,8 +26,12 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// MouseUp, MouseUp before Click; Click only where the release is over the PictureBox again. A press on a control it holds is that
 /// control's. Its mouse events' X and Y are in twips.
 /// </para>
+/// <para>
+/// With the focus, it raises KeyDown, KeyPress and KeyUp for every key, the arrow keys included: an arrow does not move the focus. A key
+/// pressed in a control it holds is that control's. These key rules were not measured with VB6: RDForms sets them.
+/// </para>
 /// </remarks>
-public sealed class VBPictureBox : Control, IVBContainer
+public sealed class VBPictureBox : Control, IVBContainer, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
     private readonly VBEdge edge = new();
@@ -41,6 +45,7 @@ public sealed class VBPictureBox : Control, IVBContainer
         ControlEvents.AttachClick<VBPictureBox>(ClickRelease.OverTheControl);
         FocusableProperty.OverrideDefaultValue<VBPictureBox>(true);
         ControlEvents.AttachFocus<VBPictureBox>();
+        ControlKeys.Attach<VBPictureBox>();
     }
 
     /// <summary>
