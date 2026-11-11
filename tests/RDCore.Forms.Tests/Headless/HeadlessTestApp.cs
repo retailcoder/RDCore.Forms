@@ -20,7 +20,7 @@ public static class Headless
 {
     private static readonly Lazy<HeadlessUnitTestSession> session = new(() => HeadlessUnitTestSession.StartNew(typeof(HeadlessTestApp)));
 
-    // A test waits on the session's thread, which is never its own, so the wait cannot deadlock.
+    // A test blocks until the session's thread has run it. That thread is never the test's own, so the wait cannot deadlock.
 #pragma warning disable VSTHRD002
     public static void Run(Action test) => session.Value.Dispatch(test, CancellationToken.None).GetAwaiter().GetResult();
 
