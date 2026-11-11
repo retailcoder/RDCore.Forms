@@ -49,7 +49,7 @@ Une propriété ou un sac de propriétés que le modèle n'a pas est conservé s
 
 ## Positions et polices
 
-Les positions et les tailles sont lues telles que le fichier les contient. La position et la taille d'un contrôle sont en twips, quel que soit le `ScaleMode` de son conteneur. Les extrémités d'un Line sont dans l'échelle de son conteneur : en twips, sauf si le conteneur (un formulaire, un UserControl, une PropertyPage ou une PictureBox) a son propre `ScaleMode`. La position et la taille de la racine sont celles de sa zone cliente, en twips.
+Le fichier contient la position et la taille d'un contrôle en twips, quel que soit le `ScaleMode` de son conteneur, et elles sont lues en pixels, à 15 twips le pixel. La position et la taille de la racine sont celles de sa zone cliente, lues de la même façon. Les extrémités d'un Line sont lues telles que le fichier les contient, dans l'échelle de son conteneur : en twips, sauf si le conteneur (un formulaire, un UserControl, une PropertyPage ou une PictureBox) a son propre `ScaleMode`.
 
 Un contrôle qui n'écrit aucune `Font`, sur un formulaire qui en écrit une, reçoit une copie de la police du formulaire.
 

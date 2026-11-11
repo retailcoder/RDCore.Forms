@@ -1,6 +1,7 @@
 ﻿// Derived from HexIDE (https://github.com/hexide-io/HexIDE), commit ae17f1db.
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
+using Avalonia;
 using Avalonia.Controls;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
@@ -15,8 +16,9 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// It raises Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp. Click comes before MouseUp, as in
 /// VB, and Space raises KeyDown, KeyPress and KeyUp, then Click. An arrow key moves the focus to the previous or next control in its
 /// container, and raises no key event. Enter on the button clicks it, with no key event, and its <c>Default</c> and <c>Cancel</c> make it
-/// the button that Enter and Esc click from the form's other controls (<see cref="Rendering.VBFormWindow"/>). Its <c>Picture</c> is not drawn,
-/// and a default button is drawn as any other.
+/// the button that Enter and Esc click from the form's other controls (<see cref="Rendering.VBFormWindow"/>). On a form's window, the button
+/// that Enter clicks has the default look: a border two pixels wide in the system's <c>Highlight</c> colour, and the <c>:default</c>
+/// pseudo-class. Its <c>Picture</c> is not drawn.
 /// </remarks>
 public sealed class VBCommandButton : Button, IRaisesKeyEvents
 {
@@ -40,6 +42,24 @@ public sealed class VBCommandButton : Button, IRaisesKeyEvents
 
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(Button);
+
+    // The default look, which the form's window gives the button that Enter clicks.
+    internal void ShowAsDefault(bool isDefault)
+    {
+        if (PseudoClasses.Contains(":default") == isDefault)
+            return;
+        PseudoClasses.Set(":default", isDefault);
+        if (isDefault)
+        {
+            BorderBrush = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.Highlight));
+            BorderThickness = new Thickness(2);
+        }
+        else
+        {
+            ClearValue(BorderBrushProperty);
+            ClearValue(BorderThicknessProperty);
+        }
+    }
 
     private void Apply(ComponentPropertyChangedEventArgs e)
     {

@@ -19,13 +19,13 @@ public sealed class ShapeControlTests
 
     // A white form of 300 by 200 pixels, in its scale.
     private static ComponentInstance Root(ScaleMode scale = ScaleMode.Twip) =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 4500d).Set(P.Height, 3000d).Set(P.ScaleMode, scale)
+        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d).Set(P.ScaleMode, scale)
             .Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
 
     private static ComponentInstance Shape(ComponentInstance container, ShapeType figure, double left, double top, double width, double height)
     {
         var shape = new ComponentInstance(VBClasses.Shape, "Shape1").Set(P.Shape, figure)
-            .Set(P.Left, left * 15).Set(P.Top, top * 15).Set(P.Width, width * 15).Set(P.Height, height * 15)
+            .Set(P.Left, left).Set(P.Top, top).Set(P.Width, width).Set(P.Height, height)
             .Set(P.BorderColor, FormColor.FromRgb(0, 0, 255)).Set(P.FillColor, FormColor.FromRgb(255, 0, 0));
         shape.SetContainer(container);
         return shape;
@@ -172,7 +172,7 @@ public sealed class ShapeControlTests
             // 4500 twips across over 100 units is 45 twips a unit, and 3000 down over -50 is -60, from a top of 50.
             var userRoot = Root(ScaleMode.User).Set(P.ScaleWidth, 100d).Set(P.ScaleHeight, -50d).Set(P.ScaleTop, 50d);
             var inUser = Line(userRoot, 10, 50, 20, 0);
-            var frameInPixels = new ComponentInstance(VBClasses.Frame, "Frame1").Set(P.Width, 1500d).Set(P.Height, 1500d);
+            var frameInPixels = new ComponentInstance(VBClasses.Frame, "Frame1").Set(P.Width, 100d).Set(P.Height, 100d);
             frameInPixels.SetContainer(pixelRoot);
             var inFrame = Line(frameInPixels, 10, 20, 30, 40);
             var window = new VBFormWindow(new FormDefinition(pixelRoot));

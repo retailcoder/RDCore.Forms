@@ -49,7 +49,7 @@ A property or a property bag the model does not have is kept as an `UnmodelledPr
 
 ## Positions and fonts
 
-Positions and sizes are read as the file holds them. A control's position and size are in twips, whatever its container's `ScaleMode`. A Line's ends are in its container's scale: twips, unless the container (a form, a UserControl, a PropertyPage or a PictureBox) has a `ScaleMode` of its own. The root's own position and size are its client area's, in twips.
+A file holds a control's position and size in twips, whatever its container's `ScaleMode`, and they are read as pixels, at 15 twips a pixel. The root's own position and size are its client area's, read the same way. A Line's ends are read as the file holds them, in its container's scale: twips, unless the container (a form, a UserControl, a PropertyPage or a PictureBox) has a `ScaleMode` of its own.
 
 A control that writes no `Font`, on a form that writes one, takes a copy of the form's font.
 

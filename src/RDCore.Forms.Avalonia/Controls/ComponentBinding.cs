@@ -44,8 +44,8 @@ internal static class ComponentBinding
     }
 
     // Applies a property every control class shares, and answers whether it was one.
-    //  - Left, Top, Width and Height are twips whatever the container's ScaleMode: a designer file holds them so, and a control is
-    //    placed in its container's canvas at 15 twips a pixel.
+    //  - Left, Top, Width and Height are pixels whatever the container's ScaleMode, and place the control in its container's canvas
+    //    as they are.
     //  - Visible is the control's own. A control in a hidden container keeps its Visible, is not drawn and takes no focus, and its
     //    events still come from its component.
     //  - Enabled is the control's own too. A control in a disabled container keeps its Enabled and takes no input.
@@ -54,16 +54,16 @@ internal static class ComponentBinding
         switch (property.Name)
         {
             case nameof(P.Left):
-                Canvas.SetLeft(control, Pixels(value));
+                Canvas.SetLeft(control, (double)value!);
                 return true;
             case nameof(P.Top):
-                Canvas.SetTop(control, Pixels(value));
+                Canvas.SetTop(control, (double)value!);
                 return true;
             case nameof(P.Width):
-                control.Width = Pixels(value);
+                control.Width = (double)value!;
                 return true;
             case nameof(P.Height):
-                control.Height = Pixels(value);
+                control.Height = (double)value!;
                 return true;
             case nameof(P.Visible):
                 control.IsVisible = (bool)value!;
@@ -120,9 +120,6 @@ internal static class ComponentBinding
         MousePointer.ArrowQuestion => new Cursor(StandardCursorType.Help),
         _ => new Cursor(StandardCursorType.Arrow),
     };
-
-    // A position or a size in twips, as pixels.
-    public static double Pixels(object? twips) => (double)twips! / ScaleModeExtensions.TwipsPerPixel;
 
     // The brush of a form colour, for a control that paints it itself.
     public static IBrush Brush(object? value) => FormPalette.ToBrush((FormColor)value!);

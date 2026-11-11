@@ -17,8 +17,8 @@ namespace RDCore.Forms.Import.VB6;
 /// The designer half, from <c>VERSION</c> to the root block's <c>End</c>, becomes the form; the rest of the file is returned as
 /// <see cref="VB6FormImport.ModuleText"/>. Property and class names are read without regard to case. A component's
 /// <c>Index</c> becomes its <see cref="ComponentInstance.Index"/>, and a root's <c>Client*</c> rectangle its position and size.
-/// Positions and sizes are read as written: in twips, whatever a container's <c>ScaleMode</c>. A Line's ends are in its container's
-/// scale.
+/// A file's positions and sizes are twips whatever a container's <c>ScaleMode</c>, and are read as pixels, at 15 twips a pixel. A Line's
+/// ends are in its container's scale, and are read as written.
 /// </para>
 /// <para>
 /// A read does not throw on what a file holds. A property the model does not have, or whose value it cannot hold, is kept as an
@@ -416,7 +416,8 @@ public static partial class VB6FormReader
                 return;
             }
 
-            if (TryConvert(definition.ValueType, literal, out var value) && instance.TrySet(definition, value))
+            if (TryConvert(definition.ValueType, literal, out var value)
+                && instance.TrySet(definition, CodeUnits.IsExtent(definition) && value is double twips ? twips / ScaleModeExtensions.TwipsPerPixel : value))
             {
                 return;
             }

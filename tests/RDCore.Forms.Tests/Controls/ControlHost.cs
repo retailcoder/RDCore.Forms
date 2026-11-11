@@ -40,11 +40,11 @@ public static class ControlHost
     public static (Window Window, RecordingSink Sink) Show(params (Control Control, Rect Bounds)[] controls)
     {
         var canvas = new Canvas();
-        // Placed by their components, in twips, as a form places them.
+        // Placed by their components, in pixels, as a form places them.
         foreach (var (control, bounds) in controls)
         {
             VBControl.GetInstance(control)!
-                .Set(P.Left, bounds.X * 15).Set(P.Top, bounds.Y * 15).Set(P.Width, bounds.Width * 15).Set(P.Height, bounds.Height * 15);
+                .Set(P.Left, bounds.X).Set(P.Top, bounds.Y).Set(P.Width, bounds.Width).Set(P.Height, bounds.Height);
             canvas.Children.Add(control);
         }
         var sink = new RecordingSink();

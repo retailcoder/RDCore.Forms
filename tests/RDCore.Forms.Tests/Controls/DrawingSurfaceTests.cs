@@ -20,7 +20,7 @@ public sealed class DrawingSurfaceTests
 
     // A white form of 300 by 200 pixels in a pixel scale, drawing in blue and filling in red.
     private static ComponentInstance Root(bool autoRedraw = false) =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 4500d).Set(P.Height, 3000d).Set(P.ScaleMode, ScaleMode.Pixel)
+        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d).Set(P.ScaleMode, ScaleMode.Pixel)
             .Set(P.BackColor, FormColor.FromRgb(255, 255, 255)).Set(P.ForeColor, FormColor.FromRgb(0, 0, 255))
             .Set(P.FillColor, FormColor.FromRgb(255, 0, 0)).Set(P.AutoRedraw, autoRedraw);
 
@@ -175,7 +175,7 @@ public sealed class DrawingSurfaceTests
             window.View.Drawing.Line(new GraphicsPoint(10, 10), new GraphicsPoint(20, 20), box: LineBox.FilledBox);
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             var before = PixelsAt(window, new PixelPoint(15, 15), new PixelPoint(25, 25));
-            root.Set(P.Width, 6000d);
+            root.Set(P.Width, 400d);
             Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             var after = PixelsAt(window, new PixelPoint(15, 15));
@@ -199,10 +199,10 @@ public sealed class DrawingSurfaceTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
             var shown = sink.Raised.Count(e => e == "Form1.Paint");
-            root.Set(P.Width, 6000d);
+            root.Set(P.Width, 400d);
             Dispatcher.UIThread.RunJobs();
             var grown = sink.Raised.Count(e => e == "Form1.Paint");
-            root.Set(P.Width, 3000d);
+            root.Set(P.Width, 200d);
             Dispatcher.UIThread.RunJobs();
             var shrunk = sink.Raised.Count(e => e == "Form1.Paint");
             VBControl.SetEventSink(window, null);
@@ -224,7 +224,7 @@ public sealed class DrawingSurfaceTests
             VBControl.SetEventSink(window, sink);
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            root.Set(P.Width, 6000d);
+            root.Set(P.Width, 400d);
             Dispatcher.UIThread.RunJobs();
             VBControl.SetEventSink(window, null);
             window.Close();
@@ -240,7 +240,7 @@ public sealed class DrawingSurfaceTests
         var (rootSurface, pictureSurface, closed) = UI.Run(() =>
         {
             var root = Root();
-            var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Width, 1500d).Set(P.Height, 1500d);
+            var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Width, 100d).Set(P.Height, 100d);
             picture.SetContainer(root);
             var window = new VBFormWindow(new FormDefinition(root));
             window.Show();
@@ -263,8 +263,8 @@ public sealed class DrawingSurfaceTests
         {
             var root = Root();
             // 100 by 100 pixels, with a 3-D border of two pixels.
-            var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Left, 150d).Set(P.Top, 150d)
-                .Set(P.Width, 1500d).Set(P.Height, 1500d).Set(P.ScaleMode, ScaleMode.Pixel).Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
+            var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Left, 10d).Set(P.Top, 10d)
+                .Set(P.Width, 100d).Set(P.Height, 100d).Set(P.ScaleMode, ScaleMode.Pixel).Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
             picture.SetContainer(root);
             var window = new VBFormWindow(new FormDefinition(root));
             window.Show();
