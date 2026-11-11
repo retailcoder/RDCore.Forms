@@ -139,7 +139,7 @@ public static class VBClasses
         [P.Align, P.Appearance, P.AutoRedraw, P.AutoSize, P.BackColor, P.BorderStyle, P.CausesValidation, P.Enabled, P.FillColor, P.FillStyle,
          P.Font, P.ForeColor, P.MousePointer, P.TabIndex, P.TabStop, P.ToolTipText, P.Picture, P.DrawMode, P.DrawStyle, P.DrawWidth,
          .. ScaleProperties],
-        [Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp, Paint],
+        [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, Paint],
         Defaults((P.BorderStyle, BorderStyle.FixedSingle)), isContainer: true);
 
     /// <summary>

@@ -80,6 +80,8 @@ The TextBox, CommandButton, CheckBox, OptionButton, ListBox and ComboBox raise t
 
 A control's KeyPress follows the TextBox's rules: a `KeyAscii` of 0 types nothing, and another code is taken in place of the character.
 
+A PictureBox raises its own key events too, by rules that are RDForms' own: see [PictureBox](containers.md#picturebox).
+
 ## Enter and Esc
 
 A CommandButton whose `Default` is True is the form's default button, and one whose `Cancel` is True its cancel button. Enter clicks the default button and Esc the cancel button from any control of the form, except that a focused CommandButton takes Enter itself and a ComboBox's open list keeps both keys.
@@ -97,7 +99,7 @@ Where more than one CommandButton has `Default` or `Cancel` True, the first the 
 What a character typed in a ListBox selects is on the [Lists](lists.md) page.
 
 > [!NOTE]
-> **Not implemented.** A scroll bar and a PictureBox raise no key events of their own: with `KeyPreview` True, a key on one of them raises the root's events alone.
+> **Not implemented.** A scroll bar raises no key events of its own: with `KeyPreview` True, a key on one raises the root's events alone.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

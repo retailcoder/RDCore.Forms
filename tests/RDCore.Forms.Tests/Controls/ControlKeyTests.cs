@@ -110,6 +110,48 @@ public sealed class ControlKeyTests
         Expect.Lines(["Button1.KeyDown(Integer 75, Integer 0)", "Button1.KeyPress(Integer 107)", "Button1.KeyUp(Integer 75, Integer 0)"], raised);
     }
 
+    // RDForms' own: unmeasured with VB6.
+    [TestMethod]
+    public void APictureBox_RaisesItsKeyEvents_AnArrowsIncluded_WhichKeepsTheFocus()
+    {
+        var (raised, focused) = UI.Run(() =>
+        {
+            var root = Root();
+            var picture = Add(root, VBClasses.PictureBox, "Picture1");
+            Add(root, VBClasses.TextBox, "Text1", top: 100);
+            var sink = new RecordingSink();
+            var window = Open(root, picture, sink);
+            Type(window, Key.K, PhysicalKey.K, "k");
+            Type(window, Key.Right, PhysicalKey.ArrowRight, null);
+            var result = (Raised(sink), window.ActiveControl?.Name);
+            window.Close();
+            return result;
+        });
+
+        Expect.Lines(["Picture1.KeyDown(Integer 75, Integer 0)", "Picture1.KeyPress(Integer 107)", "Picture1.KeyUp(Integer 75, Integer 0)",
+            "Picture1.KeyDown(Integer 39, Integer 0)", "Picture1.KeyUp(Integer 39, Integer 0)"], raised);
+        Assert.AreEqual("Picture1", focused);
+    }
+
+    [TestMethod]
+    public void AKeyInAControlAPictureBoxHolds_IsThatControlsAlone()
+    {
+        var raised = UI.Run(() =>
+        {
+            var root = Root();
+            var picture = Add(root, VBClasses.PictureBox, "Picture1");
+            var list = Add(picture, VBClasses.ListBox, "List1");
+            var sink = new RecordingSink();
+            var window = Open(root, list, sink);
+            Type(window, Key.K, PhysicalKey.K, "k");
+            var result = Raised(sink);
+            window.Close();
+            return result;
+        });
+
+        Expect.Lines(["List1.KeyDown(Integer 75, Integer 0)", "List1.KeyPress(Integer 107)", "List1.KeyUp(Integer 75, Integer 0)"], raised);
+    }
+
     [TestMethod]
     public void SpaceOnACheckBox_RaisesItsKeyEvents_ThenClick_AndOnTheSelectedOptionButtonNoClick()
     {

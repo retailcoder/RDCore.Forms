@@ -19,6 +19,8 @@ Frame and PictureBox hold controls; PictureBox and Image draw pictures. The thre
 - Its drawing statements draw over its `Picture` and under its controls; see [Drawing](drawing.md). It raises Paint as its drawing surface does.
 - It takes the focus, whether or not it holds controls. It raises MouseUp before Click, and Click only where the release is over the PictureBox again. Its mouse events' X and Y are in twips.
 
+Its key events are RDForms' own, not measured with VB6. With the focus, it raises KeyDown and KeyUp for every key, and KeyPress between them for a key that types a character, in the order of [A control's key events](form-events.md#a-controls-key-events). An arrow key raises its KeyDown and KeyUp and leaves the focus where it is. A key pressed in a control it holds is that control's alone.
+
 ## Image
 
 [`VBImage`](../api/RDCore.Forms.Avalonia.Controls.VBImage.yml) is windowless: it takes no focus, and it is under every windowed control in its container.
