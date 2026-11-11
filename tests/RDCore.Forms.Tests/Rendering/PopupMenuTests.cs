@@ -153,7 +153,7 @@ public sealed class PopupMenuTests
             var other = FormMenuItem.Of(Probe().Contents[0]);
             try
             {
-                window.PopupMenu(other);
+                _ = window.PopupMenu(other);
                 return null;
             }
             catch (ArgumentException e)
@@ -179,7 +179,7 @@ public sealed class PopupMenuTests
         {
             var root = Probe().Set(P.ScaleMode, ScaleMode.Pixel);
             var window = Open(root, new RecordingSink());
-            window.PopupMenu(Model(window, "mnuEdit"), 40, 25, alignment);
+            _ = window.PopupMenu(Model(window, "mnuEdit"), 40, 25, alignment);
             Dispatcher.UIThread.RunJobs();
             var popup = Popup(window)!;
             var result = (popup.PlacementRect!.Value.Position, popup.PlacementGravity);
@@ -200,7 +200,7 @@ public sealed class PopupMenuTests
             var window = Open(Probe(), new RecordingSink());
             window.MouseMove(new Point(120, 70));
             Dispatcher.UIThread.RunJobs();
-            window.PopupMenu(Model(window, "mnuEdit"), y: 600);
+            _ = window.PopupMenu(Model(window, "mnuEdit"), y: 600);
             Dispatcher.UIThread.RunJobs();
             var popup = Popup(window)!;
             var result = popup.PlacementRect!.Value.Position;
@@ -218,7 +218,7 @@ public sealed class PopupMenuTests
         var weights = UI.Run(() =>
         {
             var window = Open(Probe(), new RecordingSink());
-            window.PopupMenu(Model(window, "mnuEdit"), boldItem: Model(window, "mnuPaste"));
+            _ = window.PopupMenu(Model(window, "mnuEdit"), boldItem: Model(window, "mnuPaste"));
             Dispatcher.UIThread.RunJobs();
             var popup = Popup(window)!;
             var result = new[] { "mnuCut", "mnuPaste" }.Select(name => Shown(popup, name).FontWeight).ToList();
