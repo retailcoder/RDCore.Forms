@@ -93,9 +93,6 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     private Control? focused;
     private Control? activeControl;
     private bool rootFocused;
-    // The control a SetFocus named while another form was the active one: it takes the focus as this form is activated, whatever the
-    // window system gives the focus back to.
-    private Control? focusOnActivation;
 
     /// <summary>
     /// Creates a window that shows a form.
@@ -249,7 +246,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// <remarks>
     /// A <c>SetFocus</c> call names its control here at once, before the focus moves.
     /// </remarks>
-    public ComponentInstance? ActiveControl => (focusOnActivation ?? activeControl) is { } control ? VBControl.GetInstance(control) : null;
+    public ComponentInstance? ActiveControl => activeControl is { } control ? VBControl.GetInstance(control) : null;
 
     /// <summary>
     /// Runs one of the methods of the root or of a control of the form, as a program's code calls it. Call it on the UI thread.
@@ -377,10 +374,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
             throw new FormErrorException(FormError.InvalidProcedureCall);
         activeControl = control;
         if (!ReferenceEquals(active, this))
-        {
-            focusOnActivation = control;
             Dispatcher.UIThread.Post(Activate);
-        }
         else if (!ReferenceEquals(control, focused))
             Dispatcher.UIThread.Post(() => control.Focus());
     }
@@ -451,7 +445,6 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
             active = null;
         focused = null;
         rootFocused = false;
-        focusOnActivation = null;
         base.OnClosed(e);
     }
 
@@ -521,11 +514,6 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     // The form's ActiveControl takes the focus again, or else the first control of the tab order, or else the root.
     private void TakeFocus()
     {
-        if (focusOnActivation is { } named)
-        {
-            focusOnActivation = null;
-            activeControl = named;
-        }
         var control = activeControl is not null && VBControl.GetInstance(activeControl) is { } instance
                       && ReferenceEquals(View.ControlOf(instance), activeControl) && VBFormView.CanTakeTheFocus(activeControl)
             ? activeControl
