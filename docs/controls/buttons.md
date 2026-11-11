@@ -15,7 +15,11 @@ The behaviour below was measured with VB6.
 - `Default` True makes it the button Enter clicks, and `Cancel` True the button Esc clicks, from any control of the form: see [Enter and Esc](form-events.md#enter-and-esc).
 - The button Enter clicks has the default look: the default button while no CommandButton has the focus, and the focused CommandButton otherwise.
 
-Two rules here are RDForms' own, not measured with VB6. The look is a border two pixels wide in the system's `Highlight` colour, and the button has the `:default` pseudo-class, which a host's style can select. A default button that is hidden or disabled takes no Enter, so it has no look.
+These are RDForms' own, not measured with VB6:
+
+- The look is a border two pixels wide in the system's `Highlight` colour, set on the button itself, so a style does not override it.
+- The button with the look has the `:default` pseudo-class, which a host's style can select.
+- A default button that is hidden or disabled takes no Enter, so it has no look.
 
 > [!NOTE]
 > **Not implemented.** A CommandButton's `Picture` is not drawn.
