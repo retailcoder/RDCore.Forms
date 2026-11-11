@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
+using RDCore.Forms.Drawing;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
@@ -92,6 +93,9 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     private Control? focused;
     private Control? activeControl;
     private bool rootFocused;
+    // The control a SetFocus named while another form was the active one: it takes the focus as this form is activated, whatever the
+    // window system gives the focus back to.
+    private Control? focusOnActivation;
 
     /// <summary>
     /// Creates a window that shows a form.
@@ -238,6 +242,165 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
         return true;
     }
 
+    /// <summary>
+    /// The component whose control has the focus on the form, or had it last: VB's <c>ActiveControl</c>. <see langword="null"/> where
+    /// none of the form's controls has had the focus.
+    /// </summary>
+    /// <remarks>
+    /// A <c>SetFocus</c> call names its control here at once, before the focus moves.
+    /// </remarks>
+    public ComponentInstance? ActiveControl => (focusOnActivation ?? activeControl) is { } control ? VBControl.GetInstance(control) : null;
+
+    /// <summary>
+    /// Runs one of the methods of the root or of a control of the form, as a program's code calls it. Call it on the UI thread.
+    /// </summary>
+    /// <param name="component">The root, or a component the form shows.</param>
+    /// <param name="method">The method: one of <paramref name="component"/>'s class's <see cref="ComponentClass.Methods"/>.</param>
+    /// <param name="arguments">
+    /// The call's arguments, in the order of the method's parameters: <see langword="null"/> for an argument left out, and none past the
+    /// last one given. A <c>Variant</c> parameter takes any value and the method coerces it; a parameter of another type takes a value of
+    /// that type.
+    /// </param>
+    /// <param name="unit">The unit the code reads and writes positions and sizes in, which <c>Move</c> takes.</param>
+    /// <returns>The method's result: <see cref="FormValue.Empty"/> for a method that returns none.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="component"/>, <paramref name="method"/> or <paramref name="arguments"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="component"/> is neither the root nor shown on the form, or <paramref name="method"/> is not a method of its class.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">The call is not on the UI thread.</exception>
+    /// <exception cref="FormErrorException">
+    /// The call is refused with VB's error, and changes nothing:
+    /// <list type="bullet">
+    /// <item><description>450 for too many arguments, 449 for a required one left out, 448 for one left out before one given;</description></item>
+    /// <item><description>13 for a value that is no number, 94 for Null where <c>Move</c> takes a number, and 6 for a number out of range;</description></item>
+    /// <item><description>5 for a value the method refuses, and for <c>SetFocus</c> where nothing can take the focus;</description></item>
+    /// <item><description>438 for a method of the class that the window does not run.</description></item>
+    /// </list>
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// <c>Move</c> sets <c>Left</c>, then <c>Top</c>, <c>Width</c> and <c>Height</c>, as many as it is given, in <paramref name="unit"/>
+    /// (see <see cref="CodeUnits"/>). It checks every value before it sets one: a negative size is error 5, and a value past a Long in
+    /// twips error 6. In <see cref="CodeUnit.VB6"/>, a value is rounded to a whole twip, half to even. On the root, a <c>Move</c> that
+    /// changes the size raises one Resize, where setting <c>Width</c> and then <c>Height</c> raises two.
+    /// </para>
+    /// <para>
+    /// <c>SetFocus</c> is error 5 while the window is not shown, and on a control that is hidden or disabled. Otherwise
+    /// <see cref="ActiveControl"/> names the control at once, and the focus moves after the call returns, with the LostFocus of the control
+    /// that had it, then the GotFocus of this one. Where another of the program's forms is the active one, this window is activated. A
+    /// control that has the focus already raises nothing, and so does the root's <c>SetFocus</c> on the active form. <c>SetFocus</c> raises
+    /// no Validate. A disabled or hidden container makes its controls refuse the focus, and the root's <c>SetFocus</c> activates a shown form
+    /// that is not the active one: these two rules were not measured with VB6, and RDForms sets them.
+    /// </para>
+    /// <para>
+    /// <c>ZOrder</c> brings a control to the front of its plane in its container, for a <c>Position</c> of 0 or none, and sends it to the
+    /// back for 1. A windowless control stays under every windowed one, and a container takes its controls with it. The position is an
+    /// Integer, rounded half to even: another number is error 5, a string that is no number and Null error 13.
+    /// </para>
+    /// <para>
+    /// <c>Refresh</c> draws the component and its contents again. On the root or a PictureBox whose <c>AutoRedraw</c> is False, it raises
+    /// Paint inside the call. VB6's <c>Refresh</c> was not measured: RDForms sets this rule.
+    /// </para>
+    /// </remarks>
+    public FormValue Invoke(ComponentInstance component, MethodDefinition method, IReadOnlyList<FormValue?> arguments, CodeUnit unit = CodeUnit.Pixel)
+    {
+        ArgumentNullException.ThrowIfNull(component);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(arguments);
+        Dispatcher.UIThread.VerifyAccess();
+        var control = ReferenceEquals(component, Root) ? View : View.ControlOf(component)
+            ?? throw new ArgumentException($"'{component.Name}' is not shown on the form.", nameof(component));
+        if (!ReferenceEquals(component.Class.Method(method.Name), method))
+            throw new ArgumentException($"{component.Class.TypeName} has no method {method.Name}.", nameof(method));
+        var given = MethodArguments.Of(method, arguments);
+        if (ReferenceEquals(method, VBMethods.Move))
+            Move(component, given, unit);
+        else if (ReferenceEquals(method, VBMethods.SetFocus))
+            SetFocus(control);
+        else if (ReferenceEquals(method, VBMethods.ZOrder))
+            View.ZOrder(control, toFront: given[0] is not { } position || ToFront(position));
+        else if (ReferenceEquals(method, VBMethods.Refresh))
+            Refresh(component, control);
+        else
+            throw new FormErrorException(FormError.ObjectDoesntSupportPropertyOrMethod);
+        return FormValue.Empty;
+    }
+
+    private void Move(ComponentInstance component, FormValue?[] given, CodeUnit unit)
+    {
+        PropertyDefinition<double>[] extents = [P.Left, P.Top, P.Width, P.Height];
+        // Every value is checked before any is set.
+        var moves = new List<(PropertyDefinition<double> Property, double Pixels)>();
+        for (var i = 0; i < given.Length && given[i] is { } value; i++)
+        {
+            var coded = (double)MethodArguments.Single(value);
+            if (i >= 2 && coded < 0)
+                throw new FormErrorException(FormError.InvalidProcedureCall);
+            var twips = CodeUnits.FromCode(component, extents[i], coded, unit) * ScaleModeExtensions.TwipsPerPixel;
+            if (unit == CodeUnit.VB6)
+                twips = Math.Round(twips);
+            if (twips is < int.MinValue or > int.MaxValue)
+                throw new FormErrorException(FormError.Overflow);
+            moves.Add((extents[i], twips / ScaleModeExtensions.TwipsPerPixel));
+        }
+        // The root's two sizes raise one Resize.
+        var root = ReferenceEquals(component, Root);
+        following = root;
+        try
+        {
+            foreach (var (property, pixels) in moves)
+                component.Set(property, pixels);
+        }
+        finally
+        {
+            following = false;
+        }
+        if (root && moves.Count > 2)
+        {
+            SizeToContent = SizeToContent.WidthAndHeight;
+            RaiseResize();
+        }
+    }
+
+    // The focus moves after the call, as Windows posts its focus messages; ActiveControl names the control at once.
+    private void SetFocus(Control control)
+    {
+        if (!IsVisible)
+            throw new FormErrorException(FormError.InvalidProcedureCall);
+        if (ReferenceEquals(control, View))
+        {
+            if (!ReferenceEquals(active, this))
+                Dispatcher.UIThread.Post(Activate);
+            return;
+        }
+        if (control is not { Focusable: true, IsEffectivelyEnabled: true, IsEffectivelyVisible: true })
+            throw new FormErrorException(FormError.InvalidProcedureCall);
+        activeControl = control;
+        if (!ReferenceEquals(active, this))
+        {
+            focusOnActivation = control;
+            Dispatcher.UIThread.Post(Activate);
+        }
+        else if (!ReferenceEquals(control, focused))
+            Dispatcher.UIThread.Post(() => control.Focus());
+    }
+
+    private static bool ToFront(FormValue position) =>
+        MethodArguments.Integer(position, ofNull: FormError.TypeMismatch) switch
+        {
+            0 => true,
+            1 => false,
+            _ => throw new FormErrorException(FormError.InvalidProcedureCall),
+        };
+
+    private static void Refresh(ComponentInstance component, Control control)
+    {
+        control.InvalidateVisual();
+        foreach (var visual in control.GetVisualDescendants())
+            visual.InvalidateVisual();
+        (DrawingSurfaces.Of(component) as VBDrawingLayer)?.PaintNow();
+    }
+
     // It follows its root while it is open, so that a closed window holds no handler of its root's.
     /// <inheritdoc/>
     protected override void OnOpened(EventArgs e)
@@ -288,6 +451,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
             active = null;
         focused = null;
         rootFocused = false;
+        focusOnActivation = null;
         base.OnClosed(e);
     }
 
@@ -357,6 +521,11 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     // The form's ActiveControl takes the focus again, or else the first control of the tab order, or else the root.
     private void TakeFocus()
     {
+        if (focusOnActivation is { } named)
+        {
+            focusOnActivation = null;
+            activeControl = named;
+        }
         var control = activeControl is not null && VBControl.GetInstance(activeControl) is { } instance
                       && ReferenceEquals(View.ControlOf(instance), activeControl) && VBFormView.CanTakeTheFocus(activeControl)
             ? activeControl

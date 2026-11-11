@@ -276,6 +276,13 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
         Height = inside.Height;
     }
 
+    // Refresh raises Paint inside the call, where AutoRedraw is False.
+    internal void PaintNow()
+    {
+        if (attached && !(Component.Class.Has(P.AutoRedraw) && Component.Get(P.AutoRedraw)))
+            VBControl.RaiseFor(this, Component, VBEvents.Paint);
+    }
+
     // One Paint waits at a time, as Windows keeps one paint message for a window: a surface that grows across and down at once, as a
     // window does under its user's drag, raises one.
     private void PostPaint()
