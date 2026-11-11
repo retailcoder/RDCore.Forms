@@ -71,6 +71,11 @@ public static class VBEvents
     public static readonly EventDefinition Change = new("Change");
 
     /// <summary>
+    /// A scroll bar's thumb was dragged to a new value. The Change comes once the thumb is released.
+    /// </summary>
+    public static readonly EventDefinition Scroll = new("Scroll");
+
+    /// <summary>
     /// A ComboBox's list is about to drop down.
     /// </summary>
     public static readonly EventDefinition DropDown = new("DropDown");

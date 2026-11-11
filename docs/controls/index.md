@@ -19,7 +19,7 @@
 |`VB.PictureBox`|[`VBPictureBox`](../api/RDCore.Forms.Avalonia.Controls.VBPictureBox.yml)|Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp, Paint|[Containers and pictures](containers.md)|
 |`VB.Image`|[`VBImage`](../api/RDCore.Forms.Avalonia.Controls.VBImage.yml)|Click, DblClick, MouseDown, MouseMove, MouseUp|[Containers and pictures](containers.md)|
 |`VB.Timer`|[`VBTimer`](../api/RDCore.Forms.Avalonia.Controls.VBTimer.yml)|Timer|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
-|`VB.HScrollBar`, `VB.VScrollBar`|[`VBScrollBar`](../api/RDCore.Forms.Avalonia.Controls.VBScrollBar.yml)|Change, GotFocus, LostFocus|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
+|`VB.HScrollBar`, `VB.VScrollBar`|[`VBScrollBar`](../api/RDCore.Forms.Avalonia.Controls.VBScrollBar.yml)|Change, GotFocus, LostFocus, Scroll|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 |`VB.Shape`|[`VBShape`](../api/RDCore.Forms.Avalonia.Controls.VBShape.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 |`VB.Line`|[`VBLine`](../api/RDCore.Forms.Avalonia.Controls.VBLine.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 |`VB.Menu`|The window's [`VBMenuBar`](../api/RDCore.Forms.Avalonia.Rendering.VBMenuBar.yml)|Click|[Menus](menus.md)|

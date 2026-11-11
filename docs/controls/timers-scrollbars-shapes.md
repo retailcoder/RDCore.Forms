@@ -1,6 +1,6 @@
 # Timers, scroll bars and shapes
 
-A Timer raises an event at an interval, a scroll bar sets a value, and a Shape and a Line draw figures. The Line's drawing and the scroll bar's focus were measured with VB6.
+A Timer raises an event at an interval, a scroll bar sets a value, and a Shape and a Line draw figures. The Line's drawing and the scroll bar's focus, drag and keys were measured with VB6.
 
 ## Timer
 
@@ -17,13 +17,17 @@ The interval is counted on the system's clock. [`VBControl.SetTimeProvider`](../
 
 [`VBScrollBar`](../api/RDCore.Forms.Avalonia.Controls.VBScrollBar.yml) shows both classes, horizontal and vertical.
 
-- The component's `Value` is the bar's. Moving the thumb sets it, to a whole number, and a change from code moves the thumb. Change is raised each time it changes, either way.
-- Its arrows move it by `SmallChange`, and a click on its track by `LargeChange`.
+- The component's `Value` is the bar's. Moving the thumb sets it, to a whole number, and a change from code moves the thumb.
+- Its arrows move it by `SmallChange`, and a click on its track by `LargeChange`. Each raises Change, and so does a change from code.
+- Dragging the thumb raises Scroll at each whole number it reaches, and no Change. Released, it raises one Change, where the value is not the one the drag started at.
 - `Min` is at its left or top end and `Max` at its right or bottom end, so a `Min` greater than `Max` runs it the other way.
 - It takes the focus, and raises GotFocus and LostFocus.
+- With the focus, the arrow keys move it by `SmallChange`, Left and Up toward its left or top end, and Page Down by `LargeChange`, each with a Change.
+
+These are RDForms' own, not measured with VB6: Page Up moves it back by `LargeChange`, Home and End take it to its ends, and a thumb released where it started raises no Change.
 
 > [!NOTE]
-> **Not implemented.** The Scroll event is not raised: dragging the thumb raises Change at each whole number it passes. The keyboard does not move a scroll bar.
+> **Not implemented.** A scroll bar raises no key events of its own.
 
 ## Shape
 
