@@ -71,7 +71,8 @@ public static class VBEvents
     public static readonly EventDefinition Change = new("Change");
 
     /// <summary>
-    /// A scroll bar's thumb was dragged to a new value. The Change comes once the thumb is released.
+    /// A scroll bar's thumb was dragged to a new value. The Change comes once the thumb is released, where the value is not the one
+    /// the drag started at.
     /// </summary>
     public static readonly EventDefinition Scroll = new("Scroll");
 
