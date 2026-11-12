@@ -347,6 +347,26 @@ public static class VBProperties
     public static readonly PropertyDefinition<bool> Locked = new("Locked", PropertyCategory.Behavior);
 
     /// <summary>
+    /// Whether a TextBox holds more than one line: set at design time, and read-only to a program.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> MultiLine = new("MultiLine", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// The scroll bars a MultiLine TextBox shows: set at design time, and read-only to a program.
+    /// </summary>
+    public static readonly PropertyDefinition<TextBoxScrollBars> ScrollBars = new("ScrollBars", PropertyCategory.Behavior, TextBoxScrollBars.None);
+
+    /// <summary>
+    /// The character a TextBox shows in place of each character of its text. An empty string, the default, shows the text.
+    /// </summary>
+    public static readonly PropertyDefinition<string> PasswordChar = new("PasswordChar", PropertyCategory.Behavior, "");
+
+    /// <summary>
+    /// The most characters the user can put in a TextBox. 0, the default, sets no limit.
+    /// </summary>
+    public static readonly PropertyDefinition<int> MaxLength = new("MaxLength", PropertyCategory.Behavior);
+
+    /// <summary>
     /// Whether a ListBox selects more than one item, and how.
     /// </summary>
     public static readonly PropertyDefinition<ListBoxMultiSelect> MultiSelect = new("MultiSelect", PropertyCategory.Behavior, ListBoxMultiSelect.None);

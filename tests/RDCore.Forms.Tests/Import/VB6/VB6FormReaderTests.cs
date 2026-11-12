@@ -55,6 +55,23 @@ public sealed class VB6FormReaderTests
     }
 
     [TestMethod]
+    public void ATextBoxsMultiLineScrollBarsPasswordCharAndMaxLength_AreRead()
+    {
+        var import = VB6FormReader.Read(Form(
+            "   Begin VB.TextBox Text1 ",
+            "      MultiLine       =   -1  'True",
+            "      ScrollBars      =   2  'Vertical",
+            "      PasswordChar    =   \"*\"",
+            "      MaxLength       =   10",
+            "   End"));
+        var box = import.Form!.Find("Text1")!;
+
+        Assert.AreEqual((true, TextBoxScrollBars.Vertical, "*", 10),
+            (box.Get(VBProperties.MultiLine), box.Get(VBProperties.ScrollBars), box.Get(VBProperties.PasswordChar), box.Get(VBProperties.MaxLength)));
+        Assert.IsEmpty(import.Diagnostics);
+    }
+
+    [TestMethod]
     public void AValueThePropertyCannotHold_IsKeptAsText_AndReported()
     {
         var import = VB6FormReader.Read(Form(Label("Alignment       =   7")));

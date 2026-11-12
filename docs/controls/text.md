@@ -30,8 +30,28 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 |`BorderStyle`|None draws no border.|
 |The mouse|MouseUp comes before Click.|
 
-> [!NOTE]
-> **Not implemented.** `MultiLine`, `ScrollBars`, `PasswordChar` and `MaxLength` are not in the model, so a TextBox is one line, shows its text, and takes text of any length.
+### MultiLine and ScrollBars
+
+Both are set at design time. A box keeps the ones it was made with.
+
+|Box|Behaviour|
+|---|---|
+|Single-line|One line, scrolled across as the caret moves. `ScrollBars` shows no bar. Enter raises KeyDown, KeyPress 13 and KeyUp, and types nothing.|
+|MultiLine, no horizontal bar|The text wraps at the box's edge.|
+|MultiLine, a horizontal bar|The text does not wrap.|
+|MultiLine, a bar asked for|Shown, with nothing to scroll too.|
+|Enter in a MultiLine box|KeyDown, KeyPress 13, a line break (CR LF), then KeyUp. Where the form has a default button, the button takes Enter as it does from any control.|
+|Ctrl+Enter in a MultiLine box|KeyDown with `Shift` 2, KeyPress 10, then a line break. No button takes it.|
+|Tab in a MultiLine box|The focus moves to the next control. No tab is typed.|
+
+A `KeyAscii` of 0 for Enter breaks no line, and another code types that character instead. This rule is RDForms' own, not measured with VB6.
+
+### PasswordChar and MaxLength
+
+These rules are RDForms' own, not measured with VB6.
+
+- `PasswordChar` shows its first character in place of each character of the text. An empty `PasswordChar` shows the text, and a MultiLine box shows its text whatever its `PasswordChar`.
+- `MaxLength` limits what the user types, and 0 sets no limit. A key past the limit still raises its KeyPress, and no Change. A text set from code is kept whole.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

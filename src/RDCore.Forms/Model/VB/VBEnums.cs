@@ -191,6 +191,30 @@ public enum ComboBoxStyle
 }
 
 /// <summary>
+/// The scroll bars a VB TextBox shows: its <c>ScrollBars</c>, set at design time and read-only to a program. A box whose
+/// <c>MultiLine</c> is not set shows none.
+/// </summary>
+public enum TextBoxScrollBars
+{
+    /// <summary>
+    /// No scroll bar, the default.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// A horizontal scroll bar.
+    /// </summary>
+    Horizontal = 1,
+    /// <summary>
+    /// A vertical scroll bar.
+    /// </summary>
+    Vertical = 2,
+    /// <summary>
+    /// Both scroll bars.
+    /// </summary>
+    Both = 3,
+}
+
+/// <summary>
 /// Whether a VB ListBox selects more than one item, and how: its <c>MultiSelect</c>, set at design time and read-only to a program.
 /// </summary>
 public enum ListBoxMultiSelect

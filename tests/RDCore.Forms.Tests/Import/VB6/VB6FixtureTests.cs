@@ -108,8 +108,14 @@ public sealed class VB6FixtureTests
     [TestMethod]
     public void APropertyTheModelHasNot_IsKeptAsWritten()
     {
-        Assert.Contains(new UnmodelledProperty("MultiLine", "-1  'True"), Component("txtNotes").UnmodelledProperties);
         Assert.Contains(new UnmodelledProperty("LinkTopic", "\"Intrinsics\""), Intrinsics.Root.UnmodelledProperties);
+    }
+
+    [TestMethod]
+    public void ATextBoxsMultiLine_IsRead()
+    {
+        Assert.IsTrue(Component("txtNotes").Get(VBProperties.MultiLine));
+        Assert.IsEmpty(Component("txtNotes").UnmodelledProperties);
     }
 
     [TestMethod]
