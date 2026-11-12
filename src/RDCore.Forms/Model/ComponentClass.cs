@@ -34,6 +34,7 @@ public sealed class ComponentClass
 {
     private readonly Dictionary<string, PropertyDefinition> propertiesByName;
     private readonly Dictionary<string, EventDefinition> eventsByName;
+    private readonly Dictionary<string, MethodDefinition> methodsByName;
     private readonly Dictionary<PropertyDefinition, object?> defaults;
 
     /// <summary>
@@ -54,14 +55,15 @@ public sealed class ComponentClass
     /// Whether an instance has a width and a height. A Timer has a place in the designer and no size, and a running program
     /// cannot see it.
     /// </param>
+    /// <param name="methods">The class's methods; none where it is <see langword="null"/>.</param>
     /// <exception cref="ArgumentException">
-    /// <paramref name="typeName"/> or <paramref name="defaultName"/> is empty or white space; two properties or two events share a name; or a default
-    /// is given for a property the class does not have, or is not a value the property can hold.
+    /// <paramref name="typeName"/> or <paramref name="defaultName"/> is empty or white space; two properties, two events or two methods share a
+    /// name; or a default is given for a property the class does not have, or is not a value the property can hold.
     /// </exception>
     public ComponentClass(string typeName, string defaultName, ComponentKind kind,
         IReadOnlyList<PropertyDefinition> properties, IReadOnlyList<EventDefinition> events,
         IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null,
-        bool isContainer = false, bool isWindowless = false, bool hasExtent = true)
+        bool isContainer = false, bool isWindowless = false, bool hasExtent = true, IReadOnlyList<MethodDefinition>? methods = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(typeName);
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultName);
@@ -86,6 +88,14 @@ public sealed class ComponentClass
         {
             if (!eventsByName.TryAdd(@event.Name, @event))
                 throw new ArgumentException($"{typeName} has two events named {@event.Name}.", nameof(events));
+        }
+
+        Methods = [.. methods ?? []];
+        methodsByName = new(StringComparer.OrdinalIgnoreCase);
+        foreach (var method in Methods)
+        {
+            if (!methodsByName.TryAdd(method.Name, method))
+                throw new ArgumentException($"{typeName} has two methods named {method.Name}.", nameof(methods));
         }
 
         this.defaults = [];
@@ -157,6 +167,18 @@ public sealed class ComponentClass
     /// <param name="name">The event's name.</param>
     /// <returns>The event, or <see langword="null"/> when the class has none of that name.</returns>
     public EventDefinition? Event(string name) => eventsByName.GetValueOrDefault(name);
+
+    /// <summary>
+    /// The class's methods: what a program's code calls on an instance, such as <c>SetFocus</c> or <c>Move</c>.
+    /// </summary>
+    public IReadOnlyList<MethodDefinition> Methods { get; }
+
+    /// <summary>
+    /// The class's method of a given name, compared without regard to case.
+    /// </summary>
+    /// <param name="name">The method's name.</param>
+    /// <returns>The method, or <see langword="null"/> when the class has none of that name.</returns>
+    public MethodDefinition? Method(string name) => methodsByName.GetValueOrDefault(name);
 
     /// <summary>
     /// Whether the class has <paramref name="property"/>, the definition compared by reference.

@@ -5,7 +5,7 @@ namespace RDCore.Forms.Model;
 
 /// <summary>
 /// The unit of a form's or a container's scale, as VB's <c>ScaleMode</c> numbers them. The ends of a Line it holds are in it; the
-/// positions and sizes of its controls are in twips whatever its scale.
+/// positions and sizes of its controls are in pixels whatever its scale.
 /// </summary>
 public enum ScaleMode
 {
@@ -49,7 +49,7 @@ public enum ScaleMode
 public static class ScaleModeExtensions
 {
     /// <summary>
-    /// The twips in a pixel at 96 dots per inch, the value the model converts pixels with.
+    /// The twips in a pixel. The model's pixel is a device-independent pixel, 1/96 inch, whatever the screen.
     /// </summary>
     public const double TwipsPerPixel = 15;
 

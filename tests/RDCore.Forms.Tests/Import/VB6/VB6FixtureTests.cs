@@ -58,7 +58,8 @@ public sealed class VB6FixtureTests
     public void TheFormsClientRectangle_IsItsPositionAndSize_AndItsOuterOneIsNotRead()
     {
         // the designer file's values: VB6 read a ScaleWidth of 7995, its window's client width at run time.
-        Assert.AreEqual((60d, 345d, 8000d, 6000d), Bounds(Intrinsics.Root));
+        // in pixels, from the file's twips.
+        Assert.AreEqual((4d, 23d, 8000d / 15, 400d), Bounds(Intrinsics.Root));
         Assert.AreEqual(ScaleMode.Twip, Intrinsics.Root.Get(VBProperties.ScaleMode));
         Assert.AreEqual(8000d, Intrinsics.Root.Get(VBProperties.ScaleWidth));
     }
@@ -70,7 +71,7 @@ public sealed class VB6FixtureTests
         var second = Component("optChoice", 1);
 
         Assert.AreSame(Component("fraOptions"), first.Container);
-        Assert.AreEqual((120d, 360d, 2000d, 255d), Bounds(first));
+        Assert.AreEqual((8d, 24d, 2000d / 15, 17d), Bounds(first));
         Assert.IsTrue(first.Get(VBProperties.OptionButtonValue));
         Assert.IsFalse(second.Get(VBProperties.OptionButtonValue));
         Assert.AreEqual(1, first.Get(VBProperties.TabIndex));
@@ -196,7 +197,7 @@ public sealed class VB6FixtureTests
         var inside = Component("cmdInside");
 
         Assert.AreSame(Component("picLogo"), inside.Container);
-        Assert.AreEqual((120d, 120d, 615d, 375d), Bounds(inside));
+        Assert.AreEqual((8d, 8d, 41d, 25d), Bounds(inside));
         Assert.AreEqual(1425d, Component("picLogo").Get(VBProperties.ScaleWidth));
     }
 
@@ -207,7 +208,7 @@ public sealed class VB6FixtureTests
 
         Assert.AreEqual(500, timer.Get(VBProperties.Interval));
         Assert.IsFalse(timer.Get(VBProperties.Enabled));
-        Assert.AreEqual(7440d, timer.Get(VBProperties.Left));
+        Assert.AreEqual(496d, timer.Get(VBProperties.Left));
     }
 
     [TestMethod]
@@ -262,7 +263,7 @@ public sealed class VB6FixtureTests
             form.Root.Get(VBProperties.ScaleTop), form.Root.Get(VBProperties.ScaleWidth), form.Root.Get(VBProperties.ScaleHeight)));
         // the designer file's ends, which the model keeps as written: VB6 read -0.0124842 0 100.0125 50.
         Assert.AreEqual((0d, 0d, 100d, 50d), (line.Get(VBProperties.X1), line.Get(VBProperties.Y1), line.Get(VBProperties.X2), line.Get(VBProperties.Y2)));
-        Assert.AreEqual((4000d, 3000d), (form.Root.Get(VBProperties.Width), form.Root.Get(VBProperties.Height)));
+        Assert.AreEqual((4000d / 15, 200d), (form.Root.Get(VBProperties.Width), form.Root.Get(VBProperties.Height)));
     }
 
     [TestMethod]
@@ -271,7 +272,7 @@ public sealed class VB6FixtureTests
     {
         var label = Read("Misplaced.frm").Form!.Find("lblInTimer")!;
 
-        Assert.AreEqual((720d, 4800d, 1215d, 255d), Bounds(label));
+        Assert.AreEqual((48d, 320d, 81d, 17d), Bounds(label));
     }
 
     [TestMethod]
@@ -281,12 +282,12 @@ public sealed class VB6FixtureTests
         var form = import.Form!;
 
         Assert.AreSame(form.Root, form.Find("cmdInList")!.Container);
-        Assert.AreEqual((120d, 120d, 1215d, 375d), Bounds(form.Find("cmdInList")!));
+        Assert.AreEqual((8d, 8d, 81d, 25d), Bounds(form.Find("cmdInList")!));
         Assert.AreSame(form.Find("fraHost"), form.Find("cmdDeep")!.Container);
-        Assert.AreEqual((60d, 60d, 900d, 375d), Bounds(form.Find("cmdDeep")!));
+        Assert.AreEqual((4d, 4d, 60d, 25d), Bounds(form.Find("cmdDeep")!));
         Assert.AreSame(form.Root, form.Find("lblInTimer")!.Container);
         // the designer file's position: VB6 read 720 4800, the Timer's offset added.
-        Assert.AreEqual((600d, 2400d, 1215d, 255d), Bounds(form.Find("lblInTimer")!));
+        Assert.AreEqual((40d, 160d, 81d, 17d), Bounds(form.Find("lblInTimer")!));
         Assert.HasCount(3, import.Diagnostics);
         Assert.IsTrue(import.Diagnostics.All(d => d is { Kind: VB6ImportDiagnosticKind.MisplacedComponent, Severity: VB6ImportSeverity.Warning }));
         Assert.AreEqual(17, import.Diagnostics[0].Line);

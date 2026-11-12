@@ -31,7 +31,7 @@ public sealed class MenuBarTests
     // is a top-level menu with no items.
     private static ComponentInstance Probe()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 4500d).Set(P.Height, 3000d);
+        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d);
         var top = Menu(root, "mnuTop", "&Top");
         Menu(top, "mnuA", "&Alpha", "^Q");
         var sub = Menu(top, "mnuSub", "&Sub");
@@ -266,7 +266,7 @@ public sealed class MenuBarTests
         var raised = UI.Run(() =>
         {
             var root = Probe();
-            var text = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.Width, 1800d).Set(P.Height, 315d);
+            var text = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.Width, 120d).Set(P.Height, 21d);
             text.SetContainer(root);
             var sink = new RecordingSink();
             var window = Open(root, sink);

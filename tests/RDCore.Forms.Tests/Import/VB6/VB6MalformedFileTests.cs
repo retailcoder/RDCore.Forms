@@ -158,7 +158,7 @@ public sealed class VB6MalformedFileTests
         var form = import.Form!;
 
         Assert.AreSame(VBClasses.MDIForm, form.Root.Class);
-        Assert.AreEqual(("Main", 6000d), (form.Root.Get(VBProperties.Caption), form.Root.Get(VBProperties.Width)));
+        Assert.AreEqual(("Main", 400d), (form.Root.Get(VBProperties.Caption), form.Root.Get(VBProperties.Width)));
         CollectionAssert.AreEqual(new[] { "picBar", "mnuFile" }, form.Root.Contents.Select(c => c.Name).ToArray());
         Assert.IsEmpty(import.Diagnostics);
     }
