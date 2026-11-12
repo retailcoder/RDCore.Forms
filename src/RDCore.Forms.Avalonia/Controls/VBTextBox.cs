@@ -176,7 +176,7 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
             TextAlignment = ToAvalonia((VBTextAlignment)e.After!);
         else if (ReferenceEquals(e.Property, P.BorderStyle))
             BorderThickness = (BorderStyle)e.After! == BorderStyle.None ? new Thickness(0) : new Thickness(1);
-        // A MultiLine box shows its text whatever its PasswordChar, and a longer one shows its first character.
+        // A MultiLine box shows its text whatever its PasswordChar, and a PasswordChar of more than one character shows its first.
         else if (ReferenceEquals(e.Property, P.PasswordChar))
             PasswordChar = !multiLine && e.After is string { Length: > 0 } mask ? mask[0] : default;
         else if (ReferenceEquals(e.Property, P.MaxLength))

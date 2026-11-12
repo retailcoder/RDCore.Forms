@@ -34,12 +34,12 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 
 Both are set at design time. A box keeps the ones it was made with.
 
-|Box|Behaviour|
+|Case|Behaviour|
 |---|---|
 |Single-line|One line, scrolled across as the caret moves. `ScrollBars` shows no bar. Enter raises KeyDown, KeyPress 13 and KeyUp, and types nothing.|
 |MultiLine, no horizontal bar|The text wraps at the box's edge.|
 |MultiLine, a horizontal bar|The text does not wrap.|
-|MultiLine, a bar asked for|Shown, with nothing to scroll too.|
+|MultiLine, a bar asked for|Shown, even with nothing to scroll.|
 |Enter in a MultiLine box|KeyDown, KeyPress 13, a line break (CR LF), then KeyUp. Where the form has a default button, the button takes Enter as it does from any control.|
 |Ctrl+Enter in a MultiLine box|KeyDown with `Shift` 2, KeyPress 10, then a line break. No button takes it.|
 |Tab in a MultiLine box|The focus moves to the next control. No tab is typed.|
