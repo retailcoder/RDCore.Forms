@@ -199,6 +199,18 @@ public static class VBProperties
     public static readonly PropertyDefinition<byte[]?> Picture = new("Picture", PropertyCategory.Appearance, null);
 
     /// <summary>
+    /// The picture a graphical button shows in place of its <see cref="Picture"/> while it is pressed or checked, as the bytes of its
+    /// image file, or <see langword="null"/> for none.
+    /// </summary>
+    public static readonly PropertyDefinition<byte[]?> DownPicture = new("DownPicture", PropertyCategory.Appearance, null);
+
+    /// <summary>
+    /// The picture a graphical button shows in place of its <see cref="Picture"/> while it is disabled, as the bytes of its image file,
+    /// or <see langword="null"/> for none.
+    /// </summary>
+    public static readonly PropertyDefinition<byte[]?> DisabledPicture = new("DisabledPicture", PropertyCategory.Appearance, null);
+
+    /// <summary>
     /// The icon a form shows in its title bar, as the bytes of its icon file, or <see langword="null"/> for none.
     /// </summary>
     public static readonly PropertyDefinition<byte[]?> Icon = new("Icon", PropertyCategory.Appearance, null);
@@ -355,6 +367,11 @@ public static class VBProperties
     /// How a ComboBox is drawn and behaves.
     /// </summary>
     public static readonly PropertyDefinition<ComboBoxStyle> ComboBoxStyle = new("Style", PropertyCategory.Behavior, VB.ComboBoxStyle.DropdownCombo);
+
+    /// <summary>
+    /// How a CommandButton, CheckBox or OptionButton is drawn.
+    /// </summary>
+    public static readonly PropertyDefinition<ButtonStyle> ButtonStyle = new("Style", PropertyCategory.Appearance, VB.ButtonStyle.Standard);
 
     /// <summary>
     /// Where a form opens on the screen.

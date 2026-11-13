@@ -13,15 +13,26 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// A VB CommandButton: a <see cref="Button"/> that shows a <see cref="VBClasses.CommandButton"/> component.
 /// </summary>
 /// <remarks>
+/// <para>
 /// It raises Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp. Click comes before MouseUp, as in
 /// VB, and Space raises KeyDown, KeyPress and KeyUp, then Click. An arrow key moves the focus to the previous or next control in its
 /// container, and raises no key event. Enter on the button clicks it, with no key event, and its <c>Default</c> and <c>Cancel</c> make it
 /// the button that Enter and Esc click from the form's other controls (<see cref="Rendering.VBFormWindow"/>). On a form's window, the button
 /// that Enter clicks has the default look: a border two pixels wide in the system's <c>Highlight</c> colour, and the <c>:default</c>
-/// pseudo-class. Its <c>Picture</c> is not drawn.
+/// pseudo-class.
+/// </para>
+/// <para>
+/// Its <c>Style</c> is read as it is made, and a later change is ignored. A Standard button shows its caption only: its <c>Picture</c>
+/// is not drawn, and its <c>BackColor</c> is not painted. A Graphical button paints its <c>BackColor</c>, and shows its caption at the
+/// bottom and its picture centred above it, both one pixel right and down while it is pressed. While pressed it shows its
+/// <c>DownPicture</c>, and while disabled its <c>DisabledPicture</c>, where it has one; a disabled button with no
+/// <c>DisabledPicture</c> shows its <c>Picture</c> greyed.
+/// </para>
 /// </remarks>
 public sealed class VBCommandButton : Button, IRaisesKeyEvents
 {
+    private readonly GraphicalFace? face;
+
     static VBCommandButton()
     {
         ControlKeys.Attach<VBCommandButton>(arrowsMoveTheFocus: true);
@@ -38,7 +49,13 @@ public sealed class VBCommandButton : Button, IRaisesKeyEvents
     /// <param name="instance">The CommandButton.</param>
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="instance"/> is not a CommandButton.</exception>
-    public VBCommandButton(ComponentInstance instance) => ComponentBinding.Bind(this, instance, VBClasses.CommandButton, Apply);
+    public VBCommandButton(ComponentInstance instance)
+    {
+        ArgumentNullException.ThrowIfNull(instance);
+        if (instance.Get(P.ButtonStyle) == ButtonStyle.Graphical)
+            GraphicalFace.ShowIn(this, face = new GraphicalFace());
+        ComponentBinding.Bind(this, instance, VBClasses.CommandButton, Apply);
+    }
 
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(Button);
@@ -61,10 +78,24 @@ public sealed class VBCommandButton : Button, IRaisesKeyEvents
         }
     }
 
+    /// <inheritdoc/>
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (face is not null && change.Property == IsPressedProperty)
+            face.IsDown = IsPressed;
+    }
+
     private void Apply(ComponentPropertyChangedEventArgs e)
     {
         if (ReferenceEquals(e.Property, P.Caption))
-            VBCaption.ShowIn(this, (string)e.After!);
+            GraphicalFace.ShowCaption(this, face, (string)e.After!);
+        else if (GraphicalFace.IsDrawnByFace(e.Property))
+            face?.Take(e.Property, (byte[]?)e.After);
+        else if (ReferenceEquals(e.Property, P.ButtonStyle) || face is null && ReferenceEquals(e.Property, P.BackColor))
+        {
+            // The style is kept as the button was made, and a Standard button does not paint its BackColor.
+        }
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
     }

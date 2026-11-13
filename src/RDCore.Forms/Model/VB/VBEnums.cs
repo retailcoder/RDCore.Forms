@@ -191,6 +191,22 @@ public enum ComboBoxStyle
 }
 
 /// <summary>
+/// How a VB CommandButton, CheckBox or OptionButton is drawn: its <c>Style</c>, set at design time and read-only to a program.
+/// </summary>
+public enum ButtonStyle
+{
+    /// <summary>
+    /// The system's control, which shows its caption only, the default.
+    /// </summary>
+    Standard = 0,
+    /// <summary>
+    /// A push button that shows its picture over its caption, in its <c>BackColor</c>. A CheckBox or an OptionButton of this style is
+    /// drawn pushed in while it is checked.
+    /// </summary>
+    Graphical = 1,
+}
+
+/// <summary>
 /// Whether a VB ListBox selects more than one item, and how: its <c>MultiSelect</c>, set at design time and read-only to a program.
 /// </summary>
 public enum ListBoxMultiSelect
