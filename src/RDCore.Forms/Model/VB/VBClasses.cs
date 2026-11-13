@@ -69,7 +69,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass CommandButton = Control("VB.CommandButton", "Command",
         [P.Caption, P.BackColor, P.ForeColor, P.Appearance, P.Font, P.MousePointer, P.Picture, P.Enabled, P.TabStop, P.TabIndex, P.ToolTipText,
-         P.Default, P.Cancel],
+         P.Default, P.Cancel, P.ButtonStyle, P.DownPicture, P.DisabledPicture],
         [Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp]);
 
     /// <summary>
@@ -96,7 +96,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass CheckBox = Control("VB.CheckBox", "Check",
         [P.BackColor, P.Caption, P.Enabled, P.Font, P.ForeColor, P.MousePointer, P.RightToLeft, P.ToolTipText, P.CheckBoxValue, P.Appearance,
-         P.TabStop, P.TabIndex],
+         P.TabStop, P.TabIndex, P.ButtonStyle, P.Picture, P.DownPicture, P.DisabledPicture],
         [Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp]);
 
     /// <summary>
@@ -104,7 +104,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass OptionButton = Control("VB.OptionButton", "Option",
         [P.BackColor, P.Caption, P.Enabled, P.Font, P.ForeColor, P.MousePointer, P.RightToLeft, P.ToolTipText, P.OptionButtonValue,
-         P.Appearance, P.TabStop, P.TabIndex],
+         P.Appearance, P.TabStop, P.TabIndex, P.ButtonStyle, P.Picture, P.DownPicture, P.DisabledPicture],
         [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp]);
 
     /// <summary>

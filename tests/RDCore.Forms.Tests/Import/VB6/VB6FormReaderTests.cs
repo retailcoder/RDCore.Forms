@@ -55,6 +55,33 @@ public sealed class VB6FormReaderTests
     }
 
     [TestMethod]
+    public void AButtonsStyleAndItsDownAndDisabledPictures_AreRead()
+    {
+        // One picture record: its length, the picture signature, the image's length, then the image.
+        var companion = Bytes(10, 0, 0, 0, 0x6C, 0x74, 0, 0, 2, 0, 0, 0, 0x42, 0x4D);
+        var import = VB6FormReader.Read(Form(
+            "   Begin VB.CommandButton Command1 ",
+            "      DisabledPicture =   \"Form1.frx\":0000",
+            "      DownPicture     =   \"Form1.frx\":0000",
+            "      Style           =   1  'Graphical",
+            "   End",
+            "   Begin VB.CheckBox Check1 ",
+            "      Style           =   1  'Graphical",
+            "   End",
+            "   Begin VB.OptionButton Option1 ",
+            "      Style           =   1  'Graphical",
+            "   End"), companion);
+        var button = import.Form!.Find("Command1")!;
+
+        Assert.AreEqual(ButtonStyle.Graphical, button.Get(VBProperties.ButtonStyle));
+        CollectionAssert.AreEqual(Bytes(0x42, 0x4D), button.Get(VBProperties.DownPicture));
+        CollectionAssert.AreEqual(Bytes(0x42, 0x4D), button.Get(VBProperties.DisabledPicture));
+        Assert.AreEqual(ButtonStyle.Graphical, import.Form.Find("Check1")!.Get(VBProperties.ButtonStyle));
+        Assert.AreEqual(ButtonStyle.Graphical, import.Form.Find("Option1")!.Get(VBProperties.ButtonStyle));
+        Assert.IsEmpty(import.Diagnostics);
+    }
+
+    [TestMethod]
     public void AValueThePropertyCannotHold_IsKeptAsText_AndReported()
     {
         var import = VB6FormReader.Read(Form(Label("Alignment       =   7")));
