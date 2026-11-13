@@ -63,18 +63,16 @@ public sealed class GraphicalButtonTests
     private static Rect CaptionBounds(Control button) =>
         button.GetVisualDescendants().OfType<TextBlock>().Single() is var text ? text.Bounds.WithY(text.TranslatePoint(default, button)!.Value.Y) : default;
 
+    // A press or a release of the left button 4 pixels in from the button's top left corner, through the window's input as the
+    // user's: it renders the window first, so that the release's hit test finds the button and it clicks.
     private static void Down(Control button, bool down)
     {
-        var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, isPrimary: true);
         var root = TopLevel.GetTopLevel(button)!;
         var point = button.TranslatePoint(new Point(4, 4), root)!.Value;
         if (down)
-            button.RaiseEvent(new PointerPressedEventArgs(button, pointer, root, point, 0,
-                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed), KeyModifiers.None, 1));
+            root.MouseDown(point, MouseButton.Left);
         else
-            button.RaiseEvent(new PointerReleasedEventArgs(button, pointer, root, point, 0,
-                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased), KeyModifiers.None, MouseButton.Left));
-        Dispatcher.UIThread.RunJobs();
+            root.MouseUp(point, MouseButton.Left);
     }
 
     private static readonly Rect Cell = new(10, 10, 100, 60);
