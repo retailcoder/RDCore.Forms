@@ -199,8 +199,8 @@ public static class VBProperties
     public static readonly PropertyDefinition<byte[]?> Picture = new("Picture", PropertyCategory.Appearance, null);
 
     /// <summary>
-    /// The picture a graphical button shows in place of its <see cref="Picture"/> while it is pressed or checked, as the bytes of its
-    /// image file, or <see langword="null"/> for none.
+    /// The picture a graphical button shows in place of its <see cref="Picture"/> while it is pressed, checked or selected, as the bytes
+    /// of its image file, or <see langword="null"/> for none.
     /// </summary>
     public static readonly PropertyDefinition<byte[]?> DownPicture = new("DownPicture", PropertyCategory.Appearance, null);
 

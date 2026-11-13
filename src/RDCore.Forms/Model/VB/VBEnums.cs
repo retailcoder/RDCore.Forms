@@ -196,12 +196,12 @@ public enum ComboBoxStyle
 public enum ButtonStyle
 {
     /// <summary>
-    /// The system's control, which shows its caption only, the default.
+    /// The default: the system's control, which shows its caption only.
     /// </summary>
     Standard = 0,
     /// <summary>
     /// A push button that shows its picture over its caption, in its <c>BackColor</c>. A CheckBox or an OptionButton of this style is
-    /// drawn pushed in while it is checked.
+    /// drawn pushed in while it is checked or selected.
     /// </summary>
     Graphical = 1,
 }
