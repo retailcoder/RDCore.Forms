@@ -3,6 +3,7 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Rendering;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
@@ -25,10 +26,17 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// Value, and raises no key event. The whole rectangle takes the pointer, as a VB CheckBox's window does, whatever part of it the theme
 /// draws.
 /// </para>
+/// <para>
+/// Its <c>Style</c> is read as it is made, and a later change is ignored. A Standard box does not draw its <c>Picture</c>. A Graphical
+/// box is a push button, drawn as a <see cref="ToggleButton"/>, with the face of a graphical
+/// <see cref="VBCommandButton"/>; it is pushed in, and shows its <c>DownPicture</c>, while it is pressed or checked. A grayed box is
+/// drawn as a cleared one.
+/// </para>
 /// </remarks>
 public sealed class VBCheckBox : CheckBox, ICustomHitTest, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
+    private readonly GraphicalFace? face;
     private bool showing;
 
     static VBCheckBox()
@@ -47,12 +55,23 @@ public sealed class VBCheckBox : CheckBox, ICustomHitTest, IRaisesKeyEvents
     /// <exception cref="ArgumentException"><paramref name="instance"/> is not a CheckBox.</exception>
     public VBCheckBox(ComponentInstance instance)
     {
+        ArgumentNullException.ThrowIfNull(instance);
         this.instance = instance;
+        if (instance.Get(P.ButtonStyle) == ButtonStyle.Graphical)
+            GraphicalFace.ShowIn(this, face = new GraphicalFace());
         ComponentBinding.Bind(this, instance, VBClasses.CheckBox, Apply);
     }
 
     /// <inheritdoc/>
-    protected override Type StyleKeyOverride => typeof(CheckBox);
+    protected override Type StyleKeyOverride => face is null ? typeof(CheckBox) : typeof(ToggleButton);
+
+    /// <inheritdoc/>
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (face is not null && (change.Property == IsPressedProperty || change.Property == IsCheckedProperty))
+            face.IsDown = IsPressed || IsChecked == true;
+    }
 
     /// <inheritdoc/>
     public bool HitTest(Point point) => new Rect(Bounds.Size).Contains(point);
@@ -96,8 +115,10 @@ public sealed class VBCheckBox : CheckBox, ICustomHitTest, IRaisesKeyEvents
                 VBControl.Raise(this, VBEvents.Click);
         }
         else if (ReferenceEquals(e.Property, P.Caption))
-            VBCaption.ShowIn(this, (string)e.After!);
-        else
+            GraphicalFace.ShowCaption(this, face, (string)e.After!);
+        else if (GraphicalFace.IsDrawnByFace(e.Property))
+            face?.Take(e.Property, (byte[]?)e.After);
+        else if (!ReferenceEquals(e.Property, P.ButtonStyle))
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
     }
 }

@@ -3,6 +3,7 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Rendering;
 using RDCore.Forms.Model;
@@ -29,10 +30,16 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// click's second press raises MouseDown, then DblClick. The whole rectangle takes the pointer, as a VB OptionButton's window does,
 /// whatever part of it the theme draws.
 /// </para>
+/// <para>
+/// Its <c>Style</c> is read as it is made, and a later change is ignored. A Standard button does not draw its <c>Picture</c>. A
+/// Graphical button is a push button, drawn as a <see cref="ToggleButton"/>, with the face of a graphical <see cref="VBCommandButton"/>;
+/// it is pushed in, and shows its <c>DownPicture</c>, while it is pressed or selected.
+/// </para>
 /// </remarks>
 public sealed class VBOptionButton : RadioButton, ICustomHitTest, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
+    private readonly GraphicalFace? face;
     private bool showing;
     // Set while the focus selects it, until its GotFocus has been raised.
     private bool clickAfterFocus;
@@ -80,12 +87,15 @@ public sealed class VBOptionButton : RadioButton, ICustomHitTest, IRaisesKeyEven
     /// <exception cref="ArgumentException"><paramref name="instance"/> is not an OptionButton.</exception>
     public VBOptionButton(ComponentInstance instance)
     {
+        ArgumentNullException.ThrowIfNull(instance);
         this.instance = instance;
+        if (instance.Get(P.ButtonStyle) == ButtonStyle.Graphical)
+            GraphicalFace.ShowIn(this, face = new GraphicalFace());
         ComponentBinding.Bind(this, instance, VBClasses.OptionButton, Apply);
     }
 
     /// <inheritdoc/>
-    protected override Type StyleKeyOverride => typeof(RadioButton);
+    protected override Type StyleKeyOverride => face is null ? typeof(RadioButton) : typeof(ToggleButton);
 
     /// <inheritdoc/>
     public bool HitTest(Point point) => new Rect(Bounds.Size).Contains(point);
@@ -97,6 +107,8 @@ public sealed class VBOptionButton : RadioButton, ICustomHitTest, IRaisesKeyEven
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (face is not null && (change.Property == IsPressedProperty || change.Property == IsCheckedProperty))
+            face.IsDown = IsPressed || IsChecked == true;
         if (change.Property != IsCheckedProperty)
             return;
         // A selection by a click, by the focus or by the group clearing it goes to the component, which raises Click from it.
@@ -150,7 +162,13 @@ public sealed class VBOptionButton : RadioButton, ICustomHitTest, IRaisesKeyEven
                 VBControl.Raise(this, VBEvents.Click);
         }
         else if (ReferenceEquals(e.Property, P.Caption))
-            VBCaption.ShowIn(this, (string)e.After!);
+            GraphicalFace.ShowCaption(this, face, (string)e.After!);
+        else if (GraphicalFace.IsDrawnByFace(e.Property))
+            face?.Take(e.Property, (byte[]?)e.After);
+        else if (ReferenceEquals(e.Property, P.ButtonStyle))
+        {
+            // Kept as the button was made.
+        }
         else if (ReferenceEquals(e.Property, P.TabStop))
         {
             tabStop = (bool)e.After!;
