@@ -71,7 +71,7 @@ Every key such a list takes raises Click, whether or not anything changed.
 
 ### Simple Combo
 
-The edit box is 21 pixels high, VB6's at its default font, and the list takes the rest of the combo's height. The list scrolls where its items do not fit.
+The edit box is 21 pixels high, as VB6 draws it at its default font, and the list takes the rest of the combo's height. The list scrolls where its items do not fit.
 
 |Input|Raised|
 |---|---|

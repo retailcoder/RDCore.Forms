@@ -58,9 +58,9 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </para>
 /// <para>
 /// A Simple Combo shows its edit box, 21 pixels high, with its list always shown under it and no button; the list takes the rest of
-/// its height, and scrolls where its items do not fit. A press on the list picks the item under it, or the last item where it is
-/// below them, the one already selected too, with Click and no Change, and leaves the focus in the edit box. A double click is one
-/// Click, then DblClick. Its list never drops, and it raises no DropDown. Its typing narrows nothing.
+/// its height, and scrolls where its items do not fit. A press on the list picks the item under it, or the last item when the
+/// press is below the items, even the item already selected; a pick raises Click and no Change, and leaves the focus in the edit box.
+/// A double click is one Click, then DblClick. Its list never drops, and it raises no DropDown. Typing does not complete or filter.
 /// </para>
 /// <para>
 /// A <c>Locked</c> combo keeps out the user, not code: its edit box takes no typing, its list does not drop, and neither the keys nor
@@ -179,8 +179,8 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         return new DockPanel { LastChildFill = true, Children = { edit, popup, list } };
     });
 
-    // A press on a Simple Combo's list picks the item under it, or the last item where it is below them, the one already selected
-    // too, with Click. A double click's second press raises DblClick and picks nothing more. A Locked combo's list picks nothing.
+    // A press on a Simple Combo's list picks the item under it, or the last item when the press is below the items, even the item
+    // already selected, with Click. A double click's second press raises DblClick and picks nothing more. A Locked combo's list picks nothing.
     private void PressList(object? sender, PointerPressedEventArgs e)
     {
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || e.Source is not Visual source || !IsInList(source))
