@@ -58,6 +58,7 @@ Every key such a list takes raises Click, whether or not anything changed.
 |Style|Behaviour|
 |---|---|
 |Dropdown Combo|The component's `Text` is the edit box's. Typing sets it; `Text` from code selects no item; choosing an item puts its text in the box. The edit box shows text only, with no icon.|
+|Simple Combo|The edit box, as a Dropdown Combo's, with its list always shown under it and no button: see [Simple Combo](#simple-combo).|
 |Dropdown List|No edit box. `Text` is the selected item's. `SetText` selects the first item whose whole text it is, without regard to case, and raises Click; it throws 383 where no item has that text. The box draws the selected item's icon. Characters typed select an item: see [Completion](#completion).|
 
 |Event|Raised|
@@ -67,6 +68,27 @@ Every key such a list takes raises Click, whether or not anything changed.
 |DropDown|As the list opens.|
 |GotFocus, LostFocus|Once as the combo is entered and left, whether the combo or its edit box has the focus.|
 |KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list. The form raises its own for them only where its `KeyPreview` is True. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
+
+### Simple Combo
+
+The edit box is 21 pixels high, VB6's at its default font, and the list takes the rest of the combo's height. The list scrolls where its items do not fit.
+
+|Input|Raised|
+|---|---|
+|A press on an item|Click, and the edit box takes the item's text, selected. The item already selected is picked again, with another Click. There is no Change.|
+|A press below the items|The last item is picked, with Click.|
+|A double click on an item|One Click, then DblClick.|
+|A press on the list of a combo without the focus|GotFocus, then Click. The focus is left in the edit box.|
+|Typing|Change. No item is selected.|
+|Up and Down|Click, as in the other styles.|
+|F4 and Alt+Down|Nothing: the list never drops, and there is no DropDown.|
+
+> [!NOTE]
+> **Not implemented.** VB6 snaps a Simple Combo's height to whole rows of its list, and a GotFocus raised by a press on the list reads the `Text` from before the pick. RDForms keeps the height the form gives it, and its GotFocus reads the picked item's `Text`.
+
+### Locked
+
+A `Locked` combo keeps out the user, not code. Its edit box takes no typing, its list does not drop, and neither the keys nor the pointer pick an item. It still raises its key events, and code's `Text` and `ListIndex` set it as they do any combo. These rules are RDForms' own, not measured with VB6.
 
 ### Completion
 
@@ -81,9 +103,7 @@ An item matched by its start is a better match than one matched by its humps; be
 |---|---|
 |Dropdown Combo|Opens the list on the items the text matches, best first, and highlights the best. Up and Down move the highlight; Enter chooses the highlighted item, as a click does, and raises Click. Until then the text stays what was typed, and no item is selected. Where no item matches, the list closes.|
 |Dropdown List|The characters typed add up into a word, which selects its best match and raises Click. A character that no item matches with the word starts a new word, which selects the next item it matches after the selected one, as a ListBox's character does. The word starts again after any other change of the selection.|
-
-> [!NOTE]
-> **Not implemented.** A `Style` of Simple Combo is shown as a Dropdown Combo, and `Locked` is not applied.
+|Simple Combo|No completion: the text stays what was typed, and the list shows every item.|
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

@@ -9,8 +9,11 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 using P = RDCore.Forms.Model.VB.VBProperties;
@@ -54,7 +57,14 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// item matches.
 /// </para>
 /// <para>
-/// A <c>Style</c> of Simple Combo is shown as a Dropdown Combo, and <c>Locked</c> is not applied.
+/// A Simple Combo shows its edit box, 21 pixels high, with its list always shown under it and no button; the list takes the rest of
+/// its height, and scrolls where its items do not fit. A press on the list picks the item under it, or the last item where it is
+/// below them, the one already selected too, with Click and no Change, and leaves the focus in the edit box. A double click is one
+/// Click, then DblClick. Its list never drops, and it raises no DropDown. Its typing narrows nothing.
+/// </para>
+/// <para>
+/// A <c>Locked</c> combo keeps out the user, not code: its edit box takes no typing, its list does not drop, and neither the keys nor
+/// the pointer pick an item. Its key events are raised. Code's <c>Text</c> and <see cref="ListIndex"/> still set it.
 /// </para>
 /// </remarks>
 public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
@@ -80,6 +90,8 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     private CompletionPanel? panel;
     private bool writingList;
     private TextBox? editBox;
+    private Border? listBorder;
+    private bool locked;
     private readonly ItemIcons icons = new();
 
     static VBComboBox()
@@ -102,14 +114,25 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         this.instance = instance;
         style = instance?.Get(P.ComboBoxStyle) ?? ComboBoxStyle.DropdownCombo;
         IsEditable = style != ComboBoxStyle.DropdownList;
+        if (style == ComboBoxStyle.SimpleCombo)
+        {
+            Template = SimpleTemplate;
+            // VB6's rows are a line of text high.
+            Styles.Add(new Style(x => x.OfType<ComboBoxItem>())
+            {
+                Setters = { new Setter(TemplatedControl.PaddingProperty, new Thickness(2, 0)), new Setter(MinHeightProperty, 0d) },
+            });
+            // On the way down, so that the press is the list's before an item takes it.
+            AddHandler(PointerPressedEvent, PressList, RoutingStrategies.Tunnel);
+            AddHandler(PointerReleasedEvent, ReleaseList, RoutingStrategies.Tunnel);
+        }
         // A Dropdown List shows its item in the combo's own padding, too deep for a combo's height.
         Padding = new Thickness(2, 0);
         VerticalContentAlignment = VerticalAlignment.Center;
         if (IsEditable)
-        {
             TextSearch.SetTextBinding(this, noItemMatches);
+        if (style == ComboBoxStyle.DropdownCombo)
             ItemsPanel = new FuncTemplate<Panel?>(() => panel = new CompletionPanel(this));
-        }
         // On the way down, so that the edit box does not take them first.
         AddHandler(KeyDownEvent, TakeKey, RoutingStrategies.Tunnel);
         ComponentBinding.Bind(this, instance!, VBClasses.ComboBox, Apply);
@@ -117,6 +140,76 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
 
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ComboBox);
+
+    // The edit box's height at VB6's default font, MS Sans Serif 8, where VB6 draws it 21 pixels high.
+    private const double SimpleEditHeight = 21;
+
+    // A Simple Combo: its edit box, with its list under it, always shown, and no button. The list scrolls when its items do not fit.
+    // Avalonia's ComboBox requires a popup, which is there and never opens.
+    private static readonly FuncControlTemplate<VBComboBox> SimpleTemplate = new((combo, scope) =>
+    {
+        var edit = new TextBox
+        {
+            Name = "PART_EditableTextBox",
+            Height = SimpleEditHeight,
+            [DockPanel.DockProperty] = Dock.Top,
+            [!!TextBox.TextProperty] = combo[!!TextProperty],
+            [!TextBox.BackgroundProperty] = combo[!BackgroundProperty],
+            [!TextBox.ForegroundProperty] = combo[!ForegroundProperty],
+        }.RegisterInNameScope(scope);
+        var items = new ItemsPresenter
+        {
+            Name = "PART_ItemsPresenter",
+            [!ItemsPresenter.ItemsPanelProperty] = combo[!ItemsPanelProperty],
+        }.RegisterInNameScope(scope);
+        var popup = new Popup { Name = "PART_Popup", [DockPanel.DockProperty] = Dock.Top }.RegisterInNameScope(scope);
+        var list = new Border
+        {
+            Name = "PART_List",
+            BorderThickness = new Thickness(1),
+            [!Border.BorderBrushProperty] = combo[!BorderBrushProperty],
+            [!Border.BackgroundProperty] = combo[!BackgroundProperty],
+            Child = new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = items,
+            },
+        }.RegisterInNameScope(scope);
+        return new DockPanel { LastChildFill = true, Children = { edit, popup, list } };
+    });
+
+    // A press on a Simple Combo's list picks the item under it, or the last item where it is below them, the one already selected
+    // too, with Click. A double click's second press raises DblClick and picks nothing more. A Locked combo's list picks nothing.
+    private void PressList(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || e.Source is not Visual source || !IsInList(source))
+            return;
+        e.Handled = true;
+        if (locked || ItemCount == 0)
+        {
+            editBox?.Focus(NavigationMethod.Pointer);
+            return;
+        }
+        var item = source as ComboBoxItem ?? source.FindAncestorOfType<ComboBoxItem>();
+        if (item is not null && e.ClickCount == 2)
+        {
+            VBControl.Raise(this, VBEvents.DblClick);
+            return;
+        }
+        SelectedIndex = item is null ? ItemCount - 1 : IndexFromContainer(item);
+        Picked();
+    }
+
+    // Its release is the press's: the list's own release would pick the item a second time.
+    private void ReleaseList(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.Source is Visual source && IsInList(source))
+            e.Handled = true;
+    }
+
+    private bool IsInList(Visual source) =>
+        listBorder is { } list && (ReferenceEquals(source, list) || list.IsVisualAncestorOf(source));
 
     /// <summary>
     /// The number of items.
@@ -266,8 +359,10 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         base.OnApplyTemplate(e);
         // The edit box is one line, at a combo's height, too short for a TextBox's own padding.
         editBox = e.NameScope.Find<TextBox>("PART_EditableTextBox");
+        listBorder = e.NameScope.Find<Border>("PART_List");
         if (editBox is not { } box)
             return;
+        box.IsReadOnly = locked;
         box.MinHeight = 0;
         box.Padding = new Thickness(2, 0);
         box.VerticalContentAlignment = VerticalAlignment.Center;
@@ -314,14 +409,17 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
                 textFromTyping = false;
             }
             instance.Set(P.Text, base.Text ?? "");
-            if (editBox?.IsKeyboardFocusWithin == true)
+            if (style == ComboBoxStyle.DropdownCombo && editBox?.IsKeyboardFocusWithin == true)
                 Narrow(base.Text ?? "");
             return;
         }
         base.OnPropertyChanged(change);
         if (change.Property == IsDropDownOpenProperty)
         {
-            if (change.GetNewValue<bool>())
+            // A Simple Combo's list is always shown: it has nothing to drop, and raises no DropDown. A Locked combo's list does not drop.
+            if (change.GetNewValue<bool>() && (style == ComboBoxStyle.SimpleCombo || locked))
+                SetCurrentValue(IsDropDownOpenProperty, false);
+            else if (change.GetNewValue<bool>())
                 VBControl.Raise(this, VBEvents.DropDown);
             else
                 EndNarrowing();
@@ -373,6 +471,8 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         if (e.Handled || string.IsNullOrEmpty(e.Text) || ItemCount == 0)
             return;
         e.Handled = true;
+        if (locked)
+            return;
         foreach (var character in e.Text)
             Search(character);
     }
@@ -533,6 +633,8 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         if (e.Key is not (Key.Up or Key.Down))
             return;
         e.Handled = true;
+        if (locked)
+            return;
         var index = SelectedIndex < 0 ? 0 : Math.Clamp(SelectedIndex + (e.Key == Key.Down ? 1 : -1), 0, ItemCount - 1);
         if (index == SelectedIndex)
             return;
@@ -542,9 +644,12 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         Picked();
     }
 
-    // A choice puts the item's text in the edit box selected, so that a key typed next replaces it.
+    // A choice puts the item's text in the edit box selected, so that a key typed next replaces it. A Simple Combo's pick leaves the
+    // focus in its edit box: what is typed next goes there.
     private void Picked()
     {
+        if (style == ComboBoxStyle.SimpleCombo && editBox is { IsFocused: false } box)
+            box.Focus(NavigationMethod.Pointer);
         if (IsEditable)
             editBox?.SelectAll();
         VBControl.Raise(this, VBEvents.Click);
@@ -577,6 +682,14 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
             Items.Clear();
             foreach (var item in (IReadOnlyList<string>)e.After!)
                 Items.Add(item);
+        }
+        else if (ReferenceEquals(e.Property, P.Locked))
+        {
+            locked = (bool)e.After!;
+            if (editBox is { } box)
+                box.IsReadOnly = locked;
+            if (locked && IsDropDownOpen)
+                SetCurrentValue(IsDropDownOpenProperty, false);
         }
         else if (ReferenceEquals(e.Property, P.ItemIcon))
         {
