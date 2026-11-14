@@ -29,7 +29,7 @@ In a form's window, the form's scale and each PictureBox's follow VB6's rules ([
 
 - A `ScaleWidth` or `ScaleHeight` of 0 is error 380, and a negative one runs the scale right to left or bottom to top.
 - A `ScaleMode` outside 0 to 7 is error 380, and the scale is unchanged. VB6 then reads the refused `ScaleMode` back; RDForms keeps the one it had.
-- A change of `BorderStyle` or `Appearance` changes the inside as a change of size does. This rule was not measured with VB6: RDForms sets it.
+- A change of `BorderStyle` or `Appearance` changes the inside as a change of size does (RDForms' own, not measured with VB6).
 
 ## Statements and methods
 
