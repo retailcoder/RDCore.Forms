@@ -108,6 +108,15 @@ public sealed class ScaleRulesTests
     }
 
     [TestMethod]
+    public void AUnitScale_OverAnEmptyInside_IsEmpty()
+    {
+        var picture = Picture();
+        picture.TrySet(P.Width, 0d);
+
+        Assert.AreEqual((ScaleMode.Twip, 0d, 0d, 0d, 1500d), Five(picture));
+    }
+
+    [TestMethod]
     public void AFormsResize_InAUserScale_KeepsTheUnit_InSinglePrecision()
     {
         var form = Form();
