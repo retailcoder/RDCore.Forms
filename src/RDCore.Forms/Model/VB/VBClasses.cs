@@ -78,7 +78,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass TextBox = Control("VB.TextBox", "Text",
         [P.Text, P.Enabled, P.BackColor, P.ForeColor, P.Font, P.TabStop, P.MousePointer, P.TabIndex, P.ToolTipText, P.Locked, P.Alignment,
-         P.Appearance, P.BorderStyle],
+         P.Appearance, P.BorderStyle, P.MultiLine, P.ScrollBars, P.PasswordChar, P.MaxLength],
         [KeyDown, KeyPress, KeyUp, Change, Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground), (P.BorderStyle, BorderStyle.FixedSingle)));
 
@@ -178,10 +178,11 @@ public static class VBClasses
         [Click, DblClick, MouseDown, MouseMove, MouseUp], isWindowless: true);
 
     /// <summary>
-    /// <c>VB.Timer</c>. It has a place in the designer and no size, and a running program does not show it.
+    /// <c>VB.Timer</c>. It has a place in the designer and no size, and a running program does not show it and can neither read
+    /// nor set its <c>Left</c> and <c>Top</c>.
     /// </summary>
     public static readonly ComponentClass Timer = new("VB.Timer", "Timer", ComponentKind.Control,
-        [P.Enabled, P.Interval, P.Left, P.Top, P.Tag], [VBEvents.Timer], hasExtent: false);
+        [P.Enabled, P.Interval, P.Left, P.Top, P.Tag], [VBEvents.Timer], hasExtent: false, notAvailableAtRunTime: [P.Left, P.Top]);
 
     /// <summary>
     /// <c>VB.HScrollBar</c>.

@@ -437,7 +437,7 @@ public static partial class VB6FormReader
             }
 
             if (TryConvert(definition.ValueType, literal, out var value)
-                && instance.TrySet(definition, CodeUnits.IsExtent(definition) && value is double twips ? twips / ScaleModeExtensions.TwipsPerPixel : value))
+                && instance.TryRead(definition, CodeUnits.IsExtent(definition) && value is double twips ? twips / ScaleModeExtensions.TwipsPerPixel : value))
             {
                 return;
             }
@@ -470,7 +470,7 @@ public static partial class VB6FormReader
                 return;
             }
 
-            if (!instance.TrySet(definition, record))
+            if (!instance.TryRead(definition, record))
             {
                 KeepInvalid(instance, property, component);
             }

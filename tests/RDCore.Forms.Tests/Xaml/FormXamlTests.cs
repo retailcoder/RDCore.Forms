@@ -90,6 +90,20 @@ public sealed class FormXamlTests
     }
 
     [TestMethod]
+    public void ATextLongerThanItsBoxsMaxLength_IsWrittenAndReadBackWhole()
+    {
+        var read = Read("<TextBox Name=\"Text1\" MaxLength=\"3\" Text=\"abcdef\" />");
+        var box = read.Form!.Components.Single(c => c.Name == "Text1");
+
+        var again = FormXaml.Read(FormXaml.Write(read.Form!)).Form!.Components.Single(c => c.Name == "Text1");
+
+        Assert.IsEmpty(read.Diagnostics, string.Join(Environment.NewLine, read.Diagnostics));
+        Assert.AreEqual("abcdef", box.Get(P.Text));
+        Assert.AreEqual("abcdef", again.Get(P.Text));
+        Assert.AreEqual(3, again.Get(P.MaxLength));
+    }
+
+    [TestMethod]
     public void AForm_IsWrittenAsTheFormatHasIt()
     {
         var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Caption, "Hello").Set(P.Width, 320.0)

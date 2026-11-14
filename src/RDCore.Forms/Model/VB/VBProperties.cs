@@ -283,9 +283,39 @@ public static class VBProperties
     public static readonly PropertyDefinition<int> Interval = new("Interval", PropertyCategory.Misc);
 
     /// <summary>
-    /// The text a TextBox or a ComboBox holds.
+    /// The most characters a TextBox holds, from 0 to 65535, or 0 for no limit. Typing stops there, and a text set is cut to it; a
+    /// text already longer stays until it is set again.
     /// </summary>
-    public static readonly PropertyDefinition<string> Text = new("Text", PropertyCategory.Misc, "");
+    public static readonly PropertyDefinition<int> MaxLength =
+        new("MaxLength", PropertyCategory.Behavior) { Valid = length => length is >= 0 and <= 65535 };
+
+    /// <summary>
+    /// The text a TextBox or a ComboBox holds. A TextBox with a <see cref="MaxLength"/> holds that many characters of a text set, at
+    /// most.
+    /// </summary>
+    public static readonly PropertyDefinition<string> Text = new("Text", PropertyCategory.Misc, "")
+    {
+        Coerce = (component, text) =>
+            component.Class.Has(MaxLength) && component.Get(MaxLength) is > 0 and var length && text.Length > length ? text[..length] : text,
+    };
+
+    /// <summary>
+    /// Whether a TextBox holds more than one line. A multi-line box takes Enter as a new line, and wraps its lines unless it has a
+    /// horizontal scroll bar.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> MultiLine = new("MultiLine", PropertyCategory.Behavior) { ReadOnlyAtRunTime = true };
+
+    /// <summary>
+    /// A TextBox's scroll bars. A box that is not multi-line has none.
+    /// </summary>
+    public static readonly PropertyDefinition<ScrollBars> ScrollBars =
+        new("ScrollBars", PropertyCategory.Appearance, VB.ScrollBars.None) { ReadOnlyAtRunTime = true };
+
+    /// <summary>
+    /// The character a TextBox shows for each character of its text, or "" to show its text. One character at most.
+    /// </summary>
+    public static readonly PropertyDefinition<string> PasswordChar =
+        new("PasswordChar", PropertyCategory.Behavior, "") { Valid = character => character.Length <= 1 };
 
     /// <summary>
     /// Whether a Label's or Shape's background is drawn.
@@ -391,12 +421,14 @@ public static class VBProperties
     /// <summary>
     /// Whether a ListBox selects more than one item, and how.
     /// </summary>
-    public static readonly PropertyDefinition<ListBoxMultiSelect> MultiSelect = new("MultiSelect", PropertyCategory.Behavior, ListBoxMultiSelect.None);
+    public static readonly PropertyDefinition<ListBoxMultiSelect> MultiSelect =
+        new("MultiSelect", PropertyCategory.Behavior, ListBoxMultiSelect.None) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// How a ComboBox is drawn and behaves.
     /// </summary>
-    public static readonly PropertyDefinition<ComboBoxStyle> ComboBoxStyle = new("Style", PropertyCategory.Behavior, VB.ComboBoxStyle.DropdownCombo);
+    public static readonly PropertyDefinition<ComboBoxStyle> ComboBoxStyle =
+        new("Style", PropertyCategory.Behavior, VB.ComboBoxStyle.DropdownCombo) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Whether a ListBox's or a Simple Combo's height is snapped to whole rows of its list. True by default.
@@ -406,17 +438,19 @@ public static class VBProperties
     /// <summary>
     /// How a CommandButton, CheckBox or OptionButton is drawn.
     /// </summary>
-    public static readonly PropertyDefinition<ButtonStyle> ButtonStyle = new("Style", PropertyCategory.Appearance, VB.ButtonStyle.Standard);
+    public static readonly PropertyDefinition<ButtonStyle> ButtonStyle =
+        new("Style", PropertyCategory.Appearance, VB.ButtonStyle.Standard) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Where a form opens on the screen.
     /// </summary>
-    public static readonly PropertyDefinition<StartUpPosition> StartUpPosition = new("StartUpPosition", PropertyCategory.Position, VB.StartUpPosition.Manual);
+    public static readonly PropertyDefinition<StartUpPosition> StartUpPosition =
+        new("StartUpPosition", PropertyCategory.Position, VB.StartUpPosition.Manual) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Whether a form has a button on the task bar.
     /// </summary>
-    public static readonly PropertyDefinition<bool> ShowInTaskbar = new("ShowInTaskbar", PropertyCategory.Misc, true);
+    public static readonly PropertyDefinition<bool> ShowInTaskbar = new("ShowInTaskbar", PropertyCategory.Misc, true) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// The control's position in its form's tab order.
@@ -447,12 +481,12 @@ public static class VBProperties
     /// <summary>
     /// Whether a form's title bar has a Maximize button.
     /// </summary>
-    public static readonly PropertyDefinition<bool> MaxButton = new("MaxButton", PropertyCategory.Appearance, true);
+    public static readonly PropertyDefinition<bool> MaxButton = new("MaxButton", PropertyCategory.Appearance, true) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Whether a form's title bar has a Minimize button.
     /// </summary>
-    public static readonly PropertyDefinition<bool> MinButton = new("MinButton", PropertyCategory.Appearance, true);
+    public static readonly PropertyDefinition<bool> MinButton = new("MinButton", PropertyCategory.Appearance, true) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Whether a menu item shows a check mark.
@@ -462,12 +496,12 @@ public static class VBProperties
     /// <summary>
     /// Whether a menu lists the open child windows of a multiple-document interface form.
     /// </summary>
-    public static readonly PropertyDefinition<bool> WindowList = new("WindowList", PropertyCategory.Misc);
+    public static readonly PropertyDefinition<bool> WindowList = new("WindowList", PropertyCategory.Misc) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// The key that chooses a menu item from anywhere on its form, or <see langword="null"/> for none.
     /// </summary>
-    public static readonly PropertyDefinition<MenuShortcut?> Shortcut = new("Shortcut", PropertyCategory.Misc);
+    public static readonly PropertyDefinition<MenuShortcut?> Shortcut = new("Shortcut", PropertyCategory.Misc) { NotAvailableAtRunTime = true };
 
     /// <summary>
     /// Whether choosing a menu item ticks or unticks it before its Click: an RD-VBA addition. False, the default, leaves
