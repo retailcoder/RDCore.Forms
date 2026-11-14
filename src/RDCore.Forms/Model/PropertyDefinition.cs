@@ -80,8 +80,8 @@ public abstract class PropertyDefinition
     public bool ReadOnlyAtRunTime { get; init; }
 
     /// <summary>
-    /// Whether <paramref name="value"/> can be held by this property: a value of <see cref="ValueType"/>, or
-    /// <see langword="null"/> where the type allows it, that is among the property's valid values.
+    /// Whether <paramref name="value"/> can be held by this property: a value of <see cref="ValueType"/> that is among the
+    /// property's valid values, or <see langword="null"/> where the type allows it.
     /// </summary>
     /// <param name="value">The value to test.</param>
     /// <returns><see langword="true"/> when the property can hold the value.</returns>
@@ -122,7 +122,7 @@ public sealed class PropertyDefinition<T>(string name, PropertyCategory category
     public T Default { get; } = defaultValue;
 
     /// <summary>
-    /// The property's valid values, of those of its type, or <see langword="null"/> for all of them.
+    /// Which values of its type the property can hold, or <see langword="null"/> where it can hold all of them.
     /// </summary>
     public Func<T, bool>? Valid { get; init; }
 

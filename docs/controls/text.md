@@ -32,10 +32,10 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 |`MultiLine`|A multi-line box types a new line, CR LF, for Enter and for Ctrl+Enter, after their KeyPress (13 and 10). A single-line box types nothing for either, and shows a CR LF its `Text` holds as it is.|
 |`ScrollBars`|A multi-line box wraps its lines unless it has a horizontal scroll bar. A single-line box has no scroll bar, whatever its `ScrollBars`.|
 |`MultiLine` and `ScrollBars` from code|Only a designer and a form's file set them. VB refuses a program's late-bound assignment with 382, and early-bound code that assigns them does not compile.|
-|`PasswordChar`|One character, or "" for none; a longer value is 380. The box shows that character in place of each of its text's, in a multi-line box too, and `Text` is the text typed.|
+|`PasswordChar`|One character, or "" for none; a longer value is 380. The box shows that character in place of each character of its text, in a multi-line box too, and `Text` is the text typed.|
 |`MaxLength`|0 to 65535, with 0 for no limit; another value is 380. A character typed into a full box is a KeyPress, and changes nothing. A `Text` set from code is cut to the limit, with one Change.|
 |A text longer than `MaxLength`|A lower `MaxLength` keeps it, and so does a form's file that holds it, until the `Text` is set again.|
-|A default button|In a multi-line box, the form's default button takes Enter, as in a single-line one, and Ctrl+Enter types a new line. This is RDForms' own.|
+|A default button|In a multi-line box, the form's default button takes Enter, as in a single-line one, and Ctrl+Enter types a new line (RDForms' own).|
 
 > [!NOTE]
 > **Not implemented.** The model marks `MultiLine` and `ScrollBars` read-only at run time, and the runtime does not refuse a program's assignment to them with 382. `SelStart`, `SelLength` and `SelText` are not in the model.

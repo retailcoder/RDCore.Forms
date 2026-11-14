@@ -312,7 +312,7 @@ public static class VBProperties
         new("ScrollBars", PropertyCategory.Appearance, VB.ScrollBars.None) { ReadOnlyAtRunTime = true };
 
     /// <summary>
-    /// The character a TextBox shows for each of its text's, or "" to show its text. One character at most.
+    /// The character a TextBox shows for each character of its text, or "" to show its text. One character at most.
     /// </summary>
     public static readonly PropertyDefinition<string> PasswordChar =
         new("PasswordChar", PropertyCategory.Behavior, "") { Valid = character => character.Length <= 1 };
