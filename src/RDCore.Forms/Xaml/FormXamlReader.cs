@@ -110,7 +110,7 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
             diagnostics.Add(K.UnknownProperty, LineOf(at), instance.Name, name);
             instance.UnmodelledProperties.Add(new UnmodelledProperty(name, text));
         }
-        else if (!FormXamlValues.TryParse(property.ValueType, text, out var value) || !instance.TrySet(property, value))
+        else if (!FormXamlValues.TryParse(property.ValueType, text, out var value) || !instance.TryRead(property, value))
             Invalid(instance, property.Name, text, at);
     }
 
