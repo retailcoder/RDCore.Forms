@@ -115,7 +115,7 @@ public sealed class TextBoxPropertyViewTests
     [TestMethod]
     public void ACharacterTypedInAFullBox_IsAKeyPress_AndChangesNothing()
     {
-        var (text, raised) = UI.Run(() =>
+        var (text, shown, raised) = UI.Run(() =>
         {
             var instance = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.MaxLength, 3).Set(P.Text, "abc");
             var box = new VBTextBox(instance);
@@ -124,10 +124,11 @@ public sealed class TextBoxPropertyViewTests
             box.CaretIndex = 3;
             window.KeyTextInput("x");
             window.Close();
-            return (instance.Get(P.Text), Typed(sink));
+            return (instance.Get(P.Text), box.Text, Typed(sink));
         });
 
         Assert.AreEqual("abc", text);
+        Assert.AreEqual("abc", shown);
         Expect.Lines(new[] { "Text1.KeyPress(Integer 120)" }, raised);
     }
 
