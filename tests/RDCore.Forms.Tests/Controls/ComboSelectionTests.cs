@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
@@ -267,6 +268,32 @@ public sealed class ComboSelectionTests
     {
         Expect.Lines(Editable, Script(Combo("Combo1", ComboBoxStyle.DropdownCombo), shown: false));
         Expect.Lines(NoEditBox, Script(Combo("Combo3", ComboBoxStyle.DropdownList), shown: false));
+    }
+
+    // A selection set before the combo has its edit box shows in the box once it does; one the user makes in the box, from its anchor
+    // back to its caret, is the program's.
+    [TestMethod]
+    public void TheEditBox_ShowsAProgramsSelection_AndGivesBackTheUsers()
+    {
+        var (shown, user) = UI.Run(() =>
+        {
+            var combo = new VBComboBox(Combo("Combo1", ComboBoxStyle.DropdownCombo)) { Width = 120 };
+            var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { combo } } };
+            combo.SetText("Hello world");
+            combo.SelStart = 2;
+            combo.SelLength = 3;
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var edit = combo.GetVisualDescendants().OfType<TextBox>().Single();
+            var shown = (edit.SelectionStart, edit.SelectionEnd);
+            edit.SelectionStart = 7;
+            edit.SelectionEnd = 3;
+            var user = (combo.SelStart, combo.SelLength);
+            window.Close();
+            return (shown, user);
+        });
+        Assert.AreEqual((2, 5), shown);
+        Assert.AreEqual((3, 4), user);
     }
 
     [TestMethod]

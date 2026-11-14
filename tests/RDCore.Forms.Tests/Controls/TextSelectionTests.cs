@@ -299,6 +299,27 @@ public sealed class TextSelectionTests
         Expect.Lines(Text2, Script(Box("Text2", (P.MultiLine, true)), shown: false));
     }
 
+    // The user's selection, from its anchor back to its caret, is the program's.
+    [TestMethod]
+    public void TheUsersSelection_IsTheProgramsToo()
+    {
+        var user = UI.Run(() =>
+        {
+            var instance = Box("Text1");
+            var box = new VBTextBox(instance);
+            var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { box } } };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            instance.Set(P.Text, "Hello world");
+            box.SelectionStart = 7;
+            box.SelectionEnd = 3;
+            var user = (box.SelStart, box.SelLength);
+            window.Close();
+            return user;
+        });
+        Assert.AreEqual((3, 4), user);
+    }
+
     [TestMethod]
     public void SelText_IsNotNull() =>
         Assert.ThrowsExactly<ArgumentNullException>(() => UI.Run(() => new VBTextBox(Box("Text1")).SelText = null!));
