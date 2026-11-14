@@ -11,7 +11,7 @@ namespace RDCore.Forms.Drawing;
 /// Coordinates are in the component's scale, its <c>ScaleMode</c> with its <c>ScaleLeft</c> and <c>ScaleTop</c>, as
 /// <see cref="DrawingScale"/> converts them. A colour that is <see langword="null"/> is the component's <c>ForeColor</c>. Lines are
 /// drawn <c>DrawWidth</c> pixels wide in its <c>DrawStyle</c>, and figures are filled with its <c>FillColor</c> in its
-/// <c>FillStyle</c>. Its <c>DrawMode</c> combines each pixel of a line and of a fill with the pixel under it.
+/// <c>FillStyle</c>. Its <c>DrawMode</c> combines each pixel of a point, a line and a fill with the pixel under it.
 /// </para>
 /// <para>
 /// What is drawn is kept, and shows under the component's controls. Each drawing statement moves <see cref="CurrentX"/> and
