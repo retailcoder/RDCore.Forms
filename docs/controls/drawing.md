@@ -13,7 +13,7 @@ surface.Line(new GraphicsPoint(10, 10), new GraphicsPoint(100, 50, IsRelative: t
 ## Where it draws
 
 - The surface covers the component's inside: a form's client area, and a PictureBox's inside its border.
-- What it draws is under every control, Labels, Images, Shapes and Lines included. On a PictureBox it is over the `Picture`.
+- What it draws is under every control, Labels, Images, Shapes and Lines included. On a form and a PictureBox it is over the `Picture`.
 - Coordinates are in the component's scale: its `ScaleMode`, from its `ScaleLeft` and `ScaleTop`. A point is drawn on the pixel nearest its twips, rounded half to even. [`DrawingScale`](../api/RDCore.Forms.Drawing.DrawingScale.yml) converts between a scale and twips.
 
 ## Statements and methods
@@ -24,7 +24,7 @@ surface.Line(new GraphicsPoint(10, 10), new GraphicsPoint(100, 50, IsRelative: t
 |`Circle`|A circle, an ellipse (with an aspect), an arc (with a start and an end, in radians), or a sector. A negative start or end also draws a radius to that end, and with both negative the sector is closed. The radius is in horizontal units. An angle outside -2π to 2π is error 5.|The centre.|
 |`PSet`|A point; a dot `DrawWidth` wide where that is more than 1.|The point.|
 |`Scale`|Nothing. With two points it sets a user scale whose corners they are; with none it sets the scale back to twips.|Unchanged.|
-|`Cls`|Clears the drawing.|0, 0.|
+|`Cls`|Clears the drawing, and keeps the `Picture`.|0, 0.|
 |`Point`|Nothing. It returns the colour at a point, the `BackColor` where nothing is drawn, and -1 outside the surface.|Unchanged.|
 
 A point written with `Step` is measured from the current point, and a `Line`'s second point from its first. A colour left out is the component's `ForeColor`.
@@ -45,7 +45,7 @@ The surface keeps what it draws whatever the component's `AutoRedraw`, and keeps
 |True|Not raised.|
 
 > [!NOTE]
-> **Not implemented.** Every `DrawMode` draws as Copy Pen (13). `Point` reads the drawing and the `BackColor`; a PictureBox's `Picture` under the drawing is not read. The `Print` method, `PaintPicture`, `TextWidth` and `TextHeight` have no surface member.
+> **Not implemented.** Every `DrawMode` draws as Copy Pen (13). `Point` reads the drawing and the `BackColor`; a form's or a PictureBox's `Picture` under the drawing is not read. The `Print` method, `PaintPicture`, `TextWidth` and `TextHeight` have no surface member.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
