@@ -24,6 +24,12 @@
   <data name="Error53" xml:space="preserve">
     <value>Fichier introuvable</value>
   </data>
+  <data name="Error68" xml:space="preserve">
+    <value>Périphérique non disponible</value>
+  </data>
+  <data name="Error76" xml:space="preserve">
+    <value>Chemin d'accès introuvable</value>
+  </data>
   <data name="Error94" xml:space="preserve">
     <value>Utilisation incorrecte de Null</value>
   </data>

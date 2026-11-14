@@ -133,6 +133,34 @@ public static class VBClasses
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
 
     /// <summary>
+    /// <c>VB.DriveListBox</c>: the drives, one of which is its <c>Drive</c>. It raises no Click and no mouse events. Its colours
+    /// default to the window's.
+    /// </summary>
+    public static readonly ComponentClass DriveListBox = Control("VB.DriveListBox", "Drive",
+        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.DragIcon, P.MousePointer, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
+        [Change, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp],
+        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
+
+    /// <summary>
+    /// <c>VB.DirListBox</c>: the directories of its <c>Path</c>, and the directories above it. It raises no DblClick. Its colours
+    /// default to the window's.
+    /// </summary>
+    public static readonly ComponentClass DirListBox = Control("VB.DirListBox", "Dir",
+        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.DragIcon, P.MousePointer, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
+        [Change, Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp],
+        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
+
+    /// <summary>
+    /// <c>VB.FileListBox</c>: the files of its <c>Path</c> that its <c>Pattern</c> and its attribute properties let through.
+    /// Its colours default to the window's.
+    /// </summary>
+    public static readonly ComponentClass FileListBox = Control("VB.FileListBox", "File",
+        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.Pattern, P.Archive, P.Hidden, P.Normal, P.ReadOnly, P.SystemFiles, P.MultiSelect,
+         P.DragIcon, P.MousePointer, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
+        [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, PathChange, PatternChange],
+        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
+
+    /// <summary>
     /// <c>VB.PictureBox</c>, a container. It has a single-line border by default.
     /// </summary>
     public static readonly ComponentClass PictureBox = Control("VB.PictureBox", "Picture",
@@ -192,7 +220,7 @@ public static class VBClasses
     /// </summary>
     public static IReadOnlyList<ComponentClass> All { get; } =
         [Form, MDIForm, UserControl, PropertyPage, CommandButton, TextBox, Label, CheckBox, OptionButton, Frame, ListBox, ComboBox, PictureBox, Image,
-         Timer, HScrollBar, VScrollBar, Shape, Line, Menu];
+         Timer, HScrollBar, VScrollBar, Shape, Line, Menu, DriveListBox, DirListBox, FileListBox];
 
     private static readonly Dictionary<string, ComponentClass> byTypeName =
         All.ToDictionary(c => c.TypeName, StringComparer.OrdinalIgnoreCase);

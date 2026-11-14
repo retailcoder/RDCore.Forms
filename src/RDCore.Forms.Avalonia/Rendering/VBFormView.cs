@@ -1,6 +1,7 @@
 ﻿// Derived from HexIDE (https://github.com/hexide-io/HexIDE), commit ae17f1db.
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
+using System.IO.Abstractions;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -18,7 +19,7 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Every component of the form that <see cref="VBControls.Create"/> makes a control for is shown, in its container's canvas. A
+/// Every component of the form that <see cref="VBControls.Create(ComponentInstance, IFileSystem)"/> makes a control for is shown, in its container's canvas. A
 /// component it makes no control for, such as a menu item, is not shown here, and neither is anything placed in one: a form's window shows its menus
 /// on its <see cref="VBFormWindow.MenuBar"/>. A Timer's control is on the form and draws nothing.
 /// </para>
@@ -57,6 +58,7 @@ public sealed class VBFormView : Canvas
         ControlEvents.AttachClick<VBFormView>(ClickRelease.OverTheControl);
     }
 
+    private readonly IFileSystem fileSystem;
     private readonly Dictionary<ComponentInstance, Control> controls = new(ReferenceEqualityComparer.Instance);
     // The shown components, in the order the form holds them.
     private readonly List<ComponentInstance> shown = [];
@@ -66,9 +68,25 @@ public sealed class VBFormView : Canvas
     /// </summary>
     /// <param name="form">The form.</param>
     /// <exception cref="ArgumentNullException"><paramref name="form"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// Its file lists show the machine's file system, from the process's current directory.
+    /// </remarks>
     public VBFormView(FormDefinition form)
+        : this(form, new FileSystem())
+    {
+    }
+
+    /// <summary>
+    /// Creates the client area of a form, with the file system its file lists show.
+    /// </summary>
+    /// <param name="form">The form.</param>
+    /// <param name="fileSystem">The file system the form's file lists show, from its current directory.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="form"/> or <paramref name="fileSystem"/> is <see langword="null"/>.</exception>
+    public VBFormView(FormDefinition form, IFileSystem fileSystem)
     {
         ArgumentNullException.ThrowIfNull(form);
+        ArgumentNullException.ThrowIfNull(fileSystem);
+        this.fileSystem = fileSystem;
         Form = form;
         // What the form's drawing statements draw is under every control, the windowless ones included.
         Drawing = new VBDrawingLayer(form.Root) { ZIndex = int.MinValue };
@@ -106,7 +124,7 @@ public sealed class VBFormView : Canvas
         int windowed = 0, windowless = WindowlessTop;
         foreach (var component in container.Contents)
         {
-            if (VBControls.Create(component) is not { } control)
+            if (VBControls.Create(component, fileSystem) is not { } control)
                 continue;
             // Each control goes under the ones of its plane placed before it.
             control.ZIndex = component.Class.IsWindowless ? windowless-- : windowed--;

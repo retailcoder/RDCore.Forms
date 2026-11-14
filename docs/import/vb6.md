@@ -41,7 +41,7 @@ A read does not throw on what a file holds. It keeps what the model cannot hold 
 |`UnmatchedEnd`|Warning|An `EndProperty` that closes nothing is left out.|
 |`InvalidValue`|Warning|The property is kept as an `UnmodelledProperty`: a value it cannot hold, a number outside its type's range, or an `Index` that is not a number from 0 to 32767.|
 |`MissingCompanion`, `MissingRecord`|Warning|The property stays at its default, and its citation is kept as an `UnmodelledProperty`.|
-|`MisplacedComponent`|Warning|A component placed in one that cannot hold it is placed in the nearest enclosing container that can, at its written position.|
+|`MisplacedComponent`|Warning|A component placed in one that cannot hold it is placed in the nearest enclosing container that can, at its written position; a control written inside a Timer is placed at the Timer's `Left` and `Top` added to its own instead, as VB6 places it.|
 |`UnmodelledClass`|Information|The component is kept as an `UnmodelledComponent`, with its text.|
 |`UnreadLibraryReference`, `UnmodelledHeaderLine`|Information|The header line is kept in `UnmodelledHeader`.|
 
@@ -56,9 +56,6 @@ A control that writes no `Font`, on a form that writes one, takes a copy of the 
 ## Differences from VB6
 
 The fixtures in the tests were built and run under VB6, and the tests assert what VB6 read from them.
-
-> [!NOTE]
-> **Not implemented.** VB6 offsets a control written inside a Timer by the Timer's `Left` and `Top`. The reader places it in the form at its written position.
 
 |Case|VB6 reads|The reader keeps|
 |---|---|---|

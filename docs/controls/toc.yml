@@ -6,6 +6,8 @@
   href: text.md
 - name: Lists
   href: lists.md
+- name: File system lists
+  href: file-lists.md
 - name: Containers and pictures
   href: containers.md
 - name: Timers, scroll bars and shapes

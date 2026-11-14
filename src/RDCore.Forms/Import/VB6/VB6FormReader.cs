@@ -261,6 +261,7 @@ public static partial class VB6FormReader
                     instance.Set(VBProperties.Font, font);
                 }
 
+                OffsetByTimers(instance, container);
                 Push(pending, instance, child, depth);
             }
         }
@@ -271,6 +272,25 @@ public static partial class VB6FormReader
             for (var at = block.Children.Count - 1; at >= 0; at--)
             {
                 pending.Push((container, block.Children[at], depth + 1));
+            }
+        }
+
+        // VB6 places a control written inside a Timer, which holds no control, at the Timer's Left and Top added to its own. A control
+        // written inside another control that cannot hold it keeps the position the file gives it.
+        private static void OffsetByTimers(ComponentInstance instance, ComponentInstance writtenIn)
+        {
+            if (!instance.Class.Has(VBProperties.Left))
+            {
+                return;
+            }
+
+            for (ComponentInstance? host = writtenIn; host is not null && host != instance.Container; host = host.Container)
+            {
+                if (ReferenceEquals(host.Class, VBClasses.Timer))
+                {
+                    instance.Set(VBProperties.Left, instance.Get(VBProperties.Left) + host.Get(VBProperties.Left))
+                        .Set(VBProperties.Top, instance.Get(VBProperties.Top) + host.Get(VBProperties.Top));
+                }
             }
         }
 

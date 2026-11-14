@@ -232,6 +232,36 @@ public static class VBProperties
     public static readonly PropertyDefinition<bool> Stretch = new("Stretch", PropertyCategory.Appearance);
 
     /// <summary>
+    /// The names a FileListBox lists: one pattern, or several separated by semicolons, such as <c>*.txt;*.bas</c>.
+    /// </summary>
+    public static readonly PropertyDefinition<string> Pattern = new("Pattern", PropertyCategory.Behavior, "*.*");
+
+    /// <summary>
+    /// Whether a FileListBox lists files with the archive attribute.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> Archive = new("Archive", PropertyCategory.Behavior, true);
+
+    /// <summary>
+    /// Whether a FileListBox lists hidden files.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> Hidden = new("Hidden", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// Whether a FileListBox lists files with no attribute.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> Normal = new("Normal", PropertyCategory.Behavior, true);
+
+    /// <summary>
+    /// Whether a FileListBox lists read-only files.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> ReadOnly = new("ReadOnly", PropertyCategory.Behavior, true);
+
+    /// <summary>
+    /// Whether a FileListBox lists system files: VB's <c>System</c> property.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> SystemFiles = new("System", PropertyCategory.Behavior);
+
+    /// <summary>
     /// A ListBox's or ComboBox's items, in order.
     /// </summary>
     public static readonly PropertyDefinition<IReadOnlyList<string>> List = new("List", PropertyCategory.List, []);

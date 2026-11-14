@@ -41,7 +41,7 @@ Une lecture ne lève pas d'exception à cause du contenu d'un fichier. Elle cons
 |`UnmatchedEnd`|Avertissement|Un `EndProperty` qui ne ferme rien est omis.|
 |`InvalidValue`|Avertissement|La propriété est conservée sous forme d'`UnmodelledProperty` : une valeur qu'elle ne peut pas contenir, un nombre hors de la plage de son type, ou un `Index` qui n'est pas un nombre de 0 à 32767.|
 |`MissingCompanion`, `MissingRecord`|Avertissement|La propriété garde sa valeur par défaut, et sa citation est conservée sous forme d'`UnmodelledProperty`.|
-|`MisplacedComponent`|Avertissement|Un composant placé dans un autre qui ne peut pas le contenir est placé dans le conteneur englobant le plus proche qui le peut, à sa position écrite.|
+|`MisplacedComponent`|Avertissement|Un composant placé dans un autre qui ne peut pas le contenir est placé dans le conteneur englobant le plus proche qui le peut, à sa position écrite; un contrôle écrit à l'intérieur d'un Timer est plutôt placé au `Left` et au `Top` du Timer ajoutés aux siens, comme VB6 le place.|
 |`UnmodelledClass`|Information|Le composant est conservé sous forme d'`UnmodelledComponent`, avec son texte.|
 |`UnreadLibraryReference`, `UnmodelledHeaderLine`|Information|La ligne d'en-tête est conservée dans `UnmodelledHeader`.|
 
@@ -56,9 +56,6 @@ Un contrôle qui n'écrit aucune `Font`, sur un formulaire qui en écrit une, re
 ## Différences avec VB6
 
 Les fichiers de test ont été compilés et exécutés sous VB6, et les tests vérifient ce que VB6 en a lu.
-
-> [!NOTE]
-> **Non implémenté.** VB6 décale un contrôle écrit à l'intérieur d'un Timer selon le `Left` et le `Top` du Timer. Le lecteur le place dans le formulaire à sa position écrite.
 
 |Cas|VB6 lit|Le lecteur conserve|
 |---|---|---|

@@ -21,12 +21,18 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// is not drawn. Neither is a picture <see cref="VBPicture.Decode"/> refuses, and <see cref="PictureError"/> says why.
 /// </para>
 /// <para>
+/// Where <c>Stretch</c> is not set, it takes its picture's size inside its border as its <c>Picture</c> changes or its
+/// <c>Stretch</c> is cleared, and its <c>Left</c> and <c>Top</c> go to whole pixels. It keeps its size where its <c>Picture</c> is
+/// cleared, and a size set by code also when the same picture is set again.
+/// </para>
+/// <para>
 /// It takes no focus. It raises Click, DblClick, MouseDown, MouseMove and MouseUp, MouseUp before Click; Click only where the release
 /// is over the image again. The whole rectangle takes the pointer, where it draws nothing too.
 /// </para>
 /// </remarks>
 public sealed class VBImage : Control, ICustomHitTest
 {
+    private readonly ComponentInstance instance;
     private readonly VBEdge edge = new();
     private readonly VBPicture.Holder picture = new();
     private bool stretch;
@@ -45,6 +51,7 @@ public sealed class VBImage : Control, ICustomHitTest
     /// <exception cref="ArgumentException"><paramref name="instance"/> is not an Image.</exception>
     public VBImage(ComponentInstance instance)
     {
+        this.instance = instance;
         VisualChildren.Add(edge);
         LogicalChildren.Add(edge);
         ComponentBinding.Bind(this, instance, VBClasses.Image, Apply);
@@ -88,15 +95,32 @@ public sealed class VBImage : Control, ICustomHitTest
                 break;
             case nameof(P.Picture):
                 if (picture.Take((byte[]?)e.After))
+                {
                     InvalidateVisual();
+                    FitToPicture();
+                }
                 break;
             case nameof(P.Stretch):
                 stretch = (bool)e.After!;
                 InvalidateVisual();
+                if (!Equals(e.Before, e.After))
+                    FitToPicture();
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);
                 break;
         }
+    }
+
+    // An Image whose Stretch is not set takes its picture's size, inside its border, as its picture changes or its Stretch is cleared,
+    // and its Left and Top go to whole pixels. It keeps its size where it has no picture. It reads Stretch and BorderStyle from its
+    // component, whatever order they are applied in.
+    private void FitToPicture()
+    {
+        if (instance.Get(P.Stretch) || picture.Picture is not { } shown)
+            return;
+        var border = 2 * VBEdge.WidthOf(VBEdge.Of(instance.Get(P.BorderStyle), Appearance.ThreeD));
+        instance.Set(P.Left, Math.Round(instance.Get(P.Left))).Set(P.Top, Math.Round(instance.Get(P.Top)))
+            .Set(P.Width, shown.PixelSize.Width + border).Set(P.Height, shown.PixelSize.Height + border);
     }
 }
