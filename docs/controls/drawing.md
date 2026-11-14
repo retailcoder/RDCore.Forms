@@ -16,6 +16,21 @@ surface.Line(new GraphicsPoint(10, 10), new GraphicsPoint(100, 50, IsRelative: t
 - What it draws is under every control, Labels, Images, Shapes and Lines included. On a PictureBox it is over the `Picture`.
 - Coordinates are in the component's scale: its `ScaleMode`, from its `ScaleLeft` and `ScaleTop`. A point is drawn on the pixel nearest its twips, rounded half to even. [`DrawingScale`](../api/RDCore.Forms.Drawing.DrawingScale.yml) converts between a scale and twips.
 
+## The scale
+
+In a form's window, the form's scale and each PictureBox's follow VB6's rules ([`ScaleRules`](../api/RDCore.Forms.Drawing.ScaleRules.yml)). A designer file's values are read as it holds them.
+
+|Change|Effect|
+|---|---|
+|`ScaleLeft`, `ScaleTop`, `ScaleWidth` or `ScaleHeight` set|`ScaleMode` becomes 0, User, even when the value is the one it has. The other three keep theirs.|
+|`ScaleMode` set to a unit, 1 to 7|`ScaleLeft` and `ScaleTop` become 0, and `ScaleWidth` and `ScaleHeight` the inside in that unit.|
+|`ScaleMode` set to 0|The four keep their values.|
+|The size changes|In a unit, `ScaleWidth` and `ScaleHeight` are the inside. In a user scale the unit keeps its size: `ScaleWidth` and `ScaleHeight` change with the inside, and `ScaleLeft` and `ScaleTop` stay.|
+
+- A `ScaleWidth` or `ScaleHeight` of 0 is error 380, and a negative one runs the scale right to left or bottom to top.
+- A `ScaleMode` outside 0 to 7 is error 380, and the scale is unchanged. VB6 then reads the refused `ScaleMode` back; RDForms keeps the one it had.
+- A change of `BorderStyle` or `Appearance` changes the inside as a change of size does. This rule was not measured with VB6: RDForms sets it.
+
 ## Statements and methods
 
 |Member|Draws|`CurrentX`, `CurrentY` after|

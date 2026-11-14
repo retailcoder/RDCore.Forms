@@ -60,7 +60,7 @@ Les fichiers de test ont été compilés et exécutés sous VB6, et les tests v�
 |Cas|VB6 lit|Le lecteur conserve|
 |---|---|---|
 |Les extrémités d'une Line en échelle utilisateur, écrites `0 0 100 50`|`-0.0124842 0 100.0125 50`|Les valeurs écrites.|
-|Le `ScaleWidth` d'un formulaire, écrit `8000`|`7995`, la largeur cliente de sa fenêtre|La valeur écrite.|
+|Le `ScaleWidth` d'un formulaire, écrit `8000`|`7995`, la largeur cliente de sa fenêtre|La valeur écrite. Dans la fenêtre du formulaire, il vaut la largeur cliente ([l'échelle](../controls/drawing.md#the-scale)).|
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | IMPORTER • [IMPORT](vb6.md) | [CONTROLS](../controls/index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

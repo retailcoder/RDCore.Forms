@@ -164,6 +164,20 @@ public sealed class DrawingSurfaceTests
     }
 
     [TestMethod]
+    public void ASurfacesComponent_FollowsTheScaleRules()
+    {
+        var (mode, width) = UI.Run(() =>
+        {
+            var root = Root();
+            _ = Surface(root);
+            root.TrySet(P.ScaleWidth, 30d);
+            return (root.Get(P.ScaleMode), root.Get(P.ScaleWidth));
+        });
+
+        Assert.AreEqual((ScaleMode.User, 30d), (mode, width));
+    }
+
+    [TestMethod]
     public void TheDrawing_IsShownUnderTheControls_AndKeptAsTheFormGrows()
     {
         var (before, after) = UI.Run(() =>

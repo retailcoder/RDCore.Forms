@@ -49,8 +49,12 @@ public static class VBProperties
     /// <summary>
     /// The unit of a form's or a PictureBox's scale: the unit of its <c>ScaleLeft</c>, <c>ScaleTop</c>, <c>ScaleWidth</c> and
     /// <c>ScaleHeight</c>, and of the ends of the Lines it holds. Its controls' positions and sizes are in pixels whatever its scale.
+    /// A value that is not a <see cref="Model.ScaleMode"/> is refused.
     /// </summary>
-    public static readonly PropertyDefinition<ScaleMode> ScaleMode = new("ScaleMode", PropertyCategory.Position, Model.ScaleMode.Twip);
+    public static readonly PropertyDefinition<ScaleMode> ScaleMode = new("ScaleMode", PropertyCategory.Position, Model.ScaleMode.Twip)
+    {
+        Valid = static mode => Enum.IsDefined(mode),
+    };
 
     /// <summary>
     /// The horizontal coordinate of a form's or a PictureBox's inside left edge, in its own scale.
@@ -64,15 +68,17 @@ public static class VBProperties
 
     /// <summary>
     /// The inside width of a form or a PictureBox, in its own scale. A designer file writes it for every Form, UserControl and
-    /// PropertyPage; in a scale other than <see cref="Model.ScaleMode.User"/> it follows from the component's size.
+    /// PropertyPage; in a scale other than <see cref="Model.ScaleMode.User"/> it follows from the component's size
+    /// (<see cref="Drawing.ScaleRules"/>). It is never 0; a negative width runs the scale right to left.
     /// </summary>
-    public static readonly PropertyDefinition<double> ScaleWidth = new("ScaleWidth", PropertyCategory.Position);
+    public static readonly PropertyDefinition<double> ScaleWidth = new("ScaleWidth", PropertyCategory.Position) { Valid = static width => width != 0 };
 
     /// <summary>
     /// The inside height of a form or a PictureBox, in its own scale. A designer file writes it for every Form, UserControl and
-    /// PropertyPage; in a scale other than <see cref="Model.ScaleMode.User"/> it follows from the component's size.
+    /// PropertyPage; in a scale other than <see cref="Model.ScaleMode.User"/> it follows from the component's size
+    /// (<see cref="Drawing.ScaleRules"/>). It is never 0; a negative height runs the scale bottom to top.
     /// </summary>
-    public static readonly PropertyDefinition<double> ScaleHeight = new("ScaleHeight", PropertyCategory.Position);
+    public static readonly PropertyDefinition<double> ScaleHeight = new("ScaleHeight", PropertyCategory.Position) { Valid = static height => height != 0 };
 
     /// <summary>
     /// The text of a form's title bar, a property page's tab, a button's face, a label, a frame's title or a menu item, or the text

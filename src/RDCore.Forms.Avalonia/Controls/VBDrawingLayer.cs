@@ -27,7 +27,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// are eight pixels apart from the surface's corner. Every <c>DrawMode</c> draws as Copy Pen, 13.
 /// </para>
 /// <para>
-/// While it is shown, <see cref="DrawingSurfaces.Of"/> gives it for its component. It takes no input.
+/// While it is shown, <see cref="DrawingSurfaces.Of"/> gives it for its component. It takes no input. From its creation, its
+/// component's scale follows <see cref="ScaleRules"/>.
 /// </para>
 /// </remarks>
 public sealed class VBDrawingLayer : Control, IDrawingSurface
@@ -51,6 +52,7 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
         IsHitTestVisible = false;
         Focusable = false;
         ClipToBounds = true;
+        ScaleRules.Follow(component);
         SizeToInside();
     }
 
@@ -199,8 +201,9 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
     /// <inheritdoc/>
     public void Scale()
     {
+        // ScaleMode goes last: setting the other four makes the scale a user one.
         var (width, height) = InsideTwips(Component);
-        Component.Set(P.ScaleMode, ScaleMode.Twip).Set(P.ScaleLeft, 0d).Set(P.ScaleTop, 0d).Set(P.ScaleWidth, width).Set(P.ScaleHeight, height);
+        Component.Set(P.ScaleLeft, 0d).Set(P.ScaleTop, 0d).Set(P.ScaleWidth, width).Set(P.ScaleHeight, height).Set(P.ScaleMode, ScaleMode.Twip);
     }
 
     /// <inheritdoc/>

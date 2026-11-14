@@ -60,7 +60,7 @@ The fixtures in the tests were built and run under VB6, and the tests assert wha
 |Case|VB6 reads|The reader keeps|
 |---|---|---|
 |A user-scale Line's ends, written `0 0 100 50`|`-0.0124842 0 100.0125 50`|The written values.|
-|A form's `ScaleWidth`, written `8000`|`7995`, its window's client width|The written value.|
+|A form's `ScaleWidth`, written `8000`|`7995`, its window's client width|The written value. In the form's window it reads the client width ([the scale](../controls/drawing.md#the-scale)).|
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](vb6.fr.md) • IMPORT | [CONTROLS](../controls/index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
