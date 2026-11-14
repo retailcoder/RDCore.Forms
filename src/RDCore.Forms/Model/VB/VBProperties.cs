@@ -421,27 +421,31 @@ public static class VBProperties
     /// <summary>
     /// Whether a ListBox selects more than one item, and how.
     /// </summary>
-    public static readonly PropertyDefinition<ListBoxMultiSelect> MultiSelect = new("MultiSelect", PropertyCategory.Behavior, ListBoxMultiSelect.None);
+    public static readonly PropertyDefinition<ListBoxMultiSelect> MultiSelect =
+        new("MultiSelect", PropertyCategory.Behavior, ListBoxMultiSelect.None) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// How a ComboBox is drawn and behaves.
     /// </summary>
-    public static readonly PropertyDefinition<ComboBoxStyle> ComboBoxStyle = new("Style", PropertyCategory.Behavior, VB.ComboBoxStyle.DropdownCombo);
+    public static readonly PropertyDefinition<ComboBoxStyle> ComboBoxStyle =
+        new("Style", PropertyCategory.Behavior, VB.ComboBoxStyle.DropdownCombo) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// How a CommandButton, CheckBox or OptionButton is drawn.
     /// </summary>
-    public static readonly PropertyDefinition<ButtonStyle> ButtonStyle = new("Style", PropertyCategory.Appearance, VB.ButtonStyle.Standard);
+    public static readonly PropertyDefinition<ButtonStyle> ButtonStyle =
+        new("Style", PropertyCategory.Appearance, VB.ButtonStyle.Standard) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Where a form opens on the screen.
     /// </summary>
-    public static readonly PropertyDefinition<StartUpPosition> StartUpPosition = new("StartUpPosition", PropertyCategory.Position, VB.StartUpPosition.Manual);
+    public static readonly PropertyDefinition<StartUpPosition> StartUpPosition =
+        new("StartUpPosition", PropertyCategory.Position, VB.StartUpPosition.Manual) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Whether a form has a button on the task bar.
     /// </summary>
-    public static readonly PropertyDefinition<bool> ShowInTaskbar = new("ShowInTaskbar", PropertyCategory.Misc, true);
+    public static readonly PropertyDefinition<bool> ShowInTaskbar = new("ShowInTaskbar", PropertyCategory.Misc, true) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// The control's position in its form's tab order.
@@ -472,12 +476,12 @@ public static class VBProperties
     /// <summary>
     /// Whether a form's title bar has a Maximize button.
     /// </summary>
-    public static readonly PropertyDefinition<bool> MaxButton = new("MaxButton", PropertyCategory.Appearance, true);
+    public static readonly PropertyDefinition<bool> MaxButton = new("MaxButton", PropertyCategory.Appearance, true) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Whether a form's title bar has a Minimize button.
     /// </summary>
-    public static readonly PropertyDefinition<bool> MinButton = new("MinButton", PropertyCategory.Appearance, true);
+    public static readonly PropertyDefinition<bool> MinButton = new("MinButton", PropertyCategory.Appearance, true) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// Whether a menu item shows a check mark.
@@ -487,12 +491,12 @@ public static class VBProperties
     /// <summary>
     /// Whether a menu lists the open child windows of a multiple-document interface form.
     /// </summary>
-    public static readonly PropertyDefinition<bool> WindowList = new("WindowList", PropertyCategory.Misc);
+    public static readonly PropertyDefinition<bool> WindowList = new("WindowList", PropertyCategory.Misc) { ReadOnlyAtRunTime = true };
 
     /// <summary>
     /// The key that chooses a menu item from anywhere on its form, or <see langword="null"/> for none.
     /// </summary>
-    public static readonly PropertyDefinition<MenuShortcut?> Shortcut = new("Shortcut", PropertyCategory.Misc);
+    public static readonly PropertyDefinition<MenuShortcut?> Shortcut = new("Shortcut", PropertyCategory.Misc) { NotAvailableAtRunTime = true };
 
     /// <summary>
     /// Whether choosing a menu item ticks or unticks it before its Click: an RD-VBA addition. False, the default, leaves

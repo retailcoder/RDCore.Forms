@@ -80,6 +80,16 @@ public abstract class PropertyDefinition
     public bool ReadOnlyAtRunTime { get; init; }
 
     /// <summary>
+    /// Whether a program can neither read nor set the property, which only a designer and a form's file set. VB refuses a program's
+    /// read with <see cref="FormError.GetNotSupportedAtRuntime"/> and its assignment with <see cref="FormError.SetNotSupportedAtRuntime"/>.
+    /// </summary>
+    /// <remarks>
+    /// A class can make a property it shares with other classes unavailable on its own instances: ask the class, with
+    /// <see cref="ComponentClass.IsNotAvailableAtRunTime"/> and <see cref="ComponentClass.IsReadOnlyAtRunTime"/>.
+    /// </remarks>
+    public bool NotAvailableAtRunTime { get; init; }
+
+    /// <summary>
     /// Whether <paramref name="value"/> can be held by this property: a value of <see cref="ValueType"/> that is among the
     /// property's valid values, or <see langword="null"/> where the type allows it.
     /// </summary>
