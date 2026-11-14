@@ -23,11 +23,13 @@ surface.Line(new GraphicsPoint(10, 10), new GraphicsPoint(100, 50, IsRelative: t
 |`Line`|A line from the first point, or from the current point, to the second. `B` draws a box, filled as `FillStyle` says; `BF` fills it with the line's colour. A box covers both corners.|The second point.|
 |`Circle`|A circle, an ellipse (with an aspect), an arc (with a start and an end, in radians), or a sector. A negative start or end also draws a radius to that end, and with both negative the sector is closed. The radius is in horizontal units. An angle outside -2π to 2π is error 5.|The centre.|
 |`PSet`|A point; a dot `DrawWidth` wide where that is more than 1.|The point.|
-|`Scale`|Nothing. With two points it sets a user scale whose corners they are; with none it sets the scale back to twips.|Unchanged.|
+|`Scale`|Nothing. With two points it sets a user scale whose corners they are; with none it sets the scale back to twips.|The same point, in the new scale.|
 |`Cls`|Clears the drawing, and keeps the `Picture`.|0, 0.|
 |`Point`|Nothing. It returns the colour at a point: what is drawn there, or else the `Picture`'s pixel, or else the `BackColor`. It returns -1 outside the surface.|Unchanged.|
 
 A point written with `Step` is measured from the current point, and a `Line`'s second point from its first. A colour left out is the component's `ForeColor`.
+
+The current point is kept in whole twips from the inside's top left corner. A `CurrentX` or `CurrentY` set is rounded to the nearest twip, and a change of scale, by `Scale` or by a `ScaleMode`, `ScaleLeft` or `ScaleWidth` set, keeps the point where it is.
 
 ## Erasing
 

@@ -67,11 +67,22 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
     /// <inheritdoc/>
     public ComponentInstance Component { get; }
 
-    /// <inheritdoc/>
-    public double CurrentX { get; set; }
+    // VB6 keeps the current point in whole twips from the inside's corner, so a scale change keeps where it is.
+    private (double X, double Y) current;
 
     /// <inheritdoc/>
-    public double CurrentY { get; set; }
+    public double CurrentX
+    {
+        get => ScaleOf(Component).FromTwips(current.X, current.Y).X;
+        set => current.X = WholeTwips(ScaleOf(Component), value, 0).X;
+    }
+
+    /// <inheritdoc/>
+    public double CurrentY
+    {
+        get => ScaleOf(Component).FromTwips(current.X, current.Y).Y;
+        set => current.Y = WholeTwips(ScaleOf(Component), 0, value).Y;
+    }
 
     /// <summary>
     /// The size of its component's inside, in pixels.

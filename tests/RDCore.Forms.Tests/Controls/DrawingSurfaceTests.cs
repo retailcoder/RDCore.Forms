@@ -163,6 +163,57 @@ public sealed class DrawingSurfaceTests
         Assert.AreEqual((ScaleMode.Twip, 4500d, 3000d, Blue), twips);
     }
 
+    // As measured with VB6 on a PictureBox 6000 by 1500 twips: each row sets CurrentX and CurrentY in twips, changes the scale, and
+    // reads them back.
+    [TestMethod]
+    public void TheCurrentPoint_IsKeptInWholeTwips_WhereverTheScaleGoes()
+    {
+        var rows = UI.Run(() =>
+        {
+            var rows = new List<string>();
+            void Row(string label, double x, double y, Action<ComponentInstance, IDrawingSurface> change, bool inPixels = false)
+            {
+                var box = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.BorderStyle, BorderStyle.None)
+                    .Set(P.Width, 6000 / 15d).Set(P.Height, 1500 / 15d).Set(P.ScaleMode, inPixels ? ScaleMode.Pixel : ScaleMode.Twip);
+                var surface = new VBDrawingLayer(box);
+                surface.Scale();
+                if (inPixels)
+                    box.Set(P.ScaleMode, ScaleMode.Pixel);
+                surface.CurrentX = x;
+                surface.CurrentY = y;
+                change(box, surface);
+                rows.Add($"{label}\t{surface.CurrentX:0.#####}\t{surface.CurrentY:0.#####}");
+            }
+            Row("CurrentX=500.3 read", 500.3, 7.7, (_, _) => { });
+            Row("ScaleMode=3", 500, 200, (box, _) => box.Set(P.ScaleMode, ScaleMode.Pixel));
+            Row("ScaleLeft=100", 500, 200, (box, _) => box.Set(P.ScaleLeft, 100d).Set(P.ScaleTop, 50d));
+            // In VB6 a ScaleWidth set makes the scale a user one; here the row sets that ScaleMode itself.
+            Row("ScaleWidth=3000", 500, 200, (box, _) => box.Set(P.ScaleMode, ScaleMode.User).Set(P.ScaleWidth, 3000d).Set(P.ScaleHeight, 750d));
+            Row("Scale (100,100)-(3100,850)", 500, 200, (_, surface) => surface.Scale(100, 100, 3100, 850));
+            Row("pixels CurrentX=10.4 Scale", 10.4, 3, (_, surface) => surface.Scale(), inPixels: true);
+            Row("pixels CurrentX=10.4 ScaleMode=1", 10.4, 3, (box, _) => box.Set(P.ScaleMode, ScaleMode.Twip), inPixels: true);
+            Row("Scale (0,0)-(1,1) CurrentX=0.1", 0, 0, (_, surface) =>
+            {
+                surface.Scale(0, 0, 1, 1);
+                surface.CurrentX = 0.1;
+                surface.CurrentY = 0.3;
+            });
+            return rows;
+        });
+
+        Expect.Lines(new[]
+        {
+            "CurrentX=500.3 read\t500\t8",
+            "ScaleMode=3\t33.33333\t13.33333",
+            "ScaleLeft=100\t600\t250",
+            "ScaleWidth=3000\t250\t100",
+            "Scale (100,100)-(3100,850)\t350\t200",
+            "pixels CurrentX=10.4 Scale\t156\t45",
+            "pixels CurrentX=10.4 ScaleMode=1\t156\t45",
+            "Scale (0,0)-(1,1) CurrentX=0.1\t0.1\t0.3",
+        }, rows);
+    }
+
     [TestMethod]
     public void TheDrawing_IsShownUnderTheControls_AndKeptAsTheFormGrows()
     {

@@ -26,12 +26,14 @@ public interface IDrawingSurface
     ComponentInstance Component { get; }
 
     /// <summary>
-    /// The horizontal position the next drawing starts from, in the component's scale. A new surface starts at 0.
+    /// The horizontal position the next drawing starts from, in the component's scale. The point is kept in whole twips from the
+    /// inside's top left corner: a value set is rounded to the nearest twip, and a change of scale keeps the point where it is. A new
+    /// surface starts at the corner.
     /// </summary>
     double CurrentX { get; set; }
 
     /// <summary>
-    /// The vertical position the next drawing starts from, in the component's scale. A new surface starts at 0.
+    /// The vertical position the next drawing starts from, in the component's scale, kept as <see cref="CurrentX"/> is.
     /// </summary>
     double CurrentY { get; set; }
 
