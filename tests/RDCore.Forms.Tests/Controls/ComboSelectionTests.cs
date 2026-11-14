@@ -75,6 +75,8 @@ public sealed class ComboSelectionTests
         ("ListIndex=1 then SelStart=1 SelText=Q", [(b, c) => b.ListIndex = 1, (b, c) => b.SelStart = 1, (b, c) => b.SelText = "Q"]),
         ("ListIndex=2 then SelStart=1 SelLength=2", [(b, c) => b.ListIndex = 2, (b, c) => b.SelStart = 1, (b, c) => b.SelLength = 2]),
         ("Text=Other after a selection", [(b, c) => b.SelStart = 1, (b, c) => b.SelLength = 2, (b, c) => b.SetText("Other")]),
+        ("ListIndex=1 then SelText=same char", [(b, c) => b.ListIndex = 1, (b, c) => b.SelStart = 0, (b, c) => b.SelLength = 1, (b, c) => b.SelText = "a"]),
+        ("ListIndex=2 then SelText=empty, nothing selected", [(b, c) => b.ListIndex = 2, (b, c) => b.SelStart = 2, (b, c) => b.SelText = ""]),
     ];
 
     // Dropdown Combo and Simple Combo: VB6 gives the same rows for both.
@@ -119,6 +121,8 @@ public sealed class ComboSelectionTests
         "ListIndex=1 then SelStart=1 SelText=Q\terr=0\tSelStart=2\tSelLength=0\tSelText=[]\tText=[aQbc]\tChanges=13\tSeen=|aQbc@2\tListIndex=-1\tClicks=1",
         "ListIndex=2 then SelStart=1 SelLength=2\terr=0\tSelStart=1\tSelLength=2\tSelText=[th]\tText=[Other]\tChanges=13\tSeen=#Other@0+0\tListIndex=2\tClicks=2",
         "Text=Other after a selection\terr=0\tSelStart=1\tSelLength=2\tSelText=[th]\tText=[Other]\tChanges=13\tSeen=\tListIndex=2\tClicks=2",
+        "ListIndex=1 then SelText=same char\terr=0\tSelStart=1\tSelLength=0\tSelText=[]\tText=[abc]\tChanges=14\tSeen=#abc@0+0|abc@1\tListIndex=-1\tClicks=3",
+        "ListIndex=2 then SelText=empty, nothing selected\terr=0\tSelStart=2\tSelLength=0\tSelText=[]\tText=[Other]\tChanges=15\tSeen=#Other@0+0|Other@2\tListIndex=-1\tClicks=4",
     ];
 
     // Dropdown List: no edit box, and 380 for every read and set of the selection, its Click handler's reads too.
@@ -163,6 +167,8 @@ public sealed class ComboSelectionTests
         "ListIndex=1 then SelStart=1 SelText=Q\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[abc]\tChanges=0\tSeen=\tListIndex=1\tClicks=2",
         "ListIndex=2 then SelStart=1 SelLength=2\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[Other]\tChanges=0\tSeen=\tListIndex=2\tClicks=3",
         "Text=Other after a selection\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[Other]\tChanges=0\tSeen=\tListIndex=2\tClicks=4",
+        "ListIndex=1 then SelText=same char\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[abc]\tChanges=0\tSeen=\tListIndex=1\tClicks=5",
+        "ListIndex=2 then SelText=empty, nothing selected\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[Other]\tChanges=0\tSeen=\tListIndex=2\tClicks=6",
     ];
 
     private static string Esc(string text) => text.Replace("\r", "\\r").Replace("\n", "\\n");
