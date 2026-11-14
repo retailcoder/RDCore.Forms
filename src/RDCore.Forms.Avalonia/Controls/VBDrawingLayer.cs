@@ -24,8 +24,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <para>
 /// It draws as GDI does, with no smoothing. A point is placed on the pixel nearest its twips, rounded half to even. A line is drawn as a
 /// Line control draws it. A box covers both of its corners. Lines are dashed only where they are one pixel wide, and a fill's lines
-/// are eight pixels apart from the surface's corner. The component's <c>DrawMode</c> combines each pixel of a line and of a fill with
-/// the pixel under it, GDI's raster operation of that number: what is drawn there, or else the <see cref="Picture"/>'s pixel over the
+/// are eight pixels apart from the surface's corner. The component's <c>DrawMode</c> combines each pixel of a point, a line and a fill
+/// with the pixel under it, GDI's raster operation of that number: what is drawn there, or else the <see cref="Picture"/>'s pixel over the
 /// <c>BackColor</c>.
 /// </para>
 /// <para>
