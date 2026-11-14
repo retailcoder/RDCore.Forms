@@ -6,4 +6,10 @@
     <Description>RDForms' form model, with no UI dependency: component classes, their properties and events, the instances of a form, the reader and writer of the RDForms document (a constrained XAML dialect), and the reader that imports a VB6 designer file (.frm, .ctl, .pag) into the model.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- a picture's header is read as the SDK reads it; a ComboBox, in RDCore.Forms.Avalonia, matches a word typed as the language
+         server's completion matches a name. -->
+    <PackageReference Include="RDCore.SDK" Version="0.1.5-local.e661bce" />
+  </ItemGroup>
+
 </Project>
