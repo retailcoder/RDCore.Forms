@@ -69,6 +69,16 @@ Every key such a list takes raises Click, whether or not anything changed.
 |GotFocus, LostFocus|Once as the combo is entered and left, whether the combo or its edit box has the focus.|
 |KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list. The form raises its own for them only where its `KeyPreview` is True. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
 
+### Selection
+
+`SelStart`, `SelLength` and `SelText` are the edit box's selection, with a single-line TextBox's rules: see [Selection](text.md#selection). A Dropdown List has no edit box, and reading or setting any of them is 380.
+
+|Case|Behaviour|
+|---|---|
+|`ListIndex` from code|The edit box takes the item's text with nothing selected, the caret before the first character, then Click is raised: its handler reads a `SelStart` and a `SelLength` of 0.|
+|`SelText` set over a chosen item|The combo selects no item, `ListIndex` -1, and raises its Change, even where the text does not change.|
+|`Text` from code, the same text|The selection and `ListIndex` stay as they are.|
+
 ### Simple Combo
 
 The edit box is 21 pixels high, as VB6 draws it at its default font, and the list takes the rest of the combo's height. The list scrolls where its items do not fit.
