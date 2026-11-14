@@ -22,12 +22,10 @@ The interval is counted on the system's clock. [`VBControl.SetTimeProvider`](../
 - Dragging the thumb raises Scroll at each whole number it reaches, and no Change. Released, it raises one Change.
 - `Min` is at its left or top end and `Max` at its right or bottom end, so a `Min` greater than `Max` runs it the other way.
 - It takes the focus, and raises GotFocus and LostFocus.
-- With the focus, the arrow keys move it by `SmallChange`, Left and Up toward its left or top end and Right and Down toward its right or bottom end, and Page Down by `LargeChange` toward its right or bottom end, each with a Change.
+- With the focus, the arrow keys move it by `SmallChange` and Page Up and Page Down by `LargeChange`: Left, Up and Page Up toward `Min`, and the others toward `Max`. Home takes it to the lower of `Min` and `Max`, and End to the higher. Each raises Change where the value changes; a move stops at the end.
+- It raises KeyDown, KeyPress and KeyUp, the form's first where its `KeyPreview` is True. KeyDown comes before the key moves it, and KeyUp after. A `KeyCode` of 0 left by the form's KeyDown or its own cancels the key: the bar does not move, and KeyUp is still raised.
 
-These are RDForms' own, not measured with VB6: Page Up moves it by `LargeChange` toward its left or top end, Home and End take it to its ends, and a thumb released where it started raises no Change.
-
-> [!NOTE]
-> **Not implemented.** A scroll bar raises no key events of its own.
+RDForms' own, not measured with VB6: a thumb released where it started raises no Change.
 
 ## Shape
 

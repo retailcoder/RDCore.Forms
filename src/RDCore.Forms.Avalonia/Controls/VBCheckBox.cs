@@ -117,7 +117,7 @@ public sealed class VBCheckBox : CheckBox, ICustomHitTest, IRaisesKeyEvents
         else if (ReferenceEquals(e.Property, P.Caption))
             GraphicalFace.ShowCaption(this, face, (string)e.After!);
         else if (GraphicalFace.IsDrawnByFace(e.Property))
-            face?.Take(e.Property, (byte[]?)e.After);
+            face?.Take(e.Property, e.After);
         else if (!ReferenceEquals(e.Property, P.ButtonStyle))
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
     }

@@ -199,7 +199,7 @@ public sealed class ComponentInstance
     public ComponentInstance Set<T>(PropertyDefinition<T> property, T value)
     {
         RequireProperty(property);
-        Store(property, value);
+        Store(property, property.Coerced(this, value));
         return this;
     }
 
@@ -210,6 +210,15 @@ public sealed class ComponentInstance
     /// <param name="value">The value.</param>
     /// <returns><see langword="true"/> when the value was set; <see langword="false"/>, with nothing changed, otherwise.</returns>
     public bool TrySet(PropertyDefinition property, object? value)
+    {
+        if (!Class.Has(property) || !property.Accepts(value))
+            return false;
+        Store(property, property.Coerced(this, value));
+        return true;
+    }
+
+    // A value as a form's file holds it, which a component loads as it is: a TextBox's text longer than its MaxLength is not cut.
+    internal bool TryRead(PropertyDefinition property, object? value)
     {
         if (!Class.Has(property) || !property.Accepts(value))
             return false;

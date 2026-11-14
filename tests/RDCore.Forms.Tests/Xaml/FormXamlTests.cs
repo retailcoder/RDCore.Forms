@@ -90,6 +90,20 @@ public sealed class FormXamlTests
     }
 
     [TestMethod]
+    public void ATextLongerThanItsBoxsMaxLength_IsWrittenAndReadBackWhole()
+    {
+        var read = Read("<TextBox Name=\"Text1\" MaxLength=\"3\" Text=\"abcdef\" />");
+        var box = read.Form!.Components.Single(c => c.Name == "Text1");
+
+        var again = FormXaml.Read(FormXaml.Write(read.Form!)).Form!.Components.Single(c => c.Name == "Text1");
+
+        Assert.IsEmpty(read.Diagnostics, string.Join(Environment.NewLine, read.Diagnostics));
+        Assert.AreEqual("abcdef", box.Get(P.Text));
+        Assert.AreEqual("abcdef", again.Get(P.Text));
+        Assert.AreEqual(3, again.Get(P.MaxLength));
+    }
+
+    [TestMethod]
     public void AForm_IsWrittenAsTheFormatHasIt()
     {
         var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Caption, "Hello").Set(P.Width, 320.0)
@@ -219,6 +233,17 @@ public sealed class FormXamlTests
         Assert.IsNotNull(none.Form);
         Assert.AreEqual(0, none.FormatVersion);
         CollectionAssert.AreEqual(new[] { "InvalidValue Warning" }, Kinds(none));
+    }
+
+    // VB6's CommandButton has no ForeColor, and the model's has none.
+    [TestMethod]
+    public void ACommandButtonsForeColor_IsKeptAsText_AndReported()
+    {
+        var read = Read("""<CommandButton Name="Command1" ForeColor="#FF0000" />""");
+        var button = read.Form!.Find("Command1")!;
+
+        CollectionAssert.AreEqual(new[] { "UnknownProperty Warning" }, Kinds(read));
+        CollectionAssert.AreEqual(new[] { new UnmodelledProperty("ForeColor", "#FF0000") }, button.UnmodelledProperties);
     }
 
     [TestMethod]

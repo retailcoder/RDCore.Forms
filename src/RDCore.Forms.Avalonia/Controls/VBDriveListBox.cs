@@ -18,7 +18,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </para>
 /// <para>
 /// It raises Change, GotFocus, LostFocus, KeyDown, KeyPress and KeyUp, and no Click and no mouse events. Change comes whenever
-/// another drive is chosen, by the user or by code.
+/// another drive, or none, is chosen, by the user or by code.
 /// </para>
 /// </remarks>
 public sealed class VBDriveListBox : ComboBox, IRaisesKeyEvents
@@ -55,9 +55,9 @@ public sealed class VBDriveListBox : ComboBox, IRaisesKeyEvents
     protected override Type StyleKeyOverride => typeof(ComboBox);
 
     /// <summary>
-    /// The chosen drive, as it shows, such as <c>c: [Windows]</c>.
+    /// The chosen drive, as it shows, such as <c>c: [Windows]</c>, or "" where none is chosen.
     /// </summary>
-    /// <exception cref="FormErrorException">Set to no drive of the list: 68, Device unavailable.</exception>
+    /// <exception cref="FormErrorException">Set to "": 380, Invalid property value. Set to no drive of the list: 68, Device unavailable.</exception>
     /// <remarks>
     /// It is set to a drive's letter, alone or followed by a colon and anything, such as <c>c</c>, <c>c:</c>, <c>c: [Windows]</c> or
     /// <c>C:\Windows</c>, or, for a drive without a letter, to a path on it. Setting another drive raises Change; setting the chosen one again raises nothing.
@@ -68,6 +68,8 @@ public sealed class VBDriveListBox : ComboBox, IRaisesKeyEvents
         set
         {
             ArgumentNullException.ThrowIfNull(value);
+            if (value.Length == 0)
+                throw new FormErrorException(FormError.InvalidPropertyValue);
             var drive = DriveNamed(value) ?? throw new FormErrorException(FormError.DeviceUnavailable);
             SelectedIndex = drives.IndexOf(drive);
         }
@@ -79,19 +81,19 @@ public sealed class VBDriveListBox : ComboBox, IRaisesKeyEvents
     public int ListCount => ItemCount;
 
     /// <summary>
-    /// The chosen drive's index, from 0.
+    /// The chosen drive's index, from 0, or -1 where none is chosen.
     /// </summary>
-    /// <exception cref="FormErrorException">Set outside 0 to <see cref="ListCount"/> - 1: 380, Invalid property value.</exception>
+    /// <exception cref="FormErrorException">Set outside -1 to <see cref="ListCount"/> - 1: 381, Invalid property array index.</exception>
     /// <remarks>
-    /// Setting it chooses that drive, and raises Change where it is another.
+    /// Setting it chooses that drive, or none for -1, and raises Change where that is another.
     /// </remarks>
     public int ListIndex
     {
         get => SelectedIndex;
         set
         {
-            if (value < 0 || value >= ItemCount)
-                throw new FormErrorException(FormError.InvalidPropertyValue);
+            if (value < -1 || value >= ItemCount)
+                throw new FormErrorException(FormError.InvalidPropertyArrayIndex);
             SelectedIndex = value;
         }
     }
@@ -104,15 +106,21 @@ public sealed class VBDriveListBox : ComboBox, IRaisesKeyEvents
     public string GetList(int index) => index >= 0 && index < ItemCount ? (string)Items[index]! : "";
 
     /// <summary>
-    /// Reads the drives again, and keeps the chosen one where it is still there.
+    /// Reads the drives again, and keeps the chosen one where it is still there; otherwise chooses the first, and raises Change.
     /// </summary>
-    public void Refresh() => Relist(SelectedIndex >= 0 ? drives[SelectedIndex].Name : null);
+    public void Refresh()
+    {
+        var chosen = SelectedIndex >= 0 ? drives[SelectedIndex].Name : null;
+        Relist(chosen);
+        if (SelectedIndex >= 0 && drives[SelectedIndex].Name != chosen)
+            VBControl.Raise(this, VBEvents.Change);
+    }
 
     /// <inheritdoc/>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == SelectedIndexProperty && !listing && change.GetNewValue<int>() >= 0)
+        if (change.Property == SelectedIndexProperty && !listing)
             VBControl.Raise(this, VBEvents.Change);
     }
 

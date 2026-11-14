@@ -23,8 +23,13 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <c>Change</c> as it is released where the value differs from the one it started at.
 /// </para>
 /// <para>
-/// With the focus, the arrow keys move it by <c>SmallChange</c>, Left and Up toward its left or top end, and Page Up and Page Down by
-/// <c>LargeChange</c>. Home and End take it to its ends. Each raises <c>Change</c>.
+/// With the focus, the arrow keys move it by <c>SmallChange</c> and Page Up and Page Down by <c>LargeChange</c>: Left, Up and Page Up
+/// toward <c>Min</c>, and the others toward <c>Max</c>. Home takes it to the lower of <c>Min</c> and <c>Max</c>, and End to the higher. Each raises <c>Change</c> where
+/// the value changes.
+/// </para>
+/// <para>
+/// It raises KeyDown, KeyPress and KeyUp, the form's first where its <c>KeyPreview</c> is True: KeyDown before the key moves it, and
+/// KeyUp after. A <c>KeyCode</c> of 0 left by the form's KeyDown or its own cancels the key.
 /// </para>
 /// <para>
 /// <c>Min</c> is at its left or top end and <c>Max</c> at its right or bottom end, so a <c>Min</c> greater than <c>Max</c> runs it
@@ -34,7 +39,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// It takes the focus, and raises GotFocus and LostFocus.
 /// </para>
 /// </remarks>
-public sealed class VBScrollBar : ScrollBar
+public sealed class VBScrollBar : ScrollBar, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
     private bool syncing;
@@ -46,6 +51,7 @@ public sealed class VBScrollBar : ScrollBar
     {
         FocusableProperty.OverrideDefaultValue<VBScrollBar>(true);
         ControlEvents.AttachFocus<VBScrollBar>();
+        ControlKeys.Attach<VBScrollBar>(zeroCancelsTheKey: true);
         Thumb.DragStartedEvent.AddClassHandler<VBScrollBar>((bar, _) => bar.dragFrom = bar.instance.Get(P.ScrollBarValue));
         Thumb.DragCompletedEvent.AddClassHandler<VBScrollBar>((bar, _) => bar.EndDrag());
     }
@@ -100,8 +106,8 @@ public sealed class VBScrollBar : ScrollBar
             Key.Right or Key.Down => Value + SmallChange,
             Key.PageUp => Value - LargeChange,
             Key.PageDown => Value + LargeChange,
-            Key.Home => Minimum,
-            Key.End => Maximum,
+            Key.Home => ToAvalonia(Math.Min(instance.Get(P.Min), instance.Get(P.Max))),
+            Key.End => ToAvalonia(Math.Max(instance.Get(P.Min), instance.Get(P.Max))),
             _ => null,
         };
         if (target is not { } to)

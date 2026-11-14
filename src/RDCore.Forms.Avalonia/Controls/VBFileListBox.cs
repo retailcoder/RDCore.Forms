@@ -25,14 +25,21 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// also matches a name with no extension. A change of <c>Pattern</c> raises PatternChange.
 /// </para>
 /// <para>
+/// With a <c>MultiSelect</c> of Simple or Extended, it selects files as a <see cref="VBListBox"/> with that <c>MultiSelect</c> does:
+/// <see cref="ListIndex"/> is the file with the focus, the first one each time the files are listed, and the selection is a set of
+/// files apart from it. <see cref="FileName"/> is the file with the focus, selected or not.
+/// </para>
+/// <para>
 /// It raises Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, PathChange and
 /// PatternChange. A press, a key or a typed character raises Click as a ListBox's does.
 /// </para>
 /// </remarks>
-public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
+public sealed class VBFileListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
 {
     private readonly ComponentInstance instance;
     private readonly IFileSystem fileSystem;
+    // A multi-select list's selection; none where its MultiSelect is None.
+    private readonly MultiSelection? multi;
     private string path;
     // What the items were read with: Relist reads them again where one of these changed.
     private string? listedPattern;
@@ -42,7 +49,7 @@ public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
     {
         // First, so that a key's KeyDown comes before the Click of the selection it moves.
         ControlKeys.Attach<VBFileListBox>();
-        SingleSelectList.Attach<VBFileListBox>();
+        ListClicks.Attach<VBFileListBox>();
         ControlEvents.AttachMouse<VBFileListBox>(DblClick.InPlaceOfMouseDown);
         FocusableProperty.OverrideDefaultValue<VBFileListBox>(true);
         ControlEvents.AttachFocus<VBFileListBox>();
@@ -55,18 +62,29 @@ public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
     /// <param name="fileSystem">The file system it lists the files of. Its current directory is the list's first <see cref="Path"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> or <paramref name="fileSystem"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="instance"/> is not a FileListBox.</exception>
+    /// <remarks>
+    /// Its <c>MultiSelect</c> is read once, here: VB sets it at design time only.
+    /// </remarks>
     public VBFileListBox(ComponentInstance instance, IFileSystem fileSystem)
     {
         ArgumentNullException.ThrowIfNull(fileSystem);
         this.instance = instance;
         this.fileSystem = fileSystem;
         path = fileSystem.Path.TrimEndingDirectorySeparator(fileSystem.Directory.GetCurrentDirectory());
+        var multiSelect = instance?.Get(P.MultiSelect) ?? ListBoxMultiSelect.None;
+        if (multiSelect != ListBoxMultiSelect.None)
+        {
+            SelectionMode = SelectionMode.Multiple;
+            multi = new MultiSelection(this, multiSelect);
+        }
         ComponentBinding.Bind(this, instance!, VBClasses.FileListBox, Apply);
         Relist();
     }
 
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ListBox);
+
+    MultiSelection? IMultiSelectList.Multi => multi;
 
     /// <summary>
     /// The folder whose files are listed, without a separator at its end.
@@ -100,24 +118,25 @@ public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
     }
 
     /// <summary>
-    /// The selected file's name, or "" where no file is selected.
+    /// The selected file's name, or on a multi-select list the focused one's; "" where there is none.
     /// </summary>
     /// <exception cref="FormErrorException">
     /// Set to a file that does not exist: 53, File not found. Set in a folder that does not exist: 76, Path not found.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// Setting a file's name makes it the <c>Pattern</c>, which lists that file alone, and selects it; it reads back as the name is on
-    /// disk. Setting a pattern, one with <c>*</c> or <c>?</c>, makes it the <c>Pattern</c> and selects nothing. A name or a pattern
-    /// with a folder sets <see cref="Path"/> to that folder first.
+    /// Setting a file's name makes it the <c>Pattern</c>, which lists that file alone, and selects it, or on a multi-select list gives
+    /// it the focus; it reads back as the name is on disk. Setting a pattern, one with <c>*</c> or <c>?</c>, makes it the
+    /// <c>Pattern</c> and selects nothing. A name or a pattern with a folder sets <see cref="Path"/> to that folder first.
     /// </para>
     /// <para>
-    /// It raises PathChange where the folder changes and PatternChange where the <c>Pattern</c> does, and no Click.
+    /// It raises PathChange where the folder changes and PatternChange where the <c>Pattern</c> does, and no Click. A file's name
+    /// then raises DblClick; the same file again raises nothing. Where only the folder changes, the DblClick is RDForms' own.
     /// </para>
     /// </remarks>
     public string FileName
     {
-        get => SelectedIndex >= 0 ? (string)Items[SelectedIndex]! : "";
+        get => ListIndex >= 0 && ListIndex < ItemCount ? (string)Items[ListIndex]! : "";
         set
         {
             ArgumentNullException.ThrowIfNull(value);
@@ -129,10 +148,16 @@ public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
             string? file = null;
             if (name.IndexOfAny(['*', '?']) < 0)
                 file = FileIn(folder, name) ?? throw new FormErrorException(FormError.FileNotFound);
+            var before = (path, Pattern);
             SetPath(folder);
             Pattern = name;
-            if (file is not null)
+            if (file is null)
+                return;
+            // A multi-select list's focus is on the file already: the only one listed.
+            if (multi is null)
                 SelectedIndex = Items.IndexOf(file);
+            if ((path, Pattern) != before)
+                VBControl.Raise(this, VBEvents.DblClick);
         }
     }
 
@@ -142,19 +167,32 @@ public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
     public int ListCount => ItemCount;
 
     /// <summary>
-    /// The selected file, -1 for none.
+    /// The selected file, -1 for none; on a multi-select list, the focused file, 0 where there is none.
     /// </summary>
-    /// <exception cref="FormErrorException">Set outside -1 to <see cref="ListCount"/> - 1: 380, Invalid property value.</exception>
+    /// <exception cref="FormErrorException">
+    /// Set outside -1 to <see cref="ListCount"/> - 1: 381, Invalid property array index. On a multi-select list, set to anything but -1
+    /// and the focused file: 381.
+    /// </exception>
     /// <remarks>
-    /// Setting it raises Click when it moves the selection, and none when it is set again.
+    /// Setting it raises Click when it moves the selection, and none when it is set again. On a multi-select list, -1 raises Click and
+    /// changes nothing, and the focused file does nothing.
     /// </remarks>
     public int ListIndex
     {
-        get => SelectedIndex;
+        get => multi?.Focus ?? SelectedIndex;
         set
         {
+            if (multi is not null)
+            {
+                if (value == multi.Focus)
+                    return;
+                if (value != -1)
+                    throw new FormErrorException(FormError.InvalidPropertyArrayIndex);
+                VBControl.Raise(this, VBEvents.Click);
+                return;
+            }
             if (value < -1 || value >= ItemCount)
-                throw new FormErrorException(FormError.InvalidPropertyValue);
+                throw new FormErrorException(FormError.InvalidPropertyArrayIndex);
             if (value == SelectedIndex)
                 return;
             SelectedIndex = value;
@@ -170,6 +208,43 @@ public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
     public string GetList(int index) => index >= 0 && index < ItemCount ? (string)Items[index]! : "";
 
     /// <summary>
+    /// Gets whether a file is selected.
+    /// </summary>
+    /// <param name="index">The file's index, from 0.</param>
+    /// <returns>Whether it is selected.</returns>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the files: 381, Invalid property array index.</exception>
+    public bool GetSelected(int index)
+    {
+        RequireItem(index);
+        return multi?.IsSelected(index) ?? index == SelectedIndex;
+    }
+
+    /// <summary>
+    /// Selects or clears a file, and raises Click when that changes something.
+    /// </summary>
+    /// <param name="index">The file's index, from 0.</param>
+    /// <param name="selected">Whether to select it.</param>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the files: 381, Invalid property array index.</exception>
+    /// <remarks>
+    /// On a single-select list it moves the selection, and clearing the selected file leaves none. On a multi-select one, selecting a
+    /// file adds it and moves the focus to it, and clearing it removes it and leaves the focus.
+    /// </remarks>
+    public void SetSelected(int index, bool selected)
+    {
+        RequireItem(index);
+        if (multi is null)
+        {
+            if (selected)
+                ListIndex = index;
+            else if (index == SelectedIndex)
+                ListIndex = -1;
+            return;
+        }
+        if (multi.Set(index, selected))
+            VBControl.Raise(this, VBEvents.Click);
+    }
+
+    /// <summary>
     /// Reads the files of <see cref="Path"/> again, and leaves no file selected.
     /// </summary>
     public void Refresh()
@@ -181,16 +256,19 @@ public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
     /// <inheritdoc/>
     protected override void OnKeyDown(KeyEventArgs e)
     {
+        // A multi-select list's keys are taken on the way down; Avalonia's own would select as Avalonia does.
+        if (multi is not null)
+            return;
         var before = SelectedIndex;
         base.OnKeyDown(e);
-        SingleSelectList.KeyMoved(this, before);
+        ListClicks.KeyMoved(this, before);
     }
 
     /// <inheritdoc/>
     protected override void OnTextInput(TextInputEventArgs e)
     {
         base.OnTextInput(e);
-        SingleSelectList.Typed(this, e);
+        ListClicks.Typed(this, e);
     }
 
     private void Apply(ComponentPropertyChangedEventArgs e)
@@ -258,6 +336,13 @@ public sealed class VBFileListBox : ListBox, IRaisesKeyEvents
         Items.Clear();
         foreach (var name in names)
             Items.Add(name);
+        multi?.Reset();
+    }
+
+    private void RequireItem(int index)
+    {
+        if (index < 0 || index >= ItemCount)
+            throw new FormErrorException(FormError.InvalidPropertyArrayIndex);
     }
 
     // A pattern's expression: * any characters, ? one, and a final .* that also lets through a name with no extension.

@@ -14,6 +14,7 @@ The behaviour below was measured with VB6.
 - Enter on the button raises its Click and no key event.
 - `Default` True makes it the button Enter clicks, and `Cancel` True the button Esc clicks, from any control of the form: see [Enter and Esc](form-events.md#enter-and-esc).
 - The button Enter clicks has the default look: the default button while no CommandButton has the focus, and the focused CommandButton otherwise.
+- `Value` True from code raises Click before the statement returns, with no focus or mouse event, even where the button is disabled or hidden, or its form is disabled, hidden, or loaded and never shown. Click reads `Value` True, and it is False again after. `Value` False does nothing. Setting `Value` True in Click raises Click again, inside the first.
 
 These are RDForms' own, not measured with VB6:
 
@@ -22,6 +23,8 @@ These are RDForms' own, not measured with VB6:
 - A default button that is hidden or disabled takes no Enter, so it has no look.
 
 A Standard CommandButton does not paint its `BackColor`. See [Style Graphical](#style-graphical) for its `Picture`.
+
+A CommandButton has no `ForeColor`, as in VB6, where a program's read or assignment of it is 438. Its caption is drawn in the system's `ButtonText` colour. A VB6 form file or a form document that gives it a `ForeColor` keeps that value as an `UnmodelledProperty` (see [Format](../format/index.md)).
 
 ## CheckBox
 
@@ -70,8 +73,23 @@ A Graphical button is down while it is pressed, and a Graphical CheckBox or Opti
 
 A picture is drawn at its size in pixels. A greyed `Picture` or caption is drawn at half its opacity, and a disabled button keeps its `BackColor`: this look is RDForms' own, not measured with VB6.
 
-> [!NOTE]
-> **Not implemented.** `MaskColor` and `UseMaskColor` are not read, so a picture's background is drawn.
+### MaskColor
+
+Where `UseMaskColor` is True, a picture's pixels of the `MaskColor` show the button's face, in its `BackColor`. By default `MaskColor` is silver (`&H00C0C0C0&`) and `UseMaskColor` is False.
+
+|Case|Behaviour|
+|---|---|
+|A pixel of a colour near the `MaskColor`|Drawn: only the exact colour is left out.|
+|A system colour as the `MaskColor`|The colour it stands for is left out.|
+|`DownPicture` and `DisabledPicture`|Masked as the `Picture` is.|
+|A bitmap, a GIF or a JPEG|Masked.|
+|An icon or a cursor|Drawn whole, whatever `UseMaskColor` says.|
+|`MaskColor` or `UseMaskColor` set at run time|The button is drawn again with the new value.|
+
+These are RDForms' own, not measured with VB6:
+
+- A PNG, which VB6 does not load, is masked as a bitmap.
+- A `Picture` greyed while the button is disabled keeps its masked pixels out: they show the face.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

@@ -458,31 +458,4 @@ public sealed class FormEventTests
         Assert.AreEqual(events, raised);
         Assert.AreEqual(text, after);
     }
-
-    [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void AKeyOnAControlThatRaisesNoKeyEvents_IsTheFormsOnlyWithKeyPreview(bool preview)
-    {
-        var raised = UI.Run(() =>
-        {
-            var root = Root().Set(P.KeyPreview, preview);
-            var scroll1 = Add(root, VBClasses.HScrollBar, "HScroll1", 8, 8, 120, 17);
-            var sink = new RecordingSink();
-            var window = Open(root, sink);
-            window.View.ControlOf(scroll1)!.Focus();
-            Dispatcher.UIThread.RunJobs();
-            sink.Raised.Clear();
-            window.KeyPress(Key.K, RawInputModifiers.None, PhysicalKey.K, "k");
-            window.KeyTextInput("k");
-            window.KeyRelease(Key.K, RawInputModifiers.None, PhysicalKey.K, "k");
-            var result = sink.Raised.ToList();
-            window.Close();
-            return result;
-        });
-
-        Expect.Lines(preview
-            ? ["Form1.KeyDown(Integer 75, Integer 0)", "Form1.KeyPress(Integer 107)", "Form1.KeyUp(Integer 75, Integer 0)"]
-            : [], raised);
-    }
 }

@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Buffers.Binary;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
@@ -9,6 +10,7 @@ using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
+using RDCore.Forms.Tests.Model;
 using P = RDCore.Forms.Model.VB.VBProperties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
@@ -38,15 +40,17 @@ public sealed class GraphicalButtonTests
         _ => new VBOptionButton(instance),
     };
 
-    // The pixels of a colour in a control, as their bounding box from the control's top left corner, or null where there are none.
-    private static PixelRect? Box(Window window, Control control, Color colour)
+    // The pixels of a colour in a control, or in an area of it, as their bounding box from the control's top left corner, or null where
+    // there are none.
+    private static PixelRect? Box(Window window, Control control, Color colour, PixelRect? within = null)
     {
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         Dispatcher.UIThread.RunJobs();
         var origin = control.TranslatePoint(default, window)!.Value;
         var (left, top) = ((int)origin.X, (int)origin.Y);
-        var (width, height) = ((int)control.Bounds.Width, (int)control.Bounds.Height);
-        var points = (from y in Enumerable.Range(top, height) from x in Enumerable.Range(left, width) select new PixelPoint(x, y)).ToArray();
+        var area = within ?? new PixelRect(0, 0, (int)control.Bounds.Width, (int)control.Bounds.Height);
+        var points = (from y in Enumerable.Range(top + area.Y, area.Height) from x in Enumerable.Range(left + area.X, area.Width)
+                      select new PixelPoint(x, y)).ToArray();
         var hits = points.Zip(PictureControlTests.PixelsAt(window, points)).Where(p => p.Second == colour).Select(p => p.First).ToList();
         if (hits.Count == 0)
             return null;
@@ -283,6 +287,157 @@ public sealed class GraphicalButtonTests
 
         Assert.AreEqual(up!.Value.Translate(new PixelVector(1, 1)), selected);
         Assert.AreEqual(up, cleared);
+    }
+
+    private static readonly Color Silver = Color.FromRgb(0xC0, 0xC0, 0xC0), Magenta = Color.FromRgb(255, 0, 255);
+
+    // Where a captionless button's 16x16 picture is drawn.
+    private static readonly PixelRect PictureArea = new(42, 22, 16, 16);
+
+    // A 16x16 24-bit bitmap as VB6's MaskColor was measured with: a border 4 pixels wide of one colour around an 8x8 centre of another.
+    private static byte[] Bordered(Color border, Color centre)
+    {
+        var bytes = new byte[54 + 16 * 16 * 3];
+        "BM"u8.CopyTo(bytes);
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(2), bytes.Length);
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(10), 54);
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(14), 40);
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(18), 16);
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(22), 16);
+        BinaryPrimitives.WriteInt16LittleEndian(bytes.AsSpan(26), 1);
+        BinaryPrimitives.WriteInt16LittleEndian(bytes.AsSpan(28), 24);
+        for (var i = 0; i < 256; i++)
+        {
+            var colour = IsCentre(i) ? centre : border;
+            (bytes[54 + i * 3], bytes[55 + i * 3], bytes[56 + i * 3]) = (colour.B, colour.G, colour.R);
+        }
+        return bytes;
+    }
+
+    private static bool IsCentre(int pixel) => pixel % 16 is >= 4 and < 12 && pixel / 16 is >= 4 and < 12;
+
+    // The same picture as an icon (1) or a cursor (2) holding one PNG image.
+    private static byte[] BorderedIcon(short type, Color border, Color centre) => TestPictures.Icon(type, PictureControlTests.Png(16, 16,
+        [.. Enumerable.Range(0, 256).Select(i => IsCentre(i) ? centre : border).Select(c => 0xFF000000u | (uint)c.R << 16 | (uint)c.G << 8 | c.B)]));
+
+    private static ComponentInstance Masked(ComponentClass type, byte[] picture, bool useMaskColor = true) =>
+        Button(type, ButtonStyle.Graphical, caption: "").Set(P.BackColor, Yellow).Set(P.Picture, picture).Set(P.UseMaskColor, useMaskColor);
+
+    [TestMethod]
+    [DataRow("VB.CommandButton")]
+    [DataRow("VB.CheckBox")]
+    [DataRow("VB.OptionButton")]
+    public void UseMaskColor_LeavesTheMaskColorOutOfThePicture_SilverByDefault(string type)
+    {
+        var (masked, unmasked) = UI.Run(() =>
+        {
+            var kind = VBClasses.All.Single(c => c.TypeName == type);
+            var one = Make(Masked(kind, Bordered(Silver, Red)));
+            var other = Make(Masked(kind, Bordered(Silver, Red), useMaskColor: false));
+            var (window, _) = ControlHost.Show((one, Cell), (other, Cell.Translate(new Vector(120, 0))));
+            var result = ((Box(window, one, Silver), Box(window, one, Red), Box(window, one, Color.FromRgb(255, 255, 0), PictureArea)),
+                Box(window, other, Silver));
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual((null, new PixelRect(46, 26, 8, 8), PictureArea), masked, "the border shows the face, BackColor");
+        Assert.AreEqual(PictureArea, unmasked);
+    }
+
+    [TestMethod]
+    public void TheMask_IsExactlyTheMaskColor()
+    {
+        var (near, magenta, other) = UI.Run(() =>
+        {
+            var c1c0c0 = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Silver, Red)).Set(P.MaskColor, FormColor.FromRgb(0xC1, 0xC0, 0xC0)));
+            var onMagenta = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Magenta, Red)).Set(P.MaskColor, FormColor.FromRgb(255, 0, 255)));
+            var onSilver = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Silver, Red)).Set(P.MaskColor, FormColor.FromRgb(255, 0, 255)));
+            var (window, _) = ControlHost.Show((c1c0c0, Cell), (onMagenta, Cell.Translate(new Vector(120, 0))), (onSilver, Cell.Translate(new Vector(240, 0))));
+            var result = (Box(window, c1c0c0, Silver), Box(window, onMagenta, Magenta), Box(window, onSilver, Silver));
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual(PictureArea, near, "C1C0C0 is not C0C0C0");
+        Assert.IsNull(magenta);
+        Assert.AreEqual(PictureArea, other);
+    }
+
+    [TestMethod]
+    public void AMaskColorThatIsASystemColour_IsTheColourItStandsFor()
+    {
+        var face = FormPalette.ToColor(FormColor.FromSystem(SystemColor.ButtonFace));
+        var border = UI.Run(() =>
+        {
+            var button = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(face, Red)).Set(P.MaskColor, FormColor.FromSystem(SystemColor.ButtonFace)));
+            var (window, _) = ControlHost.Show((button, Cell));
+            var result = Box(window, button, face, PictureArea);
+            window.Close();
+            return result;
+        });
+
+        Assert.IsNull(border);
+    }
+
+    [TestMethod]
+    public void TheMask_IsLeftOutOfTheDownPicture_AndOfTheDisabledPicture()
+    {
+        var (held, disabled) = UI.Run(() =>
+        {
+            var one = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Silver, Red)).Set(P.DownPicture, Bordered(Silver, Blue)));
+            var other = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Silver, Red)).Set(P.DisabledPicture, Bordered(Silver, Green))
+                .Set(P.Enabled, false));
+            var (window, _) = ControlHost.Show((one, Cell), (other, Cell.Translate(new Vector(120, 0))));
+            Down(one, true);
+            var held = (Box(window, one, Silver), Box(window, one, Blue));
+            Down(one, false);
+            var result = (held, (Box(window, other, Silver), Box(window, other, Green)));
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual((null, new PixelRect(47, 27, 8, 8)), held);
+        Assert.AreEqual((null, new PixelRect(46, 26, 8, 8)), disabled);
+    }
+
+    [TestMethod]
+    public void UseMaskColorAndMaskColor_SetAtRunTime_RedrawTheButton()
+    {
+        var (before, masked, remasked) = UI.Run(() =>
+        {
+            var instance = Masked(VBClasses.CommandButton, Bordered(Silver, Red), useMaskColor: false);
+            var button = new VBCommandButton(instance);
+            var (window, _) = ControlHost.Show((button, Cell));
+            var before = Box(window, button, Silver);
+            instance.Set(P.UseMaskColor, true);
+            var masked = Box(window, button, Silver);
+            instance.Set(P.MaskColor, FormColor.FromRgb(255, 0, 255));
+            var result = (before, masked, Box(window, button, Silver));
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual(PictureArea, before);
+        Assert.IsNull(masked);
+        Assert.AreEqual(PictureArea, remasked);
+    }
+
+    [TestMethod]
+    [DataRow((short)1, DisplayName = "an icon")]
+    [DataRow((short)2, DisplayName = "a cursor")]
+    public void AnIconOrACursor_IsDrawnWhole_WithUseMaskColor(short type)
+    {
+        var silver = UI.Run(() =>
+        {
+            var button = new VBCommandButton(Masked(VBClasses.CommandButton, BorderedIcon(type, Silver, Red)));
+            var (window, _) = ControlHost.Show((button, Cell));
+            var result = Box(window, button, Silver);
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual(PictureArea, silver);
     }
 
     [TestMethod]

@@ -33,7 +33,7 @@ An argument left out is `null`, and the list ends at the last one given. A `Vari
 |Rounding|In VB6's unit, each value is a whole number of twips, rounded half to even.|
 |Checks|Every value is checked before any is set. A negative width or height is error 5, a value past a Long in twips is error 6, and Null is error 94.|
 |Arguments|`Left` is required (449). An argument left out before one given, as in `Move 600, , 4800`, is error 448.|
-|Resize|On the root, a `Move` that changes the size raises one Resize, where setting `Width` and then `Height` raises two. A `Move` to the size the form already has raises none.|
+|Resize|On the root and on a PictureBox, a `Move` that changes the size raises one Resize, where setting `Width` and then `Height` raises two. A `Move` to the size it already has raises none.|
 
 The window system's smallest size for a window is not modelled: a form takes the size asked for.
 

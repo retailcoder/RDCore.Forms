@@ -34,6 +34,7 @@ list.SetItemIcon(0, File.ReadAllBytes("open.png"));
 |---|---|
 |A left press on an item|Selects it at once; the selection follows the pointer over the items while the button is held. Click is raised at the release, before MouseUp, whether or not the selection changed and wherever the release lands.|
 |A press below the items, a right or middle press|Selects nothing and raises no Click.|
+|Navigation keys|Up and Left move one item back, Down and Right one item on, Home and End to the first and the last item. PageUp and PageDown move as many items as the list shows whole, less one, so that PageDown from the top reaches the last item shown whole. The same for every `MultiSelect`.|
 |A key or code that moves the selection|Raises Click, with `ListIndex` already the new value. Setting it again, a key that can go no further, and a change to the items raise none. A key's Click comes before its KeyUp: see [A control's key events](form-events.md#a-controls-key-events).|
 |A character typed|Where `MultiSelect` is None, selects the next item that starts with it, after the selected one and from the top again past the last, without regard to case.|
 |`GetSelected`, `SetSelected`|Read and set an item's selection; 381 for an index outside the items. `SetSelected` raises Click when it changes something.|
@@ -46,10 +47,19 @@ With a `MultiSelect` of Simple or Extended, `ListIndex` is the item with the foc
 
 |MultiSelect|Mouse|Keys|
 |---|---|---|
-|Simple|A press toggles the item, whatever the modifiers.|The arrow keys move only the focus; Space toggles.|
-|Extended|A press selects the item alone, Ctrl+press toggles it, and Shift+press selects from the anchor (the last item pressed or reached without Shift). A drag selects from the anchor.|Up and Down select the item alone; with Shift, from the anchor. Space changes nothing.|
+|Simple|A press toggles the item, whatever the modifiers.|The navigation keys move only the focus; Space toggles.|
+|Extended|A press selects the item alone, Ctrl+press toggles it, and Shift+press selects from the anchor (the last item pressed or reached without Shift). A drag selects from the anchor.|A navigation key selects the item it reaches alone; with Shift, from the anchor (RDForms' own for the keys other than Up and Down). Space changes nothing.|
 
-Every key such a list takes raises Click, whether or not anything changed.
+Every key such a list takes raises Click, whether or not anything changed: at the first or the last item too. The other keys change nothing and raise no Click (RDForms' own).
+
+### Height
+
+A ListBox's rows are a line of its font high, as a [Simple Combo's](#simple-combo) are, in a border of 2 pixels on each side. The height it is given, from the form or from code, is first rounded to whole pixels, 15 twips to a pixel.
+
+- Where `IntegralHeight` is True, its default, the list is its border and as many whole rows as fit, and at least one: 1000 twips are 840, and 200 are 255.
+- Where it is False, the list takes the height it is given.
+- Where `IntegralHeight` is True, a font from code snaps the height to the new rows: 69 pixels at MS Sans Serif 8 are 64 at 12.
+- `Height` keeps the height given where it rounds to the pixels the list takes, and reads those pixels otherwise: 1234 twips stay 1234, drawn as 82 pixels.
 
 ## ComboBox
 
@@ -69,22 +79,42 @@ Every key such a list takes raises Click, whether or not anything changed.
 |GotFocus, LostFocus|Once as the combo is entered and left, whether the combo or its edit box has the focus.|
 |KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list. The form raises its own for them only where its `KeyPreview` is True. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
 
+### Selection
+
+`SelStart`, `SelLength` and `SelText` are the edit box's selection, with a single-line TextBox's rules: see [Selection](text.md#selection). A Dropdown List has no edit box, and reading or setting any of them is 380.
+
+|Case|Behaviour|
+|---|---|
+|`ListIndex` from code|The edit box takes the item's text with nothing selected, the caret before the first character, then Click is raised: its handler reads a `SelStart` and a `SelLength` of 0.|
+|`SelText` set over a chosen item|The combo selects no item, `ListIndex` -1, and raises its Change, even where the text does not change.|
+|`Text` from code, the same text|The selection and `ListIndex` stay as they are.|
+
 ### Simple Combo
 
-The edit box is 21 pixels high, as VB6 draws it at its default font, and the list takes the rest of the combo's height. The list scrolls where its items do not fit.
+The list is under the edit box, in a border of 2 pixels on each side, and scrolls where its items do not fit. Its rows are a line of the combo's font high, and the edit box is a row and 8 pixels high: 13 and 21 pixels at the default font, MS Sans Serif 8, and 20 and 28 at MS Sans Serif 12.
+
+The height the combo is given is first rounded to whole pixels, 15 twips to a pixel. Then:
+
+|Case|`IntegralHeight` True (the default)|`IntegralHeight` False|
+|---|---|---|
+|A height more than the edit box's|The edit box, the list's border and as many whole rows as fit: 1000 twips are 960. Where no row fits, the edit box alone.|The height given. Where the list would be no more than its border, the edit box alone.|
+|A height of the edit box's or less, from the form|The edit box alone.|The edit box alone.|
+|A height of the edit box's or less, from code|Ignored: the combo keeps its size.|Ignored.|
+|A font from code|The edit box and the rows take the font, the list keeps its pixels, and the height snaps to the new rows.|The edit box takes the font, and the list keeps its pixels.|
+
+`Height` keeps the height given where it rounds to the pixels the combo takes, and reads those pixels otherwise: 1150 twips stay 1150, drawn as 77 pixels.
+
+MS Sans Serif's rows are VB6's at each of its sizes. Another font's rows are RDForms' own: the line as RDForms draws it, rounded up to a whole pixel. VB6 takes them from the font's hinting, so they can differ from VB6's by a pixel or more.
 
 |Input|Raised|
 |---|---|
 |A press on an item|Click, and the edit box takes the item's text, selected. The item already selected is picked again, with another Click. There is no Change.|
 |A press below the items|The last item is picked, with Click.|
 |A double click on an item|One Click, then DblClick.|
-|A press on the list of a combo without the focus|GotFocus, then Click. The focus is left in the edit box.|
+|A press on the list of a combo without the focus|The item is selected first: the LostFocus of the control that loses the focus, then the combo's GotFocus, read the combo's new `ListIndex` and its `Text` from before the pick. Then Click, with the item's text. The focus is left in the edit box.|
 |Typing|Change. No item is selected.|
 |Up and Down|Click, as in the other styles.|
 |F4 and Alt+Down|Nothing: the list never drops, and there is no DropDown.|
-
-> [!NOTE]
-> **Not implemented.** VB6 snaps a Simple Combo's height to whole rows of its list, and a GotFocus raised by a press on the list reads the `Text` from before the pick. RDForms keeps the height the form gives it, and its GotFocus reads the picked item's `Text`.
 
 ### Locked
 

@@ -201,4 +201,70 @@ public sealed class ListControlTests
         Assert.AreEqual(VBEdgeStyle.Single, flat);
         Assert.IsTrue(container);
     }
+
+    // A ListBox of a height and IntegralHeight, and a font: the component's Height in twips (15 to a pixel) and the height drawn,
+    // after each height given from code, then after the font given from code.
+    private static string Heights(int twips, bool integral, int[] fromCode, FormFont? font = null)
+    {
+        return UI.Run(() =>
+        {
+            var instance = List("List1", "one", "two", "three").Set(P.IntegralHeight, integral);
+            var list = new VBListBox(instance);
+            var (window, _) = ControlHost.Show((list, new Rect(10, 5, 120, twips / 15d)));
+            var heights = new List<string>();
+            void Read()
+            {
+                global::Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+                heights.Add($"{Math.Round(instance.Get(P.Height) * 15)}/{list.Bounds.Height}");
+            }
+            Read();
+            foreach (var asked in fromCode)
+            {
+                instance.Set(P.Height, asked / 15d);
+                Read();
+            }
+            if (font is { } given)
+            {
+                instance.Set(P.Font, given);
+                Read();
+            }
+            window.Close();
+            return string.Join(", ", heights);
+        });
+    }
+
+    // As measured with VB6 at the default font: rows of 13 pixels in a border of 4, at least one row; whole pixels first.
+    [TestMethod]
+    [DataRow(500, "450/30")]
+    [DataRow(1000, "840/56")]
+    [DataRow(1100, "1035/69")]
+    [DataRow(1150, "1035/69")]
+    [DataRow(1300, "1230/82")]
+    [DataRow(200, "255/17")]
+    public void AListBoxsHeight_IsWholeRows_WhereIntegralHeightIsTrue(int twips, string expected)
+    {
+        Assert.AreEqual(expected, Heights(twips, true, []));
+    }
+
+    [TestMethod]
+    public void AListBoxsHeightFromCode_IsWholeRowsToo_AtLeastOne_AndKeptWhereItRoundsToThem()
+    {
+        Assert.AreEqual("840/56, 1234/82, 840/56, 1035/69, 255/17, 255/17, 255/17", Heights(1000, true, [1234, 1000, 1150, 300, 100, 0]));
+    }
+
+    [TestMethod]
+    [DataRow(500, "500/33")]
+    [DataRow(1000, "1000/67")]
+    [DataRow(1300, "1300/87")]
+    public void WithIntegralHeightFalse_AListBox_TakesTheHeightItIsGiven(int twips, string expected)
+    {
+        Assert.AreEqual(expected, Heights(twips, false, []));
+    }
+
+    // MS Sans Serif 12 is drawn at its 16-pixel size, whose rows VB6 makes 20 pixels high: 69 pixels at 8 points are 64 at 12.
+    [TestMethod]
+    public void AFontFromCode_SnapsAListBoxToItsRows()
+    {
+        Assert.AreEqual("1035/69, 960/64", Heights(1100, true, [], new FormFont("MS Sans Serif", 12)));
+    }
 }

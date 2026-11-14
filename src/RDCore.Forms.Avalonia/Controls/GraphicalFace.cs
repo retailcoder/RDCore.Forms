@@ -10,7 +10,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 
 // The face of a graphical CommandButton, CheckBox or OptionButton, as VB6 draws it: the caption at the bottom, the picture centred
 // above it (centred in the whole face where there is no caption), and both one pixel right and down while the button is down. A button
-// that is down shows its DownPicture where it has one, and a disabled button its DisabledPicture, or else its Picture greyed.
+// that is down shows its DownPicture where it has one, and a disabled button its DisabledPicture, or else its Picture greyed. Where
+// UseMaskColor is set, the pixels of a picture of exactly the MaskColor show the face, whichever picture is shown.
 internal sealed class GraphicalFace : Control
 {
     // How much of its colour a disabled button's caption keeps, and its Picture where it has no DisabledPicture.
@@ -21,6 +22,8 @@ internal sealed class GraphicalFace : Control
     private readonly VBPicture.Holder disabledPicture = new();
     private Control? caption;
     private bool isDown;
+    private FormColor maskColor = P.MaskColor.Default;
+    private bool useMaskColor;
 
     public GraphicalFace() => ClipToBounds = true;
 
@@ -37,10 +40,17 @@ internal sealed class GraphicalFace : Control
         }
     }
 
-    // The picture drawn now, and whether it is drawn greyed.
-    internal (Bitmap? Picture, bool Greyed) Shown => !IsEffectivelyEnabled
-        ? disabledPicture.Picture is { } disabled ? (disabled, false) : (picture.Picture, true)
-        : (isDown ? downPicture.Picture ?? picture.Picture : picture.Picture, false);
+    // The picture drawn now, masked, and whether it is drawn greyed.
+    internal (Bitmap? Picture, bool Greyed) Shown
+    {
+        get
+        {
+            var (holder, greyed) = !IsEffectivelyEnabled
+                ? disabledPicture.Picture is not null ? (disabledPicture, false) : (picture, true)
+                : (isDown && downPicture.Picture is not null ? downPicture : picture, false);
+            return (holder.MaskedBy(useMaskColor ? FormPalette.ToColor(maskColor) : null), greyed);
+        }
+    }
 
     public void ShowCaption(string text)
     {
@@ -60,13 +70,22 @@ internal sealed class GraphicalFace : Control
         InvalidateMeasure();
     }
 
-    // Takes the value of one of the pictures it draws.
-    public void Take(PropertyDefinition property, byte[]? bytes)
+    // Takes the value of one of the properties it draws with (IsDrawnByFace).
+    public void Take(PropertyDefinition property, object? value)
     {
+        if (ReferenceEquals(property, P.MaskColor) || ReferenceEquals(property, P.UseMaskColor))
+        {
+            if (ReferenceEquals(property, P.MaskColor))
+                maskColor = (FormColor)value!;
+            else
+                useMaskColor = (bool)value!;
+            InvalidateVisual();
+            return;
+        }
         var holder = ReferenceEquals(property, P.DownPicture) ? downPicture
             : ReferenceEquals(property, P.DisabledPicture) ? disabledPicture
             : picture;
-        if (holder.Take(bytes))
+        if (holder.Take((byte[]?)value))
         {
             InvalidateMeasure();
             InvalidateVisual();
@@ -120,9 +139,10 @@ internal sealed class GraphicalFace : Control
         }
     }
 
-    // Whether a property is one of the pictures a graphical button draws, which a Standard one ignores.
+    // Whether a property is one a graphical button draws with, which a Standard one ignores: its pictures and their mask.
     public static bool IsDrawnByFace(PropertyDefinition property) =>
-        ReferenceEquals(property, P.Picture) || ReferenceEquals(property, P.DownPicture) || ReferenceEquals(property, P.DisabledPicture);
+        ReferenceEquals(property, P.Picture) || ReferenceEquals(property, P.DownPicture) || ReferenceEquals(property, P.DisabledPicture)
+        || ReferenceEquals(property, P.MaskColor) || ReferenceEquals(property, P.UseMaskColor);
 
     // Shows a button's caption: on its face where it is graphical, or as its content.
     public static void ShowCaption(ContentControl button, GraphicalFace? face, string caption)

@@ -87,4 +87,32 @@
   <data name="Error481" xml:space="preserve">
     <value>Image incorrecte</value>
   </data>
+  <data name="Error711" xml:space="preserve">
+    <value>Chaîne de classe incorrecte.
+Recherche de l'objet dont le ProgID est : {0}</value>
+  </data>
+  <data name="Error720" xml:space="preserve">
+    <value>« {0} » n'est pas un type de contrôle valide</value>
+  </data>
+  <data name="Error721" xml:space="preserve">
+    <value>« {0} » n'est pas un conteneur de contrôles valide</value>
+  </data>
+  <data name="Error727" xml:space="preserve">
+    <value>Il existe déjà un contrôle nommé « {0} »</value>
+  </data>
+  <data name="Error728" xml:space="preserve">
+    <value>« {0} » n'est pas un nom de contrôle autorisé</value>
+  </data>
+  <data name="Error729" xml:space="preserve">
+    <value>Controls.Remove ne peut supprimer que les contrôles ajoutés avec Controls.Add</value>
+  </data>
+  <data name="Error730" xml:space="preserve">
+    <value>Contrôle « {0} » introuvable</value>
+  </data>
+  <data name="Error735" xml:space="preserve">
+    <value>Le contrôle n'est plus utilisable, car il a été supprimé de la collection des contrôles</value>
+  </data>
+  <data name="Error740" xml:space="preserve">
+    <value>Controls.Remove ne peut supprimer que les conteneurs dont les contrôles ont été ajoutés avec Controls.Add. « {0} » n'a pas été ajouté avec Controls.Add.</value>
+  </data>
 </root>

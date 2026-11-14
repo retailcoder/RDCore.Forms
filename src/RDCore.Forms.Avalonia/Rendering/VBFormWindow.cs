@@ -29,8 +29,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// included: a button that is hidden or disabled takes no key, and a combo's open list keeps both keys. The button Enter clicks has the
 /// default look, and no other (see <see cref="VBCommandButton"/>). While it is open, the window is its root's
 /// <see cref="IMenuHost"/>, registered with <see cref="MenuHosts"/>, and a right release over a component whose <c>ContextMenu</c> names
-/// one of the form's menus pops it up at the pointer, after the component's MouseUp and Click. The window follows the root's <c>Caption</c>, <c>MaxButton</c>,
-/// <c>MinButton</c> and <c>ShowInTaskbar</c>. Its <c>StartUpPosition</c> chooses where it starts: CenterOwner and CenterScreen centre
+/// one of the form's menus pops it up at the pointer, after the component's MouseUp and Click. The window follows the root's <c>Caption</c>, <c>Icon</c>,
+/// <c>MaxButton</c>, <c>MinButton</c> and <c>ShowInTaskbar</c>. Its <c>StartUpPosition</c> chooses where it starts: CenterOwner and CenterScreen centre
 /// it, and Manual and Windows Default leave its place to the window system.
 /// </para>
 /// <para>
@@ -89,6 +89,9 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     private Point pointer;
     // Enter or Esc, while a button took it, or an open list kept it, and its KeyUp is to raise nothing.
     private Key? keyUpTaken;
+    // The root's Icon the window's icon was made from, once it was made.
+    private byte[]? iconFrom;
+    private bool iconMade;
     // The control that has VB's focus, while the form is the program's active one, and the control that last had it: VB's
     // ActiveControl, which takes the focus again as the form is activated again. The root has the focus itself where the form had
     // no control to take it.
@@ -329,7 +332,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
             throw new ArgumentException($"{component.Class.TypeName} has no method {method.Name}.", nameof(method));
         var given = MethodArguments.Of(method, arguments);
         if (ReferenceEquals(method, VBMethods.Move))
-            Move(component, given, unit);
+            Move(component, control, given, unit);
         else if (ReferenceEquals(method, VBMethods.SetFocus))
             SetFocus(control);
         else if (ReferenceEquals(method, VBMethods.ZOrder))
@@ -341,7 +344,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
         return FormValue.Empty;
     }
 
-    private void Move(ComponentInstance component, FormValue?[] given, CodeUnit unit)
+    private void Move(ComponentInstance component, Control control, FormValue?[] given, CodeUnit unit)
     {
         PropertyDefinition<double>[] extents = [P.Left, P.Top, P.Width, P.Height];
         // Every value is checked before any is set.
@@ -358,13 +361,20 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
                 throw new FormErrorException(FormError.Overflow);
             moves.Add((extents[i], twips / ScaleModeExtensions.TwipsPerPixel));
         }
-        // The root's two sizes raise one Resize.
+        // The root's two sizes raise one Resize, and so do a PictureBox's.
         var root = ReferenceEquals(component, Root);
         following = root;
-        try
+        void SetAll()
         {
             foreach (var (property, pixels) in moves)
                 component.Set(property, pixels);
+        }
+        try
+        {
+            if (control is VBPictureBox box)
+                box.Resizing(SetAll);
+            else
+                SetAll();
         }
         finally
         {
@@ -783,5 +793,32 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
         ShowInTaskbar = Root.Get(P.ShowInTaskbar);
         ShowActivated = Root.Get(P.Enabled);
         MenuBar.IsEnabled = Root.Get(P.Enabled);
+        ApplyIcon();
+    }
+
+    // The window shows the root's Icon, made once for each value it takes. With none, or one the window system cannot read, it
+    // shows the window system's own.
+    private void ApplyIcon()
+    {
+        var bytes = Root.Class.Has(P.Icon) ? Root.Get(P.Icon) : null;
+        if (iconMade && ReferenceEquals(bytes, iconFrom))
+            return;
+        iconMade = true;
+        iconFrom = bytes;
+        Icon = IconOf(bytes);
+    }
+
+    private static WindowIcon? IconOf(byte[]? bytes)
+    {
+        if (bytes is null || FormPictures.Inspect(bytes, out _) is not null)
+            return null;
+        try
+        {
+            return new WindowIcon(new MemoryStream(bytes, writable: false));
+        }
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            return null;
+        }
     }
 }

@@ -226,6 +226,30 @@ public enum ListBoxMultiSelect
 }
 
 /// <summary>
+/// The scroll bars of a VB TextBox: its <c>ScrollBars</c>, set at design time and read-only to a program. A box that is not
+/// multi-line has none, whatever it is set to.
+/// </summary>
+public enum ScrollBars
+{
+    /// <summary>
+    /// No scroll bar, the default.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// A horizontal scroll bar. A multi-line box does not wrap its lines.
+    /// </summary>
+    Horizontal = 1,
+    /// <summary>
+    /// A vertical scroll bar.
+    /// </summary>
+    Vertical = 2,
+    /// <summary>
+    /// Both scroll bars. A multi-line box does not wrap its lines.
+    /// </summary>
+    Both = 3,
+}
+
+/// <summary>
 /// How a VB Shape, form or PictureBox fills a figure: its <c>FillStyle</c>.
 /// </summary>
 public enum FillStyle

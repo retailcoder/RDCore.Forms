@@ -17,6 +17,48 @@ public sealed class ComponentClassTests
             new ComponentClass("Test.Widget", "Widget", ComponentKind.Control, [Caption, other], []));
     }
 
+    // The member each VB class's default member stands for, as VB6 reads and assigns it through the instance.
+    [TestMethod]
+    [DataRow("VB.Form", "Controls")]
+    [DataRow("VB.MDIForm", "Controls")]
+    [DataRow("VB.CommandButton", "Value")]
+    [DataRow("VB.CheckBox", "Value")]
+    [DataRow("VB.OptionButton", "Value")]
+    [DataRow("VB.HScrollBar", "Value")]
+    [DataRow("VB.VScrollBar", "Value")]
+    [DataRow("VB.TextBox", "Text")]
+    [DataRow("VB.ComboBox", "Text")]
+    [DataRow("VB.ListBox", "Text")]
+    [DataRow("VB.Label", "Caption")]
+    [DataRow("VB.Frame", "Caption")]
+    [DataRow("VB.PictureBox", "Picture")]
+    [DataRow("VB.Image", "Picture")]
+    [DataRow("VB.DriveListBox", "Drive")]
+    [DataRow("VB.DirListBox", "Path")]
+    [DataRow("VB.FileListBox", "FileName")]
+    [DataRow("VB.Shape", "Shape")]
+    [DataRow("VB.Line", "Visible")]
+    [DataRow("VB.Timer", "Enabled")]
+    [DataRow("VB.Menu", "Enabled")]
+    [DataRow("VB.UserControl", null)]
+    [DataRow("VB.PropertyPage", null)]
+    public void AVBClassesDefaultMember_IsTheMemberVB6ReadsAndAssignsThroughTheInstance(string typeName, string? member) =>
+        Assert.AreEqual(member, VBClasses.ByTypeName(typeName)!.DefaultMember);
+
+    [TestMethod]
+    public void EveryVBClass_ButAUserControlAndAPropertyPage_HasADefaultMember() =>
+        CollectionAssert.AreEquivalent(new[] { VBClasses.UserControl, VBClasses.PropertyPage }, VBClasses.All.Where(c => c.DefaultMember is null).ToArray());
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void ADefaultMemberWithNoName_IsRefused(string name) =>
+        Assert.ThrowsExactly<ArgumentException>(() => new ComponentClass("Test.Widget", "Widget", ComponentKind.Control, [], [], defaultMember: name));
+
+    [TestMethod]
+    public void AClassGivenNoDefaultMember_HasNone() =>
+        Assert.IsNull(new ComponentClass("Test.Widget", "Widget", ComponentKind.Control, [], []).DefaultMember);
+
     [TestMethod]
     public void ADefault_ForAPropertyTheClassHasNot_IsRefused()
     {
@@ -75,5 +117,28 @@ public sealed class ComponentClassTests
         Assert.AreEqual(BorderStyle.None, VBClasses.Label.DefaultOf(VBProperties.BorderStyle));
         Assert.AreEqual(BackStyle.Opaque, VBClasses.Label.DefaultOf(VBProperties.BackStyle));
         Assert.AreEqual(BackStyle.Transparent, VBClasses.Shape.DefaultOf(VBProperties.BackStyle));
+    }
+
+    // VB6 gives the three buttons a MaskColor of silver and UseMaskColor False; the model gives them to no other class.
+    [TestMethod]
+    public void TheCatalog_GivesTheButtonsAMaskColor_SilverAndNotUsed()
+    {
+        var buttons = new[] { VBClasses.CommandButton, VBClasses.CheckBox, VBClasses.OptionButton };
+
+        CollectionAssert.AreEquivalent(buttons, VBClasses.All.Where(c => c.Has(VBProperties.MaskColor)).ToArray());
+        CollectionAssert.AreEquivalent(buttons, VBClasses.All.Where(c => c.Has(VBProperties.UseMaskColor)).ToArray());
+        Assert.IsTrue(buttons.All(c => c.DefaultOf(VBProperties.MaskColor) == FormColor.FromRgb(0xC0, 0xC0, 0xC0) && !c.DefaultOf(VBProperties.UseMaskColor)));
+    }
+
+    [TestMethod]
+    [DataRow("VB.HScrollBar")]
+    [DataRow("VB.VScrollBar")]
+    public void TheCatalog_GivesAScrollBarItsKeyEvents(string typeName)
+    {
+        var bar = VBClasses.ByTypeName(typeName)!;
+
+        CollectionAssert.AreEquivalent(new[] { "Change", "GotFocus", "KeyDown", "KeyPress", "KeyUp", "LostFocus", "Scroll" },
+            bar.Events.Select(e => e.Name).ToArray());
+        Assert.AreSame(VBEvents.KeyPress, bar.Event("keypress"));
     }
 }

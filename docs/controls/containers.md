@@ -17,6 +17,7 @@ Frame and PictureBox hold controls; PictureBox and Image draw pictures. The thre
 - Its border is a sunken edge when 3-D, and one pixel when flat. The controls it holds are placed inside the border, from its client origin.
 - Its `Picture` is drawn at its own size in pixels from the client origin, clipped, under the controls it holds.
 - Where `AutoSize` is set, it takes its picture's size: see [A size from the picture](#a-size-from-the-picture).
+- It raises Resize as its size changes: see [A PictureBox's Resize](#a-pictureboxs-resize).
 - Its drawing statements draw over its `Picture` and under its controls; see [Drawing](drawing.md). It raises Paint as its drawing surface does.
 - It takes the focus, whether or not it holds controls. It raises MouseUp before Click, and Click only where the release is over the PictureBox again. Its mouse events' X and Y are in twips.
 
@@ -44,8 +45,23 @@ An Image whose `Stretch` is not set, and a PictureBox whose `AutoSize` is set, t
 |`Stretch` set, or `AutoSize` cleared|Keeps its size.|Keeps its size.|
 |`Width` or `Height` set by code|Kept, also when the same picture is set again.|Kept, also when the same picture is set again.|
 
+## A PictureBox's Resize
+
+A PictureBox raises Resize inside the statement that changes its size in whole pixels or its client area, as measured with VB6:
+
+|Change|Resize|
+|---|---|
+|`Width` or `Height` set to a new size|One.|
+|`Move` to a new size|One for both sizes.|
+|`AutoSize` fitting a new picture size|One for both sizes.|
+|`BorderStyle`, which changes the client area|One.|
+|The same size, a change of less than a pixel, a position, `Visible`, `ScaleMode` or the scale|None.|
+|Its form loading, an `AutoSize` fit to a picture from the `.frx` included|None.|
+
+It raises Resize whether or not it or its form is shown.
+
 > [!NOTE]
-> **Not implemented.** A PictureBox raises no Resize. VB6 raises one each time its size changes, by `AutoSize` or by code.
+> **Not implemented.** `Align` does not dock a PictureBox to an edge of its form. In VB6, an aligned PictureBox raises Resize as its form is first shown, and whenever a change of the form's size changes its own.
 
 ## Pictures
 
@@ -55,7 +71,7 @@ A `Picture` holds the bytes of a picture file. A picture from a VB6 form is read
 |---|---|
 |PNG|Yes, its transparent pixels showing what is behind them.|
 |BMP, GIF, JPEG|Yes. An animated GIF is not animated.|
-|ICO, CUR|Yes.|
+|ICO, CUR|Yes. VB6 draws a cursor that is a form's `Picture` in black; RDForms draws it in its own colours.|
 |WMF, EMF|No. A metafile is recognized and accepted, and not drawn.|
 
 Before anything decodes a picture, [`FormPictures.Inspect`](../api/RDCore.Forms.Model.FormPictures.yml) reads its header, with every offset checked against the bytes. It refuses a picture:

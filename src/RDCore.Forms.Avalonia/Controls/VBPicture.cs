@@ -5,7 +5,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using RDCore.Forms.Model;
+using System.Runtime.InteropServices;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -30,9 +32,13 @@ public static class VBPicture
     /// <returns>
     /// The picture, or <see langword="null"/> where there is none, it is refused, or it is a metafile. The caller disposes it.
     /// </returns>
-    public static Bitmap? Decode(byte[]? bytes, out FormError? error)
+    public static Bitmap? Decode(byte[]? bytes, out FormError? error) => DecodeWithFormat(bytes, out error, out _);
+
+    // Decodes a picture, and says the format its header names, where it is accepted.
+    internal static Bitmap? DecodeWithFormat(byte[]? bytes, out FormError? error, out PictureFormat? format)
     {
         error = null;
+        format = null;
         if (bytes is null || bytes.Length == 0)
             return null;
         if (FormPictures.Inspect(bytes, out var info) is { } refused)
@@ -40,6 +46,7 @@ public static class VBPicture
             error = refused;
             return null;
         }
+        format = info.Format;
         if (!info.IsDrawn)
             return null;
         // A cursor is an icon with a hot spot: decoded as one.
@@ -69,6 +76,8 @@ public static class VBPicture
     internal sealed class Holder
     {
         private byte[]? decodedFrom;
+        private PictureFormat? format;
+        private (Color Mask, Bitmap Picture)? masked;
 
         public Bitmap? Picture { get; private set; }
 
@@ -81,10 +90,50 @@ public static class VBPicture
                 return false;
             decodedFrom = bytes;
             Picture?.Dispose();
-            Picture = Decode(bytes, out var error);
+            masked?.Picture.Dispose();
+            masked = null;
+            Picture = DecodeWithFormat(bytes, out var error, out format);
             Error = error;
             return true;
         }
+
+        // The picture with its pixels of the mask colour left out, made once for each picture and colour; the picture as it is where
+        // there is no mask. VB6 masks a picture of type bitmap (a bitmap, a GIF, a JPEG) and draws an icon or a cursor whole. A PNG,
+        // which VB6 does not load, is masked as a bitmap.
+        public Bitmap? MaskedBy(Color? mask)
+        {
+            if (Picture is null || mask is not { } colour || format is PictureFormat.Icon or PictureFormat.Cursor)
+                return Picture;
+            if (masked is not { } made || made.Mask != colour)
+            {
+                masked?.Picture.Dispose();
+                made = (colour, Masked(Picture, colour));
+                masked = made;
+            }
+            return made.Picture;
+        }
+    }
+
+    // A copy of a picture whose opaque pixels of exactly one colour are transparent.
+    internal static Bitmap Masked(Bitmap picture, Color mask)
+    {
+        var copy = new WriteableBitmap(picture.PixelSize, new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Premul);
+        using var buffer = copy.Lock();
+        picture.CopyPixels(buffer);
+        var (first, third) = buffer.Format == PixelFormats.Rgba8888 ? (mask.R, mask.B) : (mask.B, mask.R);
+        var row = new byte[buffer.Size.Width * 4];
+        for (var y = 0; y < buffer.Size.Height; y++)
+        {
+            var at = buffer.Address + y * buffer.RowBytes;
+            Marshal.Copy(at, row, 0, row.Length);
+            for (var x = 0; x < row.Length; x += 4)
+            {
+                if (row[x + 3] == 255 && row[x] == first && row[x + 1] == mask.G && row[x + 2] == third)
+                    row.AsSpan(x, 4).Clear();
+            }
+            Marshal.Copy(row, 0, at, row.Length);
+        }
+        return copy;
     }
 
     // Draws a picture at its size in pixels from the top left corner of the area, clipped to it, or stretched over it.

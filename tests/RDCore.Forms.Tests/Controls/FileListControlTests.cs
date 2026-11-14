@@ -129,31 +129,34 @@ public sealed class FileListControlTests
     }
 
     [TestMethod]
-    public void TheListIndex_SelectsAFile_AndRaisesClick_AndOutsideTheFilesIs380()
+    public void TheListIndex_SelectsAFile_AndRaisesClick_AndOutsideTheFilesIs381()
     {
-        var (fileName, raised, error) = UI.Run(() =>
+        var (fileName, raised, past, below) = UI.Run(() =>
         {
             var list = new VBFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.ListIndex = 1;
             list.ListIndex = 1;
-            var error = Assert.ThrowsExactly<FormErrorException>(() => list.ListIndex = 6).Error.Number;
+            var past = Assert.ThrowsExactly<FormErrorException>(() => list.ListIndex = 6).Error.Number;
+            var below = Assert.ThrowsExactly<FormErrorException>(() => list.ListIndex = -2).Error.Number;
             window.Close();
-            return (list.FileName, sink.Raised, error);
+            return (list.FileName, sink.Raised, past, below);
         });
 
         Assert.AreEqual("b.bas", fileName);
         Expect.Lines(new[] { "File1.Click" }, raised);
-        Assert.AreEqual(380, error);
+        Assert.AreEqual(381, past);
+        Assert.AreEqual(381, below);
     }
 
     [TestMethod]
-    public void AFileName_BecomesThePattern_AndSelectsTheFile_AsItsNameIsOnDisk()
+    public void AFileName_BecomesThePattern_SelectsTheFile_AsItsNameIsOnDisk_AndRaisesDblClick_OnlyWhereItChanges()
     {
         var (pattern, fileName, index, items, raised) = UI.Run(() =>
         {
             var list = new VBFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
+            list.FileName = "c.txt";
             list.FileName = "c.txt";
             window.Close();
             return (list.Pattern, list.FileName, list.ListIndex, Items(list), sink.Raised);
@@ -163,7 +166,7 @@ public sealed class FileListControlTests
         Assert.AreEqual("C.TXT", fileName);
         Assert.AreEqual(0, index);
         Expect.Lines(new[] { "C.TXT" }, items);
-        Expect.Lines(new[] { "File1.PatternChange" }, raised);
+        Expect.Lines(new[] { "File1.PatternChange", "File1.DblClick" }, raised);
     }
 
     [TestMethod]
@@ -216,7 +219,99 @@ public sealed class FileListControlTests
         Assert.AreEqual(In("SubOne"), path);
         Assert.AreEqual("x.bas", fileName);
         Assert.AreEqual(0, index);
-        Expect.Lines(new[] { "File1.PathChange", "File1.PatternChange" }, raised);
+        Expect.Lines(new[] { "File1.PathChange", "File1.PatternChange", "File1.DblClick" }, raised);
+    }
+
+    [TestMethod]
+    public void ASingleSelectFileListsSelected_MovesTheSelection_AndClearingTheSelectedFileLeavesNone()
+    {
+        var (log, raised, read, set) = UI.Run(() =>
+        {
+            var list = new VBFileListBox(File(), Tree());
+            var (window, sink) = ControlHost.Show(list);
+            var log = new List<string>();
+            void Step(string name, Action act)
+            {
+                act();
+                log.Add($"{name}: {sink.Raised.Count(e => e == "File1.Click")} {list.ListIndex} {list.FileName} {list.GetSelected(1)}");
+                sink.Raised.Clear();
+            }
+            Step("Selected(1) = True", () => list.SetSelected(1, true));
+            Step("Selected(3) = True", () => list.SetSelected(3, true));
+            Step("Selected(1) = True", () => list.SetSelected(1, true));
+            Step("Selected(3) = False", () => list.SetSelected(3, false));
+            Step("Selected(1) = False", () => list.SetSelected(1, false));
+            var read = Assert.ThrowsExactly<FormErrorException>(() => list.GetSelected(6)).Error.Number;
+            var set = Assert.ThrowsExactly<FormErrorException>(() => list.SetSelected(-1, true)).Error.Number;
+            window.Close();
+            return (log, sink.Raised, read, set);
+        });
+
+        Expect.Lines(["Selected(1) = True: 1 1 b.bas True", "Selected(3) = True: 1 3 noext False", "Selected(1) = True: 1 1 b.bas True",
+            "Selected(3) = False: 0 1 b.bas True", "Selected(1) = False: 1 -1  False"], log);
+        Assert.IsEmpty(raised);
+        Assert.AreEqual(381, read);
+        Assert.AreEqual(381, set);
+    }
+
+    [TestMethod]
+    [DataRow(ListBoxMultiSelect.Simple)]
+    [DataRow(ListBoxMultiSelect.Extended)]
+    public void AMultiSelectFileListsListIndex_IsTheFocusedFile_TheFirstEachTimeItLists_AndTakesOnlyMinus1AndItself(ListBoxMultiSelect mode)
+    {
+        var (log, error) = UI.Run(() =>
+        {
+            var list = new VBFileListBox(File().Set(P.MultiSelect, mode), Tree());
+            var (window, sink) = ControlHost.Show(list);
+            var log = new List<string>();
+            void Step(string name, Action act)
+            {
+                act();
+                var selected = Enumerable.Range(0, list.ListCount).Where(list.GetSelected);
+                log.Add($"{name}: {string.Join(" ", sink.Raised.Select(e => e[6..]))} [{string.Join(",", selected)}] {list.ListIndex} {list.FileName}");
+                sink.Raised.Clear();
+            }
+            Step("shown", () => { });
+            Step("Selected(1) = True", () => list.SetSelected(1, true));
+            Step("Selected(3) = True", () => list.SetSelected(3, true));
+            Step("Selected(3) = True", () => list.SetSelected(3, true));
+            Step("Selected(3) = False", () => list.SetSelected(3, false));
+            Step("ListIndex = 3", () => list.ListIndex = 3);
+            Step("ListIndex = -1", () => list.ListIndex = -1);
+            var error = Assert.ThrowsExactly<FormErrorException>(() => list.ListIndex = 2).Error.Number;
+            Step("Refresh", list.Refresh);
+            Step("Pattern = *.none", () => list.Pattern = "*.none");
+            Step("ListIndex = 0", () => list.ListIndex = 0);
+            Step("ListIndex = -1", () => list.ListIndex = -1);
+            window.Close();
+            return (log, error);
+        });
+
+        Expect.Lines(["shown:  [] 0 a.txt", "Selected(1) = True: Click [1] 1 b.bas", "Selected(3) = True: Click [1,3] 3 noext",
+            "Selected(3) = True:  [1,3] 3 noext", "Selected(3) = False: Click [1] 3 noext", "ListIndex = 3:  [1] 3 noext",
+            "ListIndex = -1: Click [1] 3 noext", "Refresh:  [] 0 a.txt", "Pattern = *.none: PatternChange [] 0 ",
+            "ListIndex = 0:  [] 0 ", "ListIndex = -1: Click [] 0 "], log);
+        Assert.AreEqual(381, error);
+    }
+
+    [TestMethod]
+    public void AMultiSelectFileListsFileName_GivesTheFileTheFocus_AndSelectsNothing()
+    {
+        var (index, fileName, selected, raised) = UI.Run(() =>
+        {
+            var list = new VBFileListBox(File().Set(P.MultiSelect, ListBoxMultiSelect.Extended), Tree());
+            var (window, sink) = ControlHost.Show(list);
+            list.SetSelected(2, true);
+            sink.Raised.Clear();
+            list.FileName = "noext";
+            window.Close();
+            return (list.ListIndex, list.FileName, list.GetSelected(0), sink.Raised);
+        });
+
+        Assert.AreEqual(0, index);
+        Assert.AreEqual("noext", fileName);
+        Assert.IsFalse(selected);
+        Expect.Lines(new[] { "File1.PatternChange", "File1.DblClick" }, raised);
     }
 
     [TestMethod]
@@ -414,8 +509,8 @@ public sealed class FileListControlTests
         Assert.AreEqual(Root, path);
         Assert.AreEqual(-2, index);
         Expect.Lines(new[] { "Dir1.Click", "Dir1.Click" }, raised);
-        Assert.AreEqual(380, below);
-        Assert.AreEqual(380, past);
+        Assert.AreEqual(381, below);
+        Assert.AreEqual(381, past);
     }
 
     [TestMethod]
@@ -483,6 +578,65 @@ public sealed class FileListControlTests
         CollectionAssert.Contains(items, "b:");
         Assert.AreEqual("c:", drive[..2]);
         Assert.AreEqual(drive, items[index]);
+    }
+
+    [TestMethod]
+    public void ADriveListsListIndexPastTheDrives_Is381_AndChangesNothing()
+    {
+        var (error, index, raised) = UI.Run(() =>
+        {
+            var list = new VBDriveListBox(Drive(), Tree());
+            var (window, sink) = ControlHost.Show(list);
+            var error = Assert.ThrowsExactly<FormErrorException>(() => list.ListIndex = list.ListCount).Error.Number;
+            window.Close();
+            return (error, list.ListIndex, sink.Raised);
+        });
+
+        Assert.AreEqual(381, error);
+        Assert.AreEqual(0, index);
+        Assert.IsEmpty(raised);
+    }
+
+    [TestMethod]
+    public void ADriveListsListIndexOfMinus1_ChoosesNoDrive_WithChangeOnce_AndRefreshChoosesTheFirstWithChange()
+    {
+        var log = UI.Run(() =>
+        {
+            var list = new VBDriveListBox(Drive(), Tree());
+            var (window, sink) = ControlHost.Show(list);
+            var first = list.GetList(0);
+            var log = new List<string>();
+            void Step(string name, Action act)
+            {
+                sink.Raised.Clear();
+                var error = 0;
+                try
+                {
+                    act();
+                }
+                catch (FormErrorException e)
+                {
+                    error = e.Error.Number;
+                }
+                var drive = list.Drive == "" ? "none" : list.Drive == first ? "first" : list.Drive;
+                log.Add($"{name}: {error} {string.Join(" ", sink.Raised)} {list.ListIndex} {drive}");
+            }
+            Step("ListIndex = -1", () => list.ListIndex = -1);
+            Step("ListIndex = -1", () => list.ListIndex = -1);
+            Step("ListIndex = -2", () => list.ListIndex = -2);
+            Step("Drive = \"\"", () => list.Drive = "");
+            Step("Refresh", list.Refresh);
+            Step("Refresh", list.Refresh);
+            Step("Drive = \"\"", () => list.Drive = "");
+            window.Close();
+            return log;
+        });
+
+        Expect.Lines(new[]
+        {
+            "ListIndex = -1: 0 Drive1.Change -1 none", "ListIndex = -1: 0  -1 none", "ListIndex = -2: 381  -1 none", "Drive = \"\": 380  -1 none",
+            "Refresh: 0 Drive1.Change 0 first", "Refresh: 0  0 first", "Drive = \"\": 380  0 first",
+        }, log);
     }
 
     [TestMethod]
