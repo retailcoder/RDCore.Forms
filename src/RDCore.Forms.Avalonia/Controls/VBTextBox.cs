@@ -5,9 +5,12 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Controls.Primitives;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 using P = RDCore.Forms.Model.VB.VBProperties;
+using ScrollBars = RDCore.Forms.Model.VB.ScrollBars;
 using VBTextAlignment = RDCore.Forms.Model.VB.TextAlignment;
 
 namespace RDCore.Forms.Avalonia.Controls;
@@ -54,6 +57,7 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     {
         this.instance = instance;
         Padding = new Thickness(1);
+        NewLine = "\r\n";
         ComponentBinding.Bind(this, instance, VBClasses.TextBox, Apply);
     }
 
@@ -106,9 +110,19 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
                 return;
             }
         }
-        // Enter and Esc, where no button took them, type nothing in a single-line box.
+        // Enter and Esc, where no button took them, type nothing in a single-line box. In a multi-line one, Enter and Ctrl+Enter type
+        // a new line, CR LF, unless the KeyPress cancels it or types another character.
         else if (!e.Handled && ControlKeys.AsciiOf(e) is { } code)
-            KeyPress(code);
+        {
+            var ascii = KeyPress(code);
+            if (code is 13 or 10 && instance.Get(P.MultiLine))
+            {
+                e.Handled = true;
+                if (ascii != 0)
+                    base.OnTextInput(new TextInputEventArgs { Text = ascii is 13 or 10 ? "\r\n" : ((char)ascii).ToString() });
+                return;
+            }
+        }
         base.OnKeyDown(e);
     }
 
@@ -138,8 +152,29 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
             TextAlignment = ToAvalonia((VBTextAlignment)e.After!);
         else if (ReferenceEquals(e.Property, P.BorderStyle))
             BorderThickness = (BorderStyle)e.After! == BorderStyle.None ? new Thickness(0) : new Thickness(1);
+        else if (ReferenceEquals(e.Property, P.MultiLine) || ReferenceEquals(e.Property, P.ScrollBars))
+            ApplyLines();
+        else if (ReferenceEquals(e.Property, P.PasswordChar))
+            PasswordChar = e.After is string { Length: 1 } character ? character[0] : '\0';
+        else if (ReferenceEquals(e.Property, P.MaxLength))
+            MaxLength = (int)e.After!;
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
+    }
+
+    // A single-line box scrolls along its line with no scroll bar. A multi-line box wraps its lines unless it has a horizontal scroll
+    // bar, and scrolls down them with or without a vertical one.
+    private void ApplyLines()
+    {
+        var multiLine = instance.Get(P.MultiLine);
+        var bars = multiLine ? instance.Get(P.ScrollBars) : ScrollBars.None;
+        var horizontal = bars is ScrollBars.Horizontal or ScrollBars.Both;
+        AcceptsReturn = multiLine;
+        TextWrapping = multiLine && !horizontal ? TextWrapping.Wrap : TextWrapping.NoWrap;
+        ScrollViewer.SetHorizontalScrollBarVisibility(this,
+            horizontal ? ScrollBarVisibility.Visible : multiLine ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Hidden);
+        ScrollViewer.SetVerticalScrollBarVisibility(this,
+            bars is ScrollBars.Vertical or ScrollBars.Both ? ScrollBarVisibility.Visible : ScrollBarVisibility.Hidden);
     }
 
     private void Sync(Action action)

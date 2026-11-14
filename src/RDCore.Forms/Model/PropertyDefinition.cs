@@ -74,15 +74,30 @@ public abstract class PropertyDefinition
     public abstract object? BoxedDefault { get; }
 
     /// <summary>
-    /// Whether <paramref name="value"/> can be held by this property: a value of <see cref="ValueType"/>, or
-    /// <see langword="null"/> where the type allows it.
+    /// Whether a program cannot set the property, which only a designer and a form's file set. VB refuses a program's assignment
+    /// with <see cref="FormError.SetNotSupportedAtRuntime"/>, and early-bound code that assigns it does not compile.
+    /// </summary>
+    public bool ReadOnlyAtRunTime { get; init; }
+
+    /// <summary>
+    /// Whether <paramref name="value"/> can be held by this property: a value of <see cref="ValueType"/> that is among the
+    /// property's valid values, or <see langword="null"/> where the type allows it.
     /// </summary>
     /// <param name="value">The value to test.</param>
     /// <returns><see langword="true"/> when the property can hold the value.</returns>
+    /// <remarks>
+    /// A program's assignment of a value the property cannot hold is VB's 380, Invalid property value.
+    /// </remarks>
     public bool Accepts(object? value) =>
         value is null
             ? !ValueType.IsValueType || Nullable.GetUnderlyingType(ValueType) is not null
-            : ValueType.IsInstanceOfType(value);
+            : ValueType.IsInstanceOfType(value) && IsValid(value);
+
+    // Whether a value of the property's type is among its valid values.
+    private protected abstract bool IsValid(object value);
+
+    // The value a component holds when the property is set to a value.
+    internal abstract object? Coerced(ComponentInstance component, object? value);
 
     /// <summary>
     /// The property's name.
@@ -106,9 +121,25 @@ public sealed class PropertyDefinition<T>(string name, PropertyCategory category
     /// </summary>
     public T Default { get; } = defaultValue;
 
+    /// <summary>
+    /// Which values of its type the property can hold, or <see langword="null"/> where it can hold all of them.
+    /// </summary>
+    public Func<T, bool>? Valid { get; init; }
+
+    /// <summary>
+    /// What a component holds when the property is set to a value, from the value and the component's other properties, or
+    /// <see langword="null"/> for the value as set.
+    /// </summary>
+    public Func<ComponentInstance, T, T>? Coerce { get; init; }
+
     /// <inheritdoc/>
     public override Type ValueType => typeof(T);
 
     /// <inheritdoc/>
     public override object? BoxedDefault => Default;
+
+    private protected override bool IsValid(object value) => Valid is null || Valid((T)value);
+
+    internal override object? Coerced(ComponentInstance component, object? value) =>
+        Coerce is not null && value is T typed ? Coerce(component, typed) : value;
 }

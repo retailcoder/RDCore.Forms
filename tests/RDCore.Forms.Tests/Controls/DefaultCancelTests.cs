@@ -107,6 +107,27 @@ public sealed class DefaultCancelTests
         Expect.Lines(["Command3.Click"], raised);
     }
 
+    // Not measured: RDForms' own, the rule of a single-line box kept for a multi-line one.
+    [TestMethod]
+    public void EnterInAMultiLineBox_ClicksTheDefaultButton_AndCtrlEnterTypesANewLine()
+    {
+        var (raised, text) = UI.Run(() =>
+        {
+            var (root, control) = Form("TextBox", buttons: true);
+            control.Set(P.MultiLine, true);
+            var sink = new RecordingSink();
+            var window = Open(root, control, sink);
+            Press(window, Key.Enter);
+            Press(window, Key.Enter, RawInputModifiers.Control);
+            var result = Raised(sink).Where(line => !line.Contains(".Key")).ToList();
+            window.Close();
+            return (result, control.Get(P.Text));
+        });
+
+        Expect.Lines(["Command1.Click", "Control1.Change"], raised);
+        Assert.AreEqual("\r\n", text);
+    }
+
     [TestMethod]
     public void EscOnACommandButton_ClicksTheCancelButton()
     {
