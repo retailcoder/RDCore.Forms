@@ -51,6 +51,15 @@ With a `MultiSelect` of Simple or Extended, `ListIndex` is the item with the foc
 
 Every key such a list takes raises Click, whether or not anything changed.
 
+### Height
+
+A ListBox's rows are a line of its font high, as a [Simple Combo's](#simple-combo) are, in a border of 2 pixels on each side. The height it is given, from the form or from code, is first rounded to whole pixels, 15 twips to a pixel.
+
+- Where `IntegralHeight` is True, its default, the list is its border and as many whole rows as fit, and at least one: 1000 twips are 840, and 200 are 255.
+- Where it is False, the list takes the height it is given.
+- Where `IntegralHeight` is True, a font from code snaps the height to the new rows: 69 pixels at MS Sans Serif 8 are 64 at 12.
+- `Height` keeps the height given where it rounds to the pixels the list takes, and reads those pixels otherwise: 1234 twips stay 1234, drawn as 82 pixels.
+
 ## ComboBox
 
 [`VBComboBox`](../api/RDCore.Forms.Avalonia.Controls.VBComboBox.yml)
@@ -81,20 +90,30 @@ Every key such a list takes raises Click, whether or not anything changed.
 
 ### Simple Combo
 
-The edit box is 21 pixels high, as VB6 draws it at its default font, and the list takes the rest of the combo's height. The list scrolls where its items do not fit.
+The list is under the edit box, in a border of 2 pixels on each side, and scrolls where its items do not fit. Its rows are a line of the combo's font high, and the edit box is a row and 8 pixels high: 13 and 21 pixels at the default font, MS Sans Serif 8, and 20 and 28 at MS Sans Serif 12.
+
+The height the combo is given is first rounded to whole pixels, 15 twips to a pixel. Then:
+
+|Case|`IntegralHeight` True (the default)|`IntegralHeight` False|
+|---|---|---|
+|A height more than the edit box's|The edit box, the list's border and as many whole rows as fit: 1000 twips are 960. Where no row fits, the edit box alone.|The height given. Where the list would be no more than its border, the edit box alone.|
+|A height of the edit box's or less, from the form|The edit box alone.|The edit box alone.|
+|A height of the edit box's or less, from code|Ignored: the combo keeps its size.|Ignored.|
+|A font from code|The edit box and the rows take the font, the list keeps its pixels, and the height snaps to the new rows.|The edit box takes the font, and the list keeps its pixels.|
+
+`Height` keeps the height given where it rounds to the pixels the combo takes, and reads those pixels otherwise: 1150 twips stay 1150, drawn as 77 pixels.
+
+MS Sans Serif's rows are VB6's at each of its sizes. Another font's rows are RDForms' own: the line as RDForms draws it, rounded up to a whole pixel. VB6 takes them from the font's hinting, so they can differ from VB6's by a pixel or more.
 
 |Input|Raised|
 |---|---|
 |A press on an item|Click, and the edit box takes the item's text, selected. The item already selected is picked again, with another Click. There is no Change.|
 |A press below the items|The last item is picked, with Click.|
 |A double click on an item|One Click, then DblClick.|
-|A press on the list of a combo without the focus|GotFocus, then Click. The focus is left in the edit box.|
+|A press on the list of a combo without the focus|The item is selected first: the LostFocus of the control that loses the focus, then the combo's GotFocus, read the combo's new `ListIndex` and its `Text` from before the pick. Then Click, with the item's text. The focus is left in the edit box.|
 |Typing|Change. No item is selected.|
 |Up and Down|Click, as in the other styles.|
 |F4 and Alt+Down|Nothing: the list never drops, and there is no DropDown.|
-
-> [!NOTE]
-> **Not implemented.** VB6 snaps a Simple Combo's height to whole rows of its list, and a GotFocus raised by a press on the list reads the `Text` from before the pick. RDForms keeps the height the form gives it, and its GotFocus reads the picked item's `Text`.
 
 ### Locked
 

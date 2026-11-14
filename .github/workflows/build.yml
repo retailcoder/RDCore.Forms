@@ -36,3 +36,36 @@ jobs:
 
    - name: Test (Release)
      run: dotnet test RDCore.Forms.slnx --configuration Release --no-build --verbosity normal
+
+ # the same runs on Windows and macOS. win-x64 and osx-x64 (macos-15-intel, GitHub's Intel image) run for every pull request;
+ # osx-arm64 (macos-latest) runs on main only, where it is too slow to hold a pull request up.
+ build-and-test-os:
+  strategy:
+   fail-fast: false
+   matrix:
+    os: ${{ fromJSON(github.event_name == 'push' && github.ref == 'refs/heads/main' && '["windows-latest", "macos-15-intel", "macos-latest"]' || '["windows-latest", "macos-15-intel"]') }}
+  name: build-and-test (${{ matrix.os }})
+  runs-on: ${{ matrix.os }}
+  timeout-minutes: 30
+
+  steps:
+   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+     with:
+      persist-credentials: false
+
+   - name: Setup .NET
+     uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+     with:
+      dotnet-version: 10.0
+
+   - name: Build (Debug)
+     run: dotnet build RDCore.Forms.slnx --configuration Debug
+
+   - name: Test (Debug)
+     run: dotnet test RDCore.Forms.slnx --configuration Debug --no-build --verbosity normal
+
+   - name: Build (Release)
+     run: dotnet build RDCore.Forms.slnx --configuration Release
+
+   - name: Test (Release)
+     run: dotnet test RDCore.Forms.slnx --configuration Release --no-build --verbosity normal

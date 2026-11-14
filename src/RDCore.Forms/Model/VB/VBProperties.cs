@@ -488,6 +488,11 @@ public static class VBProperties
         new("Style", PropertyCategory.Behavior, VB.ComboBoxStyle.DropdownCombo) { ReadOnlyAtRunTime = true };
 
     /// <summary>
+    /// Whether a ListBox's or a Simple Combo's height is snapped to whole rows of its list. True by default.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> IntegralHeight = new("IntegralHeight", PropertyCategory.Behavior, true) { ReadOnlyAtRunTime = true };
+
+    /// <summary>
     /// How a CommandButton, CheckBox or OptionButton is drawn.
     /// </summary>
     public static readonly PropertyDefinition<ButtonStyle> ButtonStyle =

@@ -318,6 +318,23 @@ public sealed class VB6FormReaderTests
     }
 
     [TestMethod]
+    public void AComboBoxsIntegralHeight_IsRead_AndIsTrueWhereTheFileLeavesItOut()
+    {
+        var import = VB6FormReader.Read(Form(
+            "   Begin VB.ComboBox Combo1 ",
+            "      IntegralHeight  =   0   'False",
+            "      Style           =   1  'Simple Combo",
+            "   End",
+            "   Begin VB.ComboBox Combo2 ",
+            "      Style           =   1  'Simple Combo",
+            "   End"));
+
+        Assert.IsFalse(import.Form!.Find("Combo1")!.Get(VBProperties.IntegralHeight));
+        Assert.IsTrue(import.Form.Find("Combo2")!.Get(VBProperties.IntegralHeight));
+        Assert.IsEmpty(import.Diagnostics);
+    }
+
+    [TestMethod]
     public void AMessage_IsInTheCurrentUICulture()
     {
         var culture = CultureInfo.CurrentUICulture;

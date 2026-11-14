@@ -55,6 +55,30 @@ public static class FormFonts
         control.SetValue(TextElement.FontStyleProperty, font.Italic ? FontStyle.Italic : FontStyle.Normal);
     }
 
+    // The height of a line of a font's text, in whole pixels, as VB6 makes a combo's or a list's rows. MS Sans Serif's are VB6's,
+    // measured: it is a bitmap font, drawn at the largest of its own sizes that is no larger than the size asked, or its least.
+    // Another font's are RDForms' own: VB6 takes them from the font's hinting, so the line as drawn here, rounded up, stands in.
+    internal static double LineHeight(FormFont font)
+    {
+        if (string.Equals(font.Name, "MS Sans Serif", StringComparison.OrdinalIgnoreCase))
+        {
+            var pixels = Math.Round(ToFontSize(font), MidpointRounding.AwayFromZero);
+            var height = MSSansSerifSizes[0].Height;
+            foreach (var (size, line) in MSSansSerifSizes)
+                if (size <= pixels)
+                    height = line;
+            return height;
+        }
+        var text = new TextBlock { Text = "Ag" };
+        Apply(text, font);
+        text.Measure(global::Avalonia.Size.Infinity);
+        return Math.Ceiling(text.DesiredSize.Height);
+    }
+
+    // MS Sans Serif's sizes in pixels, and the height of a line at each, as VB6 measures them.
+    private static readonly (double Size, double Height)[] MSSansSerifSizes =
+        [(11, 13), (13, 16), (16, 20), (18, 24), (20, 25), (24, 29), (26, 32), (32, 37)];
+
     // Whether this machine has a font of exactly this family: a platform may answer a family it lacks with a substitute. The NULs
     // are removed because a symbol font's name is read a byte at a time, so Wingdings comes back as "\0W\0i\0n...".
     private static bool IsInstalled(string family) =>
