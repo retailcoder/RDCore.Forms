@@ -184,7 +184,7 @@ public static class VBProperties
 
     /// <summary>
     /// Whether the text a form's or a PictureBox's <c>Print</c> method draws leaves what is under it. Where it is False, each line's
-    /// cell is filled with the <c>BackColor</c> first.
+    /// cell is filled with the <c>BackColor</c> first. True by default.
     /// </summary>
     public static readonly PropertyDefinition<bool> FontTransparent = new("FontTransparent", PropertyCategory.Appearance, true);
 
