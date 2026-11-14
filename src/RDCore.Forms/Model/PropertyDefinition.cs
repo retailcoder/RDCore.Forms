@@ -77,6 +77,10 @@ public abstract class PropertyDefinition
     /// Whether a program cannot set the property, which only a designer and a form's file set. VB refuses a program's assignment
     /// with <see cref="FormError.SetNotSupportedAtRuntime"/>, and early-bound code that assigns it does not compile.
     /// </summary>
+    /// <remarks>
+    /// A property that is <see cref="NotAvailableAtRunTime"/> cannot be set either, and a class can make a property unavailable on its own
+    /// instances: ask the class, with <see cref="ComponentClass.IsReadOnlyAtRunTime"/>.
+    /// </remarks>
     public bool ReadOnlyAtRunTime { get; init; }
 
     /// <summary>

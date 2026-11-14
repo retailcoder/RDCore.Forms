@@ -178,8 +178,8 @@ public static class VBClasses
         [Click, DblClick, MouseDown, MouseMove, MouseUp], isWindowless: true);
 
     /// <summary>
-    /// <c>VB.Timer</c>. It has a place in the designer and no size, and a running program does not show it, nor read or set its
-    /// <c>Left</c> and <c>Top</c>.
+    /// <c>VB.Timer</c>. It has a place in the designer and no size, and a running program does not show it and can neither read
+    /// nor set its <c>Left</c> and <c>Top</c>.
     /// </summary>
     public static readonly ComponentClass Timer = new("VB.Timer", "Timer", ComponentKind.Control,
         [P.Enabled, P.Interval, P.Left, P.Top, P.Tag], [VBEvents.Timer], hasExtent: false, notAvailableAtRunTime: [P.Left, P.Top]);
