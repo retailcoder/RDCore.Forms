@@ -36,6 +36,7 @@ public sealed class ComponentClass
     private readonly Dictionary<string, EventDefinition> eventsByName;
     private readonly Dictionary<string, MethodDefinition> methodsByName;
     private readonly Dictionary<PropertyDefinition, object?> defaults;
+    private readonly HashSet<PropertyDefinition> notAvailable;
 
     /// <summary>
     /// Creates a component class.
@@ -56,14 +57,20 @@ public sealed class ComponentClass
     /// cannot see it.
     /// </param>
     /// <param name="methods">The class's methods; none where it is <see langword="null"/>.</param>
+    /// <param name="notAvailableAtRunTime">
+    /// The properties a program can neither read nor set on an instance of this class, beyond those whose definition says so, such as
+    /// the <c>Left</c> and <c>Top</c> of a Timer; none where it is <see langword="null"/>.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// <paramref name="typeName"/> or <paramref name="defaultName"/> is empty or white space; two properties, two events or two methods share a
-    /// name; or a default is given for a property the class does not have, or is not a value the property can hold.
+    /// name; a default is given for a property the class does not have, or is not a value the property can hold; or
+    /// <paramref name="notAvailableAtRunTime"/> names a property the class does not have.
     /// </exception>
     public ComponentClass(string typeName, string defaultName, ComponentKind kind,
         IReadOnlyList<PropertyDefinition> properties, IReadOnlyList<EventDefinition> events,
         IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null,
-        bool isContainer = false, bool isWindowless = false, bool hasExtent = true, IReadOnlyList<MethodDefinition>? methods = null)
+        bool isContainer = false, bool isWindowless = false, bool hasExtent = true, IReadOnlyList<MethodDefinition>? methods = null,
+        IReadOnlyList<PropertyDefinition>? notAvailableAtRunTime = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(typeName);
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultName);
@@ -106,6 +113,14 @@ public sealed class ComponentClass
             if (!property.Accepts(value))
                 throw new ArgumentException($"{value} is not a value of {typeName}.{property.Name}.", nameof(defaults));
             this.defaults[property] = value;
+        }
+
+        notAvailable = new(ReferenceEqualityComparer.Instance);
+        foreach (var property in notAvailableAtRunTime ?? [])
+        {
+            if (!Has(property))
+                throw new ArgumentException($"{typeName} has no property {property.Name} to make unavailable at run time.", nameof(notAvailableAtRunTime));
+            notAvailable.Add(property);
         }
     }
 
@@ -204,6 +219,26 @@ public sealed class ComponentClass
     /// <returns>The default value.</returns>
     public T DefaultOf<T>(PropertyDefinition<T> property) =>
         defaults.TryGetValue(property, out var value) ? (T)value! : property.Default;
+
+    /// <summary>
+    /// Whether a program can neither read nor set <paramref name="property"/> on an instance of this class: VB's 393 on a read and 382
+    /// on an assignment.
+    /// </summary>
+    /// <param name="property">The property definition.</param>
+    /// <returns>
+    /// <see langword="true"/> when the definition says so (<see cref="PropertyDefinition.NotAvailableAtRunTime"/>) or the class does.
+    /// </returns>
+    public bool IsNotAvailableAtRunTime(PropertyDefinition property) => property.NotAvailableAtRunTime || notAvailable.Contains(property);
+
+    /// <summary>
+    /// Whether a program cannot set <paramref name="property"/> on an instance of this class: VB's 382 on an assignment.
+    /// </summary>
+    /// <param name="property">The property definition.</param>
+    /// <returns>
+    /// <see langword="true"/> when the property is <see cref="PropertyDefinition.ReadOnlyAtRunTime"/>, or is not available at run time
+    /// (<see cref="IsNotAvailableAtRunTime"/>).
+    /// </returns>
+    public bool IsReadOnlyAtRunTime(PropertyDefinition property) => property.ReadOnlyAtRunTime || IsNotAvailableAtRunTime(property);
 
     /// <summary>
     /// The class's type name.
