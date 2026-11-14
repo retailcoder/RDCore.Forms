@@ -42,7 +42,7 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 
 ### Selection
 
-`SelStart`, `SelLength` and `SelText` are the box's selection. A program reads and sets them on a loaded form as on a shown one, and reads back a selection the user makes.
+`SelStart`, `SelLength` and `SelText` are the box's selection. A program reads and sets them on a loaded form as on a shown one, and reads back a selection the user makes. The component holds them, with or without a control to show it, and only a running program sets them ([`PropertyDefinition.RunTimeOnly`](../api/RDCore.Forms.Model.PropertyDefinition.yml)): a form's file does not hold them.
 
 |Member|Behaviour|
 |---|---|

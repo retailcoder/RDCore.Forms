@@ -161,6 +161,8 @@ public sealed class ComponentInstance
     public T Get<T>(PropertyDefinition<T> property)
     {
         RequireProperty(property);
+        if (property.Read is { } read)
+            return read(this);
         return values.TryGetValue(property, out var value) ? (T)value! : Class.DefaultOf(property);
     }
 
@@ -173,7 +175,26 @@ public sealed class ComponentInstance
     public object? GetBoxed(PropertyDefinition property)
     {
         RequireProperty(property);
+        if (property.IsDerived)
+            return property.Derived(this);
         return values.TryGetValue(property, out var value) ? value : Class.DefaultOf(property);
+    }
+
+    /// <summary>
+    /// The value of <paramref name="property"/>, boxed, where the instance has one.
+    /// </summary>
+    /// <param name="property">The property.</param>
+    /// <param name="value">The property's value; <see langword="null"/> where the instance has none.</param>
+    /// <returns>
+    /// <see langword="false"/> where the class does not have the property, or where the instance's other properties leave it without
+    /// one: a ComboBox whose style is Dropdown List has no edit box, and no <c>SelStart</c>. VB refuses a program's read of it with 380,
+    /// Invalid property value.
+    /// </returns>
+    public bool TryGet(PropertyDefinition property, out object? value)
+    {
+        var present = Class.Has(property) && property.IsPresent(this);
+        value = present ? GetBoxed(property) : null;
+        return present;
     }
 
     /// <summary>
@@ -196,33 +217,53 @@ public sealed class ComponentInstance
     /// <param name="value">The value.</param>
     /// <returns>This instance.</returns>
     /// <exception cref="ArgumentException">The instance's class does not have <paramref name="property"/>.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="value"/> is <see langword="null"/> for a property whose assignment sets others, such as <c>SelText</c>.
+    /// </exception>
+    /// <remarks>
+    /// An assignment can set other properties with it: a TextBox's <c>SelText</c> sets its <c>Text</c>, <c>SelStart</c> and
+    /// <c>SelLength</c>. <see cref="PropertyChanged"/> is raised for each, once every value of the step is stored, with
+    /// <paramref name="property"/> as <see cref="ComponentPropertyChangedEventArgs.AssignedProperty"/>.
+    /// </remarks>
     public ComponentInstance Set<T>(PropertyDefinition<T> property, T value)
     {
         RequireProperty(property);
-        Store(property, property.Coerced(this, value));
+        Assign(property, value);
         return this;
     }
 
     /// <summary>
-    /// Sets <paramref name="property"/> to <paramref name="value"/>, when the class has the property and the property can hold the value.
+    /// Sets <paramref name="property"/> to <paramref name="value"/>, when the class has the property, the instance has it, and the
+    /// property can hold the value.
     /// </summary>
     /// <param name="property">The property.</param>
     /// <param name="value">The value.</param>
-    /// <returns><see langword="true"/> when the value was set; <see langword="false"/>, with nothing changed, otherwise.</returns>
+    /// <returns>
+    /// <see langword="true"/> when the value was set; <see langword="false"/>, with nothing changed, otherwise. A program's assignment
+    /// that is refused is VB's 380, Invalid property value.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="value"/> is <see langword="null"/> for a property whose assignment sets others, such as <c>SelText</c>.
+    /// </exception>
+    /// <remarks>
+    /// An instance that has no value of the property refuses it (see <see cref="TryGet"/>). The assignment sets other properties as
+    /// <see cref="Set{T}"/> does.
+    /// </remarks>
     public bool TrySet(PropertyDefinition property, object? value)
     {
-        if (!Class.Has(property) || !property.Accepts(value))
+        if (!Class.Has(property) || !property.IsPresent(this) || !property.Accepts(value))
             return false;
-        Store(property, property.Coerced(this, value));
+        Assign(property, value);
         return true;
     }
 
-    // A value as a form's file holds it, which a component loads as it is: a TextBox's text longer than its MaxLength is not cut.
+    // A value as a form's file holds it, which a component loads as it is: a TextBox's text longer than its MaxLength is not cut. A
+    // file holds no property that only a running program sets.
     internal bool TryRead(PropertyDefinition property, object? value)
     {
-        if (!Class.Has(property) || !property.Accepts(value))
+        if (property.RunTimeOnly || !Class.Has(property) || !property.Accepts(value))
             return false;
-        Store(property, value);
+        Store([(property, value)], property);
         return true;
     }
 
@@ -246,11 +287,22 @@ public sealed class ComponentInstance
     /// <returns>The instance's name, such as <c>Command1</c> or <c>Option1(2)</c>.</returns>
     public override string ToString() => Index is { } index ? $"{Name}({index})" : Name;
 
-    private void Store(PropertyDefinition property, object? value)
+    private void Assign(PropertyDefinition property, object? value)
     {
-        var before = GetBoxed(property);
-        values[property] = value;
-        PropertyChanged?.Invoke(this, new ComponentPropertyChangedEventArgs(property, before, value));
+        foreach (var step in property.Assignment(this, value))
+            Store(step, property);
+    }
+
+    // The values are stored together, so the handler of each one's PropertyChanged sees all of them.
+    private void Store(IReadOnlyList<(PropertyDefinition Property, object? Value)> step, PropertyDefinition assigned)
+    {
+        var before = new object?[step.Count];
+        for (var i = 0; i < step.Count; i++)
+            before[i] = GetBoxed(step[i].Property);
+        foreach (var (property, value) in step)
+            values[property] = value;
+        for (var i = 0; i < step.Count; i++)
+            PropertyChanged?.Invoke(this, new ComponentPropertyChangedEventArgs(step[i].Property, before[i], step[i].Value, assigned));
     }
 
     private void RequireProperty(PropertyDefinition property)
@@ -266,12 +318,22 @@ public sealed class ComponentInstance
 /// <param name="property">The property whose value changed.</param>
 /// <param name="before">The property's value before the change.</param>
 /// <param name="after">The property's value after the change.</param>
-public sealed class ComponentPropertyChangedEventArgs(PropertyDefinition property, object? before, object? after) : EventArgs
+/// <param name="assigned">
+/// The property whose assignment made the change, or <see langword="null"/> for <paramref name="property"/> itself.
+/// </param>
+public sealed class ComponentPropertyChangedEventArgs(PropertyDefinition property, object? before, object? after, PropertyDefinition? assigned = null)
+    : EventArgs
 {
     /// <summary>
     /// The property whose value changed.
     /// </summary>
     public PropertyDefinition Property { get; } = property;
+
+    /// <summary>
+    /// The property whose assignment made the change: <see cref="Property"/> itself, or another that sets it, such as a TextBox's
+    /// <c>SelText</c> for the <c>Text</c> it replaces.
+    /// </summary>
+    public PropertyDefinition AssignedProperty { get; } = assigned ?? property;
 
     /// <summary>
     /// The property's value before the change.

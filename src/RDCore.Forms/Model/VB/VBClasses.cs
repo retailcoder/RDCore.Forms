@@ -78,7 +78,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass TextBox = Control("VB.TextBox", "Text",
         [P.Text, P.Enabled, P.BackColor, P.ForeColor, P.Font, P.TabStop, P.MousePointer, P.TabIndex, P.ToolTipText, P.Locked, P.Alignment,
-         P.Appearance, P.BorderStyle, P.MultiLine, P.ScrollBars, P.PasswordChar, P.MaxLength],
+         P.Appearance, P.BorderStyle, P.MultiLine, P.ScrollBars, P.PasswordChar, P.MaxLength, P.SelStart, P.SelLength, P.SelText],
         [KeyDown, KeyPress, KeyUp, Change, Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground), (P.BorderStyle, BorderStyle.FixedSingle)));
 
@@ -128,7 +128,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass ComboBox = Control("VB.ComboBox", "Combo",
         [P.Text, P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.Locked, P.ComboBoxStyle, P.MousePointer, P.RightToLeft,
-         P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
+         P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.SelStart, P.SelLength, P.SelText],
         [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
 

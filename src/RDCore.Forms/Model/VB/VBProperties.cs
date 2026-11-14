@@ -6,7 +6,8 @@ using RDCore.Forms.Menus;
 namespace RDCore.Forms.Model.VB;
 
 /// <summary>
-/// The properties of VB's intrinsic forms and controls that a designer file sets, with their VB6 defaults.
+/// The properties of VB's intrinsic forms and controls that a designer file sets, with their VB6 defaults, and the few that only a
+/// running program sets, such as a TextBox's <see cref="SelStart"/>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -291,12 +292,68 @@ public static class VBProperties
 
     /// <summary>
     /// The text a TextBox or a ComboBox holds. A TextBox with a <see cref="MaxLength"/> holds that many characters of a text set, at
-    /// most.
+    /// most. A different text selects nothing (<see cref="SelStart"/> and <see cref="SelLength"/> 0); the same text keeps the
+    /// selection.
     /// </summary>
     public static readonly PropertyDefinition<string> Text = new("Text", PropertyCategory.Misc, "")
     {
         Coerce = (component, text) =>
             component.Class.Has(MaxLength) && component.Get(MaxLength) is > 0 and var length && text.Length > length ? text[..length] : text,
+        Assign = TextAssigned,
+    };
+
+    /// <summary>
+    /// Where a TextBox's selection starts, or a ComboBox's in its edit box, or the caret's place where nothing is selected: 0 is before
+    /// the first character. It takes 0 to 65535, a value past the end of the text being its end, and setting it selects nothing.
+    /// </summary>
+    /// <remarks>
+    /// Only a running program sets it. A ComboBox whose style is Dropdown List has no edit box, and none of its selection.
+    /// </remarks>
+    public static readonly PropertyDefinition<int> SelStart = new("SelStart", PropertyCategory.Misc)
+    {
+        RunTimeOnly = true,
+        Valid = Selectable,
+        Present = HasEditBox,
+        Assign = StartAssigned,
+    };
+
+    /// <summary>
+    /// The number of characters selected from <see cref="SelStart"/>. It takes 0 to 65535, a value past the end of the text selecting
+    /// up to it.
+    /// </summary>
+    /// <remarks>
+    /// Only a running program sets it, as <see cref="SelStart"/>.
+    /// </remarks>
+    public static readonly PropertyDefinition<int> SelLength = new("SelLength", PropertyCategory.Misc)
+    {
+        RunTimeOnly = true,
+        Valid = Selectable,
+        Present = HasEditBox,
+        Assign = LengthAssigned,
+    };
+
+    /// <summary>
+    /// The selected text, "" where nothing is selected. Setting it puts the text in place of the selection, or at the caret, and
+    /// leaves the caret after it with nothing selected: it sets <see cref="Text"/>, <see cref="SelStart"/> and <see cref="SelLength"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Where a TextBox has a <see cref="MaxLength"/>, what does not fit is left out. A box that is not multi-line takes the text in
+    /// one step, even where its text does not change, and in none where nothing is selected and a text other than "" does not fit at
+    /// all. A multi-line box takes it in two steps: the selection is deleted, where there is one, then the text is inserted, where
+    /// some of it fits. A view raises a Change for each step.
+    /// </para>
+    /// <para>
+    /// Only a running program sets it, as <see cref="SelStart"/>. A <see langword="null"/> text is refused with an
+    /// <see cref="ArgumentNullException"/>.
+    /// </para>
+    /// </remarks>
+    public static readonly PropertyDefinition<string> SelText = new("SelText", PropertyCategory.Misc, "")
+    {
+        RunTimeOnly = true,
+        Present = HasEditBox,
+        Read = Selected,
+        Assign = Replacing,
     };
 
     /// <summary>
@@ -510,4 +567,58 @@ public static class VBProperties
     /// pops up none.
     /// </summary>
     public static readonly PropertyDefinition<string> ContextMenu = new("ContextMenu", PropertyCategory.Behavior, "");
+
+    private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> TextAssigned(ComponentInstance component, string text) =>
+        component.Class.Has(SelStart) && text != component.Get(Text)
+            ? [[(Text, text), (SelStart, 0), (SelLength, 0)]]
+            : [[(Text, text)]];
+
+    private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> StartAssigned(ComponentInstance component, int start) =>
+        [[(SelStart, Math.Min(start, component.Get(Text).Length)), (SelLength, 0)]];
+
+    private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> LengthAssigned(ComponentInstance component, int length) =>
+        [[(SelLength, Math.Min(length, Math.Max(0, component.Get(Text).Length - component.Get(SelStart))))]];
+
+    private static bool Selectable(int value) => value is >= 0 and <= 65535;
+
+    // A Dropdown List shows its item where a ComboBox of another style has its edit box.
+    private static bool HasEditBox(ComponentInstance component) =>
+        !component.Class.Has(ComboBoxStyle) || component.Get(ComboBoxStyle) != VB.ComboBoxStyle.DropdownList;
+
+    // The selection within the text: a text a designer resets can be shorter than the selection.
+    private static (int Start, int Length) Selection(ComponentInstance component, string text)
+    {
+        var start = Math.Min(component.Get(SelStart), text.Length);
+        return (start, Math.Min(component.Get(SelLength), text.Length - start));
+    }
+
+    private static string Selected(ComponentInstance component)
+    {
+        var text = component.Get(Text);
+        var (start, length) = Selection(component, text);
+        return text.Substring(start, length);
+    }
+
+    // SelText's steps, each a text with the caret after what it inserts.
+    private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> Replacing(ComponentInstance component, string value)
+    {
+        var text = component.Get(Text);
+        var (from, count) = Selection(component, text);
+        var limit = component.Class.Has(MaxLength) ? component.Get(MaxLength) : 0;
+        var room = limit == 0 ? value.Length : Math.Max(0, limit - (text.Length - count));
+        var inserted = value.Length > room ? value[..room] : value;
+        if (!component.Class.Has(MultiLine) || !component.Get(MultiLine))
+            return count > 0 || inserted.Length > 0 || value.Length == 0
+                ? [Replaced(text.Remove(from, count).Insert(from, inserted), from + inserted.Length)]
+                : [];
+        var steps = new List<IReadOnlyList<(PropertyDefinition, object?)>>();
+        if (count > 0)
+            steps.Add(Replaced(text = text.Remove(from, count), from));
+        if (inserted.Length > 0)
+            steps.Add(Replaced(text.Insert(from, inserted), from + inserted.Length));
+        return steps;
+    }
+
+    private static IReadOnlyList<(PropertyDefinition, object?)> Replaced(string text, int caret) =>
+        [(Text, text), (SelStart, caret), (SelLength, 0)];
 }
