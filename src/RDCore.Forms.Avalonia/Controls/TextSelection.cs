@@ -43,7 +43,7 @@ internal sealed class TextSelection(Func<string> text, Action<int, int> show)
 
     // The texts SelText puts in the box, in order, each with the caret after it and a Change of its own. With a MaxLength (0 for none),
     // what does not fit is left out. A single-line box takes the value in one step, even where the text does not change, and in none
-    // where nothing is selected and nothing of a value that is not "" fits. A multi-line box deletes the selection, where there is
+    // where nothing is selected and a value other than "" does not fit at all. A multi-line box deletes the selection, where there is
     // one, then inserts what fits, where some does.
     internal IReadOnlyList<(string Text, int Caret)> Replacing(string value, int maxLength, bool multiLine)
     {

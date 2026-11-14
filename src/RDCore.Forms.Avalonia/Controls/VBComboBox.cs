@@ -289,8 +289,8 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     /// Set below 0 or above 65535, or read or set on a Dropdown List, which has no edit box: 380, Invalid property value.
     /// </exception>
     /// <remarks>
-    /// As a single-line TextBox's <c>SelStart</c>. A text from code, or an item <see cref="ListIndex"/> selects, selects nothing, the
-    /// caret before the first character.
+    /// As a single-line TextBox's <c>SelStart</c>. A text from code, or an item chosen with <see cref="ListIndex"/>, leaves nothing
+    /// selected, the caret before the first character.
     /// </remarks>
     public int SelStart
     {

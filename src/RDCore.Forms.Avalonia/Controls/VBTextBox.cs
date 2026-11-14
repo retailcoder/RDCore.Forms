@@ -107,7 +107,7 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     /// <remarks>
     /// Setting it puts the text in place of the selection, or at the caret, and the caret after it, with nothing selected. Where the
     /// box has a <c>MaxLength</c>, what does not fit is left out. A <c>Locked</c> box takes it too. A single-line box raises Change
-    /// once, even where its text does not change, and none where nothing is selected and nothing of a text that is not "" fits. A
+    /// once, even where its text does not change, and none where nothing is selected and a text other than "" does not fit at all. A
     /// multi-line box takes it in two steps, each with its Change: the selection is deleted, where there is one, then the text is
     /// inserted, where some of it fits.
     /// </remarks>

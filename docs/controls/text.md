@@ -49,7 +49,7 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 |`SelStart`|Where the selection starts, or the caret's place: 0 is before the first character. It takes 0 to 65535, a value past the end of the text being its end; another value is 380. Setting it selects nothing.|
 |`SelLength`|The number of characters selected from `SelStart`. It takes 0 to 65535, a value past the end of the text selecting up to it; another value is 380.|
 |`SelText`|The selected text, "" where nothing is selected. Setting it puts the text in place of the selection, or at the caret, and leaves the caret after it with nothing selected. Where the box has a `MaxLength`, what does not fit is left out. A `Locked` box takes it too.|
-|Change from `SelText`|A single-line box raises one Change, even where the text does not change, and none where nothing is selected and nothing of a text other than "" fits. A multi-line box raises one Change as it deletes the selection, where there is one, and one as it inserts the text, where some of it fits.|
+|Change from `SelText`|A single-line box raises one Change, even where the text does not change, and none where nothing is selected and a text other than "" does not fit at all. A multi-line box raises one Change as it deletes the selection, where there is one, and one as it inserts the text, where some of it fits.|
 |`Text` from code|A different text selects nothing, the caret before the first character. The same text keeps the selection, with no Change.|
 |A new line|`SelStart` and `SelLength` count its CR and its LF, and a selection can start or end between them. The box shows the caret at the nearest place it can.|
 
