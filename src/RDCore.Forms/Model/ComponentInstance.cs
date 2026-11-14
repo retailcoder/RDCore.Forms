@@ -257,11 +257,10 @@ public sealed class ComponentInstance
         return true;
     }
 
-    // A value as a form's file holds it, which a component loads as it is: a TextBox's text longer than its MaxLength is not cut. A
-    // file holds no property that only a running program sets.
+    // A value as a form's file holds it, which a component loads as it is: a TextBox's text longer than its MaxLength is not cut.
     internal bool TryRead(PropertyDefinition property, object? value)
     {
-        if (property.RunTimeOnly || !Class.Has(property) || !property.Accepts(value))
+        if (!Class.Has(property) || !property.Accepts(value))
             return false;
         Store([(property, value)], property);
         return true;
