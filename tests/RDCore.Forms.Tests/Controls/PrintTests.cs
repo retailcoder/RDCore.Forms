@@ -66,6 +66,10 @@ public sealed class PrintTests
             ("Print ,", Printing(([Tab()], false))),
             ("Print a long text,", Printing(([Text(alphabet), Tab()], false))),
             ("Print Spc(5);", Printing(([Spc(5)], false))),
+            ("CurrentX=106 Print Spc(1);", At(106, 0, ([Spc(1)], false))),
+            ("CurrentX=100 Print Spc(0);", At(100, 0, ([Spc(0)], false))),
+            ("Print Spc(-2);", Printing(([Spc(-2)], false))),
+            ("CurrentX=500 Print Tab(0);", At(500, 0, ([Tab(0)], false))),
             ("Print Tab(10);", Printing(([Tab(10)], false))),
             ("Print abcdef; Tab(2);", Printing(([Text("abcdef"), Tab(2)], false))),
             ("Print a; Tab;", Printing(([Text("a"), Tab()], false))),
@@ -111,6 +115,11 @@ public sealed class PrintTests
             // 155 pixels, past the first zone.
             "Print a long text,\t2940\t0",
             "Print Spc(5);\t525\t0",
+            // From the pixel 106 twips is on, 105 twips: a column on is 210, where 106 twips and a column would round up to 315.
+            "CurrentX=106 Print Spc(1);\t210\t0",
+            "CurrentX=100 Print Spc(0);\t105\t0",
+            "Print Spc(-2);\t0\t0",
+            "CurrentX=500 Print Tab(0);\t0\t210",
             "Print Tab(10);\t945\t0",
             "Print abcdef; Tab(2);\t105\t210",
             "Print a; Tab;\t1470\t0",
@@ -186,9 +195,9 @@ public sealed class PrintTests
 
     // In pixels, over a red box: five spaces are a cell 15 pixels wide and 14 high.
     [TestMethod]
-    [DataRow(false, (short)13, "FFFFFF\tFF\tFF")]
-    [DataRow(true, (short)13, "FF\tFF\tFF")]
-    [DataRow(false, (short)6, "FFFFFF\tFF\tFF")]
+    [DataRow(false, (short)13, "FFFFFF\tFFFFFF\tFFFFFF\tFF\tFF")]
+    [DataRow(true, (short)13, "FF\tFF\tFF\tFF\tFF")]
+    [DataRow(false, (short)6, "FFFFFF\tFFFFFF\tFFFFFF\tFF\tFF")]
     public void FontTransparentFalse_FillsTheTextsCellWithTheBackColour_AndDrawModeDoesNotApply(bool transparent, short mode, string expected)
     {
         var points = UI.Run(() =>
@@ -200,7 +209,7 @@ public sealed class PrintTests
             surface.CurrentX = 0;
             surface.CurrentY = 0;
             surface.Print([Text("     ")], false);
-            return string.Join("\t", new[] { (1, 6), (1, 20), (16, 6) }.Select(p => surface.Point(p.Item1, p.Item2).ToString("X")));
+            return string.Join("\t", new[] { (1, 6), (1, 13), (14, 6), (1, 14), (15, 6) }.Select(p => surface.Point(p.Item1, p.Item2).ToString("X")));
         });
 
         Assert.AreEqual(expected, points);
