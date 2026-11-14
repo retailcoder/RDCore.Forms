@@ -41,10 +41,8 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     // Set while SelText writes the component's text: it raises the box's Change itself.
     private bool replacing;
 
-    // The selection a program sees. VB's can start or end between the CR and the LF of a new line, where the box's caret does not
-    // stop; the box shows it as near as it can, and the user's selection in the box comes back here.
-    private int selStart;
-    private int selLength;
+    // The selection a program sees.
+    private readonly TextSelection selection;
 
     // Set while the selection goes to the box.
     private bool selecting;
@@ -67,6 +65,7 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     public VBTextBox(ComponentInstance instance)
     {
         this.instance = instance;
+        selection = new(() => Text ?? "", ShowSelection);
         Padding = new Thickness(1);
         NewLine = "\r\n";
         ComponentBinding.Bind(this, instance, VBClasses.TextBox, Apply);
@@ -84,12 +83,8 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     /// </remarks>
     public int SelStart
     {
-        get => Math.Min(selStart, TextLength);
-        set
-        {
-            TextSelection.Check(value);
-            SelectRange(Math.Min(value, TextLength), 0);
-        }
+        get => selection.Start;
+        set => selection.SetStart(value);
     }
 
     /// <summary>
@@ -101,13 +96,8 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     /// </remarks>
     public int SelLength
     {
-        get => Math.Min(selLength, TextLength - SelStart);
-        set
-        {
-            TextSelection.Check(value);
-            var start = SelStart;
-            SelectRange(start, Math.Min(value, TextLength - start));
-        }
+        get => selection.Length;
+        set => selection.SetLength(value);
     }
 
     /// <summary>
@@ -123,31 +113,18 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     /// </remarks>
     public string SelText
     {
-        get => (Text ?? "").Substring(SelStart, SelLength);
+        get => selection.Selected;
         set
         {
             ArgumentNullException.ThrowIfNull(value);
-            var text = Text ?? "";
-            var (start, length) = (SelStart, SelLength);
-            var inserted = TextSelection.Fitting(text, length, value, instance.Get(P.MaxLength));
-            if (instance.Get(P.MultiLine))
-            {
-                if (length > 0)
-                    Replace(text = text.Remove(start, length), start);
-                if (inserted.Length > 0)
-                    Replace(text.Insert(start, inserted), start + inserted.Length);
-            }
-            else if (length > 0 || inserted.Length > 0 || value.Length == 0)
-                Replace(text.Remove(start, length).Insert(start, inserted), start + inserted.Length);
+            foreach (var (text, caret) in selection.Replacing(value, instance.Get(P.MaxLength), instance.Get(P.MultiLine)))
+                Replace(text, caret);
         }
     }
 
-    private int TextLength => Text?.Length ?? 0;
-
     // The caret goes to the selection's end first: setting it empties the selection.
-    private void SelectRange(int start, int length)
+    private void ShowSelection(int start, int length)
     {
-        (selStart, selLength) = (start, length);
         selecting = true;
         try
         {
@@ -173,7 +150,7 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
         {
             replacing = false;
         }
-        SelectRange(caret, 0);
+        selection.Select(caret, 0);
         VBControl.Raise(this, VBEvents.Change);
     }
 
@@ -185,7 +162,8 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
             Sync(() => instance.Set(P.Text, Text ?? ""));
         else if ((change.Property == SelectionStartProperty || change.Property == SelectionEndProperty || change.Property == CaretIndexProperty)
             && !selecting)
-            (selStart, selLength) = (Math.Min(SelectionStart, SelectionEnd), Math.Abs(SelectionEnd - SelectionStart));
+            // A property set as the box is made comes before its selection is.
+            selection?.Take(SelectionStart, SelectionEnd);
     }
 
     /// <inheritdoc/>
@@ -261,7 +239,7 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
             if (!syncing && Text != text)
             {
                 Sync(() => Text = text);
-                SelectRange(0, 0);
+                selection.Select(0, 0);
             }
             if (!replacing && !Equals(e.Before, e.After))
                 VBControl.Raise(this, VBEvents.Change);
