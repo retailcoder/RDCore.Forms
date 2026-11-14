@@ -289,6 +289,34 @@ public sealed class VB6FormReaderTests
         Assert.AreEqual(VB6ImportDiagnosticKind.InvalidValue, import.Diagnostics.Single().Kind);
     }
 
+    // VB6 loads a file's text whole where it is longer than the box's MaxLength, native and p-code agreeing.
+    [TestMethod]
+    public void ATextBoxsLines_Mask_AndLimit_AreRead_AndATextLongerThanTheLimitIsReadWhole()
+    {
+        var import = VB6FormReader.Read(Form(
+            "   Begin VB.TextBox Text1 ",
+            "      MaxLength       =   3",
+            "      MultiLine       =   -1  'True",
+            "      PasswordChar    =   \"*\"",
+            "      ScrollBars      =   2  'Vertical",
+            "      Text            =   \"abcdef\"",
+            "   End",
+            "   Begin VB.TextBox Text2 ",
+            "      MaxLength       =   70000",
+            "   End"));
+        var text1 = import.Form!.Find("Text1")!;
+        var text2 = import.Form!.Find("Text2")!;
+
+        Assert.AreEqual(3, text1.Get(VBProperties.MaxLength));
+        Assert.IsTrue(text1.Get(VBProperties.MultiLine));
+        Assert.AreEqual("*", text1.Get(VBProperties.PasswordChar));
+        Assert.AreEqual(ScrollBars.Vertical, text1.Get(VBProperties.ScrollBars));
+        Assert.AreEqual("abcdef", text1.Get(VBProperties.Text));
+        Assert.IsEmpty(text1.UnmodelledProperties);
+        Assert.AreEqual(VB6ImportDiagnosticKind.InvalidValue, import.Diagnostics.Single().Kind);
+        Assert.AreEqual(new UnmodelledProperty("MaxLength", "70000"), text2.UnmodelledProperties.Single());
+    }
+
     [TestMethod]
     public void AMessage_IsInTheCurrentUICulture()
     {

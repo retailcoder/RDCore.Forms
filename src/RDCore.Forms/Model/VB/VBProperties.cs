@@ -283,9 +283,39 @@ public static class VBProperties
     public static readonly PropertyDefinition<int> Interval = new("Interval", PropertyCategory.Misc);
 
     /// <summary>
-    /// The text a TextBox or a ComboBox holds.
+    /// The most characters a TextBox holds, from 0 to 65535, or 0 for no limit. Typing stops there, and a text set is cut to it; a
+    /// text already longer stays until it is set again.
     /// </summary>
-    public static readonly PropertyDefinition<string> Text = new("Text", PropertyCategory.Misc, "");
+    public static readonly PropertyDefinition<int> MaxLength =
+        new("MaxLength", PropertyCategory.Behavior) { Valid = length => length is >= 0 and <= 65535 };
+
+    /// <summary>
+    /// The text a TextBox or a ComboBox holds. A TextBox with a <see cref="MaxLength"/> holds that many characters of a text set, at
+    /// most.
+    /// </summary>
+    public static readonly PropertyDefinition<string> Text = new("Text", PropertyCategory.Misc, "")
+    {
+        Coerce = (component, text) =>
+            component.Class.Has(MaxLength) && component.Get(MaxLength) is > 0 and var length && text.Length > length ? text[..length] : text,
+    };
+
+    /// <summary>
+    /// Whether a TextBox holds more than one line. A multi-line box takes Enter as a new line, and wraps its lines unless it has a
+    /// horizontal scroll bar.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> MultiLine = new("MultiLine", PropertyCategory.Behavior) { ReadOnlyAtRunTime = true };
+
+    /// <summary>
+    /// A TextBox's scroll bars. A box that is not multi-line has none.
+    /// </summary>
+    public static readonly PropertyDefinition<ScrollBars> ScrollBars =
+        new("ScrollBars", PropertyCategory.Appearance, VB.ScrollBars.None) { ReadOnlyAtRunTime = true };
+
+    /// <summary>
+    /// The character a TextBox shows for each of its text's, or "" to show its text. One character at most.
+    /// </summary>
+    public static readonly PropertyDefinition<string> PasswordChar =
+        new("PasswordChar", PropertyCategory.Behavior, "") { Valid = character => character.Length <= 1 };
 
     /// <summary>
     /// Whether a Label's or Shape's background is drawn.
