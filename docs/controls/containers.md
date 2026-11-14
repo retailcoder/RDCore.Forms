@@ -55,7 +55,7 @@ A `Picture` holds the bytes of a picture file. A picture from a VB6 form is read
 |---|---|
 |PNG|Yes, its transparent pixels showing what is behind them.|
 |BMP, GIF, JPEG|Yes. An animated GIF is not animated.|
-|ICO, CUR|Yes.|
+|ICO, CUR|Yes. VB6 draws a cursor that is a form's `Picture` in black; RDForms draws it in its own colours.|
 |WMF, EMF|No. A metafile is recognized and accepted, and not drawn.|
 
 Before anything decodes a picture, [`FormPictures.Inspect`](../api/RDCore.Forms.Model.FormPictures.yml) reads its header, with every offset checked against the bytes. It refuses a picture:
