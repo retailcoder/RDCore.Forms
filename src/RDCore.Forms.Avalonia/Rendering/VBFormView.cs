@@ -39,7 +39,8 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// <c>MousePointer</c>. A disabled root takes no input in any of its controls.
 /// </para>
 /// <para>
-/// The root's drawing statements draw on its <see cref="Drawing"/>, under every control.
+/// The root's drawing statements draw on its <see cref="Drawing"/>, under every control. The root's <c>Picture</c> is under its
+/// drawing, at its size in pixels from the top left corner, and a picture it is refused is not drawn (see <see cref="PictureError"/>).
 /// </para>
 /// <para>
 /// A press on no control is the root's: it raises MouseDown, MouseMove and MouseUp with <c>X</c> and <c>Y</c> in the root's scale, and
@@ -62,6 +63,9 @@ public sealed class VBFormView : Canvas
     private readonly Dictionary<ComponentInstance, Control> controls = new(ReferenceEqualityComparer.Instance);
     // The shown components, in the order the form holds them.
     private readonly List<ComponentInstance> shown = [];
+    private readonly VBPicture.Holder picture = new();
+    // A press on the picture is the root's.
+    private readonly PictureLayer pictureLayer = new() { ZIndex = int.MinValue, IsHitTestVisible = false };
 
     /// <summary>
     /// Creates the client area of a form.
@@ -88,7 +92,8 @@ public sealed class VBFormView : Canvas
         ArgumentNullException.ThrowIfNull(fileSystem);
         this.fileSystem = fileSystem;
         Form = form;
-        // What the form's drawing statements draw is under every control, the windowless ones included.
+        // What the form's drawing statements draw is under every control, the windowless ones included, and its picture is under that.
+        Children.Add(pictureLayer);
         Drawing = new VBDrawingLayer(form.Root) { ZIndex = int.MinValue };
         Children.Add(Drawing);
         Place(form.Root, this);
@@ -105,6 +110,21 @@ public sealed class VBFormView : Canvas
     /// The surface the form's drawing statements draw on, under its controls.
     /// </summary>
     public VBDrawingLayer Drawing { get; }
+
+    /// <summary>
+    /// The error the root's <c>Picture</c> was refused with, <see cref="FormError.InvalidPicture"/>, or <see langword="null"/> where
+    /// it is drawn or there is none.
+    /// </summary>
+    public FormError? PictureError => picture.Error;
+
+    /// <inheritdoc/>
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var size = base.ArrangeOverride(finalSize);
+        // The picture's layer is the whole client area, which clips it.
+        pictureLayer.Arrange(new Rect(size));
+        return size;
+    }
 
     /// <summary>
     /// The controls that take part in the form's tab order, in it: every shown control whose class has a <c>TabIndex</c>, whether
@@ -145,6 +165,10 @@ public sealed class VBFormView : Canvas
                 break;
             case nameof(P.BackColor):
                 Background = ComponentBinding.Brush(e.After);
+                break;
+            case nameof(P.Picture):
+                if (picture.Take((byte[]?)e.After))
+                    pictureLayer.Picture = picture.Picture;
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);
