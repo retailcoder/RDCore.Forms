@@ -77,6 +77,7 @@ public sealed class ComboSelectionTests
         ("Text=Other after a selection", [(b, c) => b.SelStart = 1, (b, c) => b.SelLength = 2, (b, c) => b.SetText("Other")]),
         ("ListIndex=1 then SelText=same char", [(b, c) => b.ListIndex = 1, (b, c) => b.SelStart = 0, (b, c) => b.SelLength = 1, (b, c) => b.SelText = "a"]),
         ("ListIndex=2 then SelText=empty, nothing selected", [(b, c) => b.ListIndex = 2, (b, c) => b.SelStart = 2, (b, c) => b.SelText = ""]),
+        ("ListIndex=1 over the same text after a selection", [(b, c) => b.SetText("abc"), (b, c) => b.SelStart = 1, (b, c) => b.SelLength = 1, (b, c) => b.ListIndex = 1]),
     ];
 
     // Dropdown Combo and Simple Combo: VB6 gives the same rows for both.
@@ -123,6 +124,7 @@ public sealed class ComboSelectionTests
         "Text=Other after a selection\terr=0\tSelStart=1\tSelLength=2\tSelText=[th]\tText=[Other]\tChanges=13\tSeen=\tListIndex=2\tClicks=2",
         "ListIndex=1 then SelText=same char\terr=0\tSelStart=1\tSelLength=0\tSelText=[]\tText=[abc]\tChanges=14\tSeen=#abc@0+0|abc@1\tListIndex=-1\tClicks=3",
         "ListIndex=2 then SelText=empty, nothing selected\terr=0\tSelStart=2\tSelLength=0\tSelText=[]\tText=[Other]\tChanges=15\tSeen=#Other@0+0|Other@2\tListIndex=-1\tClicks=4",
+        "ListIndex=1 over the same text after a selection\terr=0\tSelStart=0\tSelLength=0\tSelText=[]\tText=[abc]\tChanges=16\tSeen=|abc@0#abc@0+0\tListIndex=1\tClicks=5",
     ];
 
     // Dropdown List: no edit box, and 380 for every read and set of the selection, its Click handler's reads too.
@@ -169,6 +171,7 @@ public sealed class ComboSelectionTests
         "Text=Other after a selection\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[Other]\tChanges=0\tSeen=\tListIndex=2\tClicks=4",
         "ListIndex=1 then SelText=same char\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[abc]\tChanges=0\tSeen=\tListIndex=1\tClicks=5",
         "ListIndex=2 then SelText=empty, nothing selected\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[Other]\tChanges=0\tSeen=\tListIndex=2\tClicks=6",
+        "ListIndex=1 over the same text after a selection\terr=380\tSelStart=err380\tSelLength=err380\tSelText=[err380]\tText=[abc]\tChanges=0\tSeen=\tListIndex=1\tClicks=7",
     ];
 
     private static string Esc(string text) => text.Replace("\r", "\\r").Replace("\n", "\\n");
@@ -277,11 +280,11 @@ public sealed class ComboSelectionTests
     }
 
     // A selection set before the combo has its edit box shows in the box once it does; one the user makes in the box, from its anchor
-    // back to its caret, is the program's.
+    // back to its caret, is the program's; one set after shows at once.
     [TestMethod]
     public void TheEditBox_ShowsAProgramsSelection_AndGivesBackTheUsers()
     {
-        var (shown, user) = UI.Run(() =>
+        var (shown, user, set) = UI.Run(() =>
         {
             var combo = new VBComboBox(Combo("Combo1", ComboBoxStyle.DropdownCombo)) { Width = 120 };
             var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { combo } } };
@@ -295,11 +298,37 @@ public sealed class ComboSelectionTests
             edit.SelectionStart = 7;
             edit.SelectionEnd = 3;
             var user = (combo.SelStart, combo.SelLength);
+            combo.SelStart = 4;
+            combo.SelLength = 5;
+            var set = (edit.SelectionStart, edit.SelectionEnd);
             window.Close();
-            return (shown, user);
+            return (shown, user, set);
         });
         Assert.AreEqual((2, 5), shown);
         Assert.AreEqual((3, 4), user);
+        Assert.AreEqual((4, 9), set);
+    }
+
+    // A change to the edit box's text leaves the component's selection where the box's caret is, even where the caret does not move.
+    [TestMethod]
+    public void TheUsersText_KeepsTheEditBoxsCaret()
+    {
+        var caret = UI.Run(() =>
+        {
+            var instance = Combo("Combo1", ComboBoxStyle.DropdownCombo);
+            var combo = new VBComboBox(instance) { Width = 120 };
+            var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { combo } } };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var edit = combo.GetVisualDescendants().OfType<TextBox>().Single();
+            edit.Text = "Hello world";
+            edit.CaretIndex = 5;
+            edit.Text = "Hello";
+            var caret = (instance.Get(P.SelStart), edit.CaretIndex);
+            window.Close();
+            return caret;
+        });
+        Assert.AreEqual((5, 5), caret);
     }
 
     [TestMethod]
