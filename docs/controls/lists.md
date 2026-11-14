@@ -57,7 +57,7 @@ A ListBox's rows are a line of its font high, as a [Simple Combo's](#simple-comb
 
 - Where `IntegralHeight` is True, its default, the list is its border and as many whole rows as fit, and at least one: 1000 twips are 840, and 200 are 255.
 - Where it is False, the list takes the height it is given.
-- A font from code snaps the height to the new rows.
+- Where `IntegralHeight` is True, a font from code snaps the height to the new rows: 69 pixels at MS Sans Serif 8 are 64 at 12.
 - `Height` keeps the height given where it rounds to the pixels the list takes, and reads those pixels otherwise: 1234 twips stay 1234, drawn as 82 pixels.
 
 ## ComboBox
