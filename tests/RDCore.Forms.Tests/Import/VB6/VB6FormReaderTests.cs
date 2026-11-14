@@ -318,6 +318,19 @@ public sealed class VB6FormReaderTests
     }
 
     [TestMethod]
+    public void APictureBoxsFontTransparent_IsRead()
+    {
+        var import = VB6FormReader.Read(Form(
+            "   Begin VB.PictureBox Picture1 ",
+            "      FontTransparent =   0   'False",
+            "   End"));
+        var picture = import.Form!.Find("Picture1")!;
+
+        Assert.IsFalse(picture.Get(VBProperties.FontTransparent));
+        Assert.IsEmpty(picture.UnmodelledProperties);
+    }
+
+    [TestMethod]
     public void AMessage_IsInTheCurrentUICulture()
     {
         var culture = CultureInfo.CurrentUICulture;

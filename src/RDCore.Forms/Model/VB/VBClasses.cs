@@ -28,7 +28,7 @@ public static class VBClasses
     /// <c>VB.Form</c>: a form's designer root.
     /// </summary>
     public static readonly ComponentClass Form = Root("VB.Form", "Form",
-        [P.Caption, P.BackColor, P.Enabled, P.ForeColor, P.Icon, P.Picture, P.MousePointer, P.ShowInTaskbar, P.Font, P.StartUpPosition, P.KeyPreview,
+        [P.Caption, P.BackColor, P.Enabled, P.ForeColor, P.Icon, P.Picture, P.MousePointer, P.ShowInTaskbar, P.Font, P.FontTransparent, P.StartUpPosition, P.KeyPreview,
          P.MaxButton, P.MinButton, P.Visible, P.AutoRedraw, P.DrawMode, P.DrawStyle, P.DrawWidth, P.FillColor, P.FillStyle, P.ContextMenu],
         [.. KeyAndMouse, Initialize, Load, Resize, Activate, Deactivate, GotFocus, LostFocus, Paint, QueryUnload, Unload, Terminate],
         [M.Move, M.Refresh, M.SetFocus]);
@@ -165,7 +165,7 @@ public static class VBClasses
     /// </summary>
     public static readonly ComponentClass PictureBox = Control("VB.PictureBox", "Picture",
         [P.Align, P.Appearance, P.AutoRedraw, P.AutoSize, P.BackColor, P.BorderStyle, P.CausesValidation, P.Enabled, P.FillColor, P.FillStyle,
-         P.Font, P.ForeColor, P.MousePointer, P.TabIndex, P.TabStop, P.ToolTipText, P.Picture, P.DrawMode, P.DrawStyle, P.DrawWidth,
+         P.Font, P.FontTransparent, P.ForeColor, P.MousePointer, P.TabIndex, P.TabStop, P.ToolTipText, P.Picture, P.DrawMode, P.DrawStyle, P.DrawWidth,
          .. ScaleProperties],
         [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, Paint],
         Defaults((P.BorderStyle, BorderStyle.FixedSingle)), isContainer: true);

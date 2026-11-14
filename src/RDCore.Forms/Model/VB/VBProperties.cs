@@ -183,6 +183,12 @@ public static class VBProperties
     public static readonly PropertyDefinition<bool> AutoRedraw = new("AutoRedraw", PropertyCategory.Behavior);
 
     /// <summary>
+    /// Whether the text a form's or a PictureBox's <c>Print</c> method draws leaves what is under it. Where it is False, each line's
+    /// cell is filled with the <c>BackColor</c> first.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> FontTransparent = new("FontTransparent", PropertyCategory.Appearance, true);
+
+    /// <summary>
     /// The width in pixels of the lines a form's or a PictureBox's drawing methods draw.
     /// </summary>
     public static readonly PropertyDefinition<short> DrawWidth = new("DrawWidth", PropertyCategory.Appearance, 1);

@@ -106,4 +106,42 @@ public interface IDrawingSurface
     /// colour (red in the low byte); -1 where the point is outside the component's inside.
     /// </returns>
     int Point(double x, double y);
+
+    /// <summary>
+    /// Prints an output list at the current point: VB's <c>Print</c> method.
+    /// </summary>
+    /// <param name="items">The items, in order. An empty list prints nothing.</param>
+    /// <param name="endsLine">
+    /// Whether the list ends the line, as one with no <c>;</c> or <c>,</c> at its end does: <see cref="CurrentX"/> then goes to the
+    /// scale's 0 and <see cref="CurrentY"/> down a line. A list that ends with a comma ends with a <see cref="PrintItem.Tab"/> instead.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// The text is drawn in the component's <c>Font</c> and <c>ForeColor</c>, its top left corner at the current point, on the
+    /// pixel nearest it. <c>FontTransparent</c> False fills each line's cell with the <c>BackColor</c> first. <c>DrawMode</c> does not
+    /// apply to text.
+    /// </para>
+    /// <para>
+    /// A column is the font's average character width, and a print zone 14 columns. Columns and zones count from the scale's 0, and
+    /// a position is moved to the pixel nearest it. A text item moves <see cref="CurrentX"/> to its end and
+    /// <see cref="CurrentY"/> to the pixel it is drawn on. <see cref="PrintItem.Spc"/> moves on its columns, to the column boundary
+    /// at or after that. <see cref="PrintItem.Tab"/> with a column moves to the column's start, or to its start on the next line
+    /// where the current point is past it; with none, it moves to the next zone boundary past the current point.
+    /// </para>
+    /// </remarks>
+    void Print(IReadOnlyList<PrintItem> items, bool endsLine = true);
+
+    /// <summary>
+    /// The width of a text in the component's <c>Font</c>: VB's <c>TextWidth</c> method.
+    /// </summary>
+    /// <param name="text">The text. A carriage return, a line feed, or both together start a new line.</param>
+    /// <returns>The width of its longest line, in the component's horizontal units; 0 for an empty text.</returns>
+    double TextWidth(string text);
+
+    /// <summary>
+    /// The height of a text in the component's <c>Font</c>: VB's <c>TextHeight</c> method.
+    /// </summary>
+    /// <param name="text">The text. A carriage return, a line feed, or both together start a new line.</param>
+    /// <returns>Its lines times the font's line height, in the component's vertical units; one line for an empty text.</returns>
+    double TextHeight(string text);
 }

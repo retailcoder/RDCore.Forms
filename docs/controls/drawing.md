@@ -1,6 +1,6 @@
 # Drawing
 
-A form and a PictureBox each have a drawing surface, a [`VBDrawingLayer`](../api/RDCore.Forms.Avalonia.Controls.VBDrawingLayer.yml): the destination of VB's drawing statements, `Line`, `Circle`, `PSet` and `Scale`, and of the `Cls` and `Point` methods. A program reaches it through the [`IDrawingSurface`](../api/RDCore.Forms.Drawing.IDrawingSurface.yml) interface, which [`DrawingSurfaces.Of`](../api/RDCore.Forms.Drawing.DrawingSurfaces.yml) gives for a shown form's root or PictureBox. The interface is part of `RDCore.Forms` and has no Avalonia types.
+A form and a PictureBox each have a drawing surface, a [`VBDrawingLayer`](../api/RDCore.Forms.Avalonia.Controls.VBDrawingLayer.yml): the destination of VB's drawing statements, `Line`, `Circle`, `PSet` and `Scale`, and of the `Cls`, `Point`, `Print`, `TextWidth` and `TextHeight` methods. A program reaches it through the [`IDrawingSurface`](../api/RDCore.Forms.Drawing.IDrawingSurface.yml) interface, which [`DrawingSurfaces.Of`](../api/RDCore.Forms.Drawing.DrawingSurfaces.yml) gives for a shown form's root or PictureBox. The interface is part of `RDCore.Forms` and has no Avalonia types.
 
 ```csharp
 using RDCore.Forms.Drawing;
@@ -30,6 +30,26 @@ surface.Line(new GraphicsPoint(10, 10), new GraphicsPoint(100, 50, IsRelative: t
 A point written with `Step` is measured from the current point, and a `Line`'s second point from its first. A colour left out is the component's `ForeColor`.
 
 The current point is kept in whole twips from the inside's top left corner. A `CurrentX` or `CurrentY` set is rounded to the nearest twip, and a change of scale, by `Scale` or by a `ScaleMode`, `ScaleLeft` or `ScaleWidth` set, keeps the point where it is.
+
+## Print, TextWidth and TextHeight
+
+`Print` draws its output list in the component's `Font` and `ForeColor`, each line's top left corner on the pixel nearest the current point. [`IDrawingSurface.Print`](../api/RDCore.Forms.Drawing.IDrawingSurface.yml) takes the list as [`PrintItem`](../api/RDCore.Forms.Drawing.PrintItem.yml)s: texts, `Spc(n)` and `Tab(n)`, a comma being a `Tab` with no column.
+
+A column is the font's average character width, and a print zone is 14 columns. Columns and zones count from the scale's 0, and each position is moved to the pixel nearest it.
+
+|Item|`CurrentX`, `CurrentY` after|
+|---|---|
+|A text|`CurrentX` at its end, `CurrentY` on the pixel it is drawn on. A carriage return, a line feed, or both together start a new line within it.|
+|`Spc(n)`|n columns on, to the column boundary at or after that.|
+|`Tab(n)`|The start of column n, counted from 1. Where the current point is past it, the start of column n on the next line.|
+|`Tab`, or a comma|The first zone boundary past the current point.|
+|The end of a list with no `;` or `,` at its end|The scale's 0 across, a line down.|
+
+`TextWidth` is the width of a text's longest line, and `TextHeight` its lines times the font's line height; an empty text is one line high and 0 wide. Both are in the component's units.
+
+Where `FontTransparent` is False, each line's cell, its width and a line high, is filled with the `BackColor` before the text is drawn. `DrawMode` does not apply to text, and text is drawn with no smoothing.
+
+The column and the line height are RDForms' own: the column is the OS/2 average width of the font file that draws the text, at its size, and the line is its ascent and descent together.
 
 ## Erasing
 
@@ -80,7 +100,7 @@ The surface keeps what it draws whatever the component's `AutoRedraw`, and keeps
 |True|Not raised.|
 
 > [!NOTE]
-> **Not implemented.** The `Print` method, `PaintPicture`, `TextWidth` and `TextHeight` have no surface member.
+> **Not implemented.** `PaintPicture` has no surface member.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

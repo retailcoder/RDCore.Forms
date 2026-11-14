@@ -258,6 +258,104 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
     }
 
     /// <inheritdoc/>
+    public void Print(IReadOnlyList<PrintItem> items, bool endsLine = true)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        var font = PrintFont.Of(Component.Get(P.Font));
+        // Columns and zones count from the scale's 0, in twips from the inside's corner.
+        var origin = ScaleOf(Component).ToTwips(0, 0).X;
+        var column = font.Column * ScaleModeExtensions.TwipsPerPixel;
+        const double near = 1e-9;
+        foreach (var item in items)
+        {
+            switch (item)
+            {
+                case PrintItem.Text text:
+                    var lines = PrintFont.Lines(text.Value);
+                    for (var i = 0; i < lines.Length; i++)
+                    {
+                        if (i > 0)
+                            NewLine(font, origin);
+                        var (left, top) = (Pixel(current.X), Pixel(current.Y));
+                        var width = font.Width(lines[i]);
+                        DrawText(font, lines[i], left, top, width);
+                        current = ((left + width) * ScaleModeExtensions.TwipsPerPixel, top * ScaleModeExtensions.TwipsPerPixel);
+                    }
+                    break;
+                case PrintItem.Spc spc:
+                    var from = Pixel(current.X) * ScaleModeExtensions.TwipsPerPixel;
+                    var columns = Math.Ceiling((from - origin + Math.Max(0, spc.Count) * column) / column - near);
+                    current.X = AtPixel(origin + columns * column);
+                    break;
+                case PrintItem.Tab { Column: null }:
+                    // The first zone boundary whose pixel is past the current point's.
+                    var zone = 14 * column;
+                    var at = Pixel(current.X);
+                    var k = Math.Floor((current.X - origin) / zone) - 1;
+                    while (Pixel(AtPixel(origin + k * zone)) <= at)
+                        k++;
+                    current.X = AtPixel(origin + k * zone);
+                    break;
+                case PrintItem.Tab { Column: int n }:
+                    var start = AtPixel(origin + (Math.Max(1, n) - 1) * column);
+                    if (Pixel(current.X) > Pixel(start))
+                        NewLine(font, origin);
+                    current.X = start;
+                    break;
+            }
+        }
+        if (endsLine)
+            NewLine(font, origin);
+    }
+
+    /// <inheritdoc/>
+    public double TextWidth(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var font = PrintFont.Of(Component.Get(P.Font));
+        var width = PrintFont.Lines(text).Max(font.Width);
+        return width * ScaleModeExtensions.TwipsPerPixel / Math.Abs(ScaleOf(Component).TwipsAcross);
+    }
+
+    /// <inheritdoc/>
+    public double TextHeight(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var font = PrintFont.Of(Component.Get(P.Font));
+        return PrintFont.Lines(text).Length * font.Line * ScaleModeExtensions.TwipsPerPixel / Math.Abs(ScaleOf(Component).TwipsDown);
+    }
+
+    // The twips of the pixel nearest a position in twips.
+    private static double AtPixel(double twips) =>
+        Pixel(Math.Round(twips, MidpointRounding.ToEven)) * ScaleModeExtensions.TwipsPerPixel;
+
+    // The start of the next line: the scale's 0 across, a line below the current point's pixel.
+    private void NewLine(PrintFont font, double origin) =>
+        current = (AtPixel(origin), (Pixel(current.Y) + font.Line) * ScaleModeExtensions.TwipsPerPixel);
+
+    // A line of text with its top left corner at a pixel, over its cell filled with the BackColor where FontTransparent is False.
+    // DrawMode does not apply to text.
+    private void DrawText(PrintFont font, string line, int left, int top, int width)
+    {
+        var opaque = Component.Class.Has(P.FontTransparent) && !Component.Get(P.FontTransparent);
+        if (line.Length == 0 || width == 0 && !opaque)
+            return;
+        Grow();
+        using (var context = bitmap!.CreateDrawingContext(false))
+        using (context.PushRenderOptions(Aliased))
+        using (context.PushTextOptions(AliasedText))
+        {
+            if (opaque)
+                context.FillRectangle(FormPalette.ToBrush(Component.Get(P.BackColor)), new Rect(left, top, width, font.Line));
+            context.DrawGlyphRun(BrushOf(null), font.Run(line, left, top));
+        }
+        drawn = null;
+        InvalidateVisual();
+    }
+
+    private static readonly TextOptions AliasedText = new() { TextRenderingMode = TextRenderingMode.Alias };
+
+    /// <inheritdoc/>
     public override void Render(DrawingContext context)
     {
         if (bitmap is not null)
