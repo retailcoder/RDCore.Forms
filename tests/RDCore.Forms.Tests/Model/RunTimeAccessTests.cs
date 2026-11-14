@@ -12,7 +12,7 @@ public sealed class RunTimeAccessTests
     private static readonly string[] ReadOnly =
     [
         "Form.StartUpPosition", "Form.ShowInTaskbar", "Form.MaxButton", "Form.MinButton", "MDIForm.StartUpPosition",
-        "CommandButton.Style", "CheckBox.Style", "OptionButton.Style", "ComboBox.Style",
+        "CommandButton.Style", "CheckBox.Style", "OptionButton.Style", "ComboBox.Style", "ComboBox.IntegralHeight", "ListBox.IntegralHeight",
         "TextBox.MultiLine", "TextBox.ScrollBars", "ListBox.MultiSelect", "FileListBox.MultiSelect",
         "Menu.WindowList", "Menu.Shortcut", "Timer.Left", "Timer.Top",
     ];

@@ -94,7 +94,7 @@ Some properties are set only by a designer and a form's file. A running VB6 prog
 
 |Access from code|Properties|
 |---|---|
-|Read only|Form and MDIForm: `StartUpPosition`. Form: `ShowInTaskbar`, `MaxButton`, `MinButton`. CommandButton, CheckBox, OptionButton and ComboBox: `Style`. TextBox: `MultiLine`, `ScrollBars`. ListBox and FileListBox: `MultiSelect`. Menu: `WindowList`.|
+|Read only|Form and MDIForm: `StartUpPosition`. Form: `ShowInTaskbar`, `MaxButton`, `MinButton`. CommandButton, CheckBox, OptionButton and ComboBox: `Style`. TextBox: `MultiLine`, `ScrollBars`. ListBox and FileListBox: `MultiSelect`. ListBox and ComboBox: `IntegralHeight`. Menu: `WindowList`.|
 |Neither read nor set|Menu: `Shortcut`. Timer: `Left`, `Top`.|
 
 The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../api/RDCore.Forms.Model.ComponentClass.yml) and `IsNotAvailableAtRunTime`. A Timer's `Left` and `Top` are the same definitions as other controls', and only the Timer makes them unavailable.
