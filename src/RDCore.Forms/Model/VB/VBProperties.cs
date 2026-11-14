@@ -211,9 +211,13 @@ public static class VBProperties
     public static readonly PropertyDefinition<byte[]?> DisabledPicture = new("DisabledPicture", PropertyCategory.Appearance, null);
 
     /// <summary>
-    /// The icon a form shows in its title bar, as the bytes of its icon file, or <see langword="null"/> for none.
+    /// The icon a form shows in its title bar, as the bytes of its icon or cursor file, or <see langword="null"/> for none. Any other
+    /// picture, and one <see cref="FormPictures.Inspect"/> refuses, is not an icon.
     /// </summary>
-    public static readonly PropertyDefinition<byte[]?> Icon = new("Icon", PropertyCategory.Appearance, null);
+    public static readonly PropertyDefinition<byte[]?> Icon = new("Icon", PropertyCategory.Appearance, null)
+    {
+        Valid = bytes => FormPictures.Inspect(bytes, out var info) is null && info.Format is PictureFormat.Icon or PictureFormat.Cursor,
+    };
 
     /// <summary>
     /// The pointer shown when <see cref="MousePointer"/> is <see cref="VB.MousePointer.Custom"/>, as the bytes of its icon or cursor
