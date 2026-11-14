@@ -128,6 +128,22 @@ public sealed class DrawModeTests
         Assert.AreEqual("563412\tFF8000", after);
     }
 
+    // RDForms' own: a transparent pixel of the picture reads as the BackColor that shows through it.
+    [TestMethod]
+    public void Point_ReadsANewPicture_AndTheBackColourThroughItsTransparentPixels()
+    {
+        var (before, after) = UI.Run(() =>
+        {
+            var surface = Surface(Box());
+            var before = Hex(surface, (0, 0), (1, 0));
+            surface.Picture = VBPicture.Decode(Png(4, 4, 0xFFFF0000u, 0u), out _);
+            return (before, Hex(surface, (0, 0), (1, 0), (10, 10)));
+        });
+
+        Assert.AreEqual("563412\t563412", before);
+        Assert.AreEqual("FF\t808080\t808080", after);
+    }
+
     [TestMethod]
     public void XorPen_DrawnTwice_GivesBackWhatWasThere()
     {
