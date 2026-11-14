@@ -20,9 +20,13 @@ public sealed class FormPicturesTests
     {
         Assert.IsNull(FormPictures.Inspect(PngHeader(3, 2), out var png));
         Assert.IsNull(FormPictures.Inspect(Bitmap2x2, out var bitmap));
+        PictureHeader.TryRead(PngHeader(3, 2), out var pngHeader);
+        PictureHeader.TryRead(Bitmap2x2, out var bitmapHeader);
 
-        Assert.AreEqual(new PictureInfo(PictureFormat.Png, 3, 2), png);
-        Assert.AreEqual(new PictureInfo(PictureFormat.Bitmap, 2, 2), bitmap);
+        Assert.AreEqual(pngHeader, png);
+        Assert.AreEqual(bitmapHeader, bitmap);
+        Assert.AreEqual((PictureFormat.Png, 3, 2), (png.Format, png.Width, png.Height));
+        Assert.AreEqual((PictureFormat.Bitmap, 2, 2), (bitmap.Format, bitmap.Width, bitmap.Height));
     }
 
     [TestMethod]

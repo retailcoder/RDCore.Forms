@@ -9,7 +9,7 @@
   <ItemGroup>
     <!-- a picture's header is read as the SDK reads it; a ComboBox, in RDCore.Forms.Avalonia, matches a word typed as the language
          server's completion matches a name. -->
-    <PackageReference Include="RDCore.SDK" Version="0.1.5-local.e661bce" />
+    <PackageReference Include="RDCore.SDK" Version="0.1.5-local.d6551a7" />
   </ItemGroup>
 
 </Project>
