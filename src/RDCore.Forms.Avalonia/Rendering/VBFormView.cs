@@ -64,8 +64,7 @@ public sealed class VBFormView : Canvas
     // The shown components, in the order the form holds them.
     private readonly List<ComponentInstance> shown = [];
     private readonly VBPicture.Holder picture = new();
-    // A press on the picture is the root's.
-    private readonly PictureLayer pictureLayer = new() { ZIndex = int.MinValue, IsHitTestVisible = false };
+    private readonly PictureLayer pictureLayer = new() { ZIndex = int.MinValue };
 
     /// <summary>
     /// Creates the client area of a form.
