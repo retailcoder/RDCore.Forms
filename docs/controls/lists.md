@@ -84,7 +84,7 @@ A ListBox's rows are a line of its font high, as a [Simple Combo's](#simple-comb
 
 |Case|Behaviour|
 |---|---|
-|`ListIndex` from code|The edit box takes the item's text with nothing selected, the caret before the first character, then Click is raised: its handler reads a `SelStart` and a `SelLength` of 0.|
+|`ListIndex` from code|The edit box takes the item's text with nothing selected, even where the item's text is the text already in the box, the caret before the first character, then Click is raised: its handler reads a `SelStart` and a `SelLength` of 0.|
 |`SelText` set over a chosen item|The combo selects no item, `ListIndex` -1, and raises its Change, even where the text does not change.|
 |`Text` from code, the same text|The selection and `ListIndex` stay as they are.|
 
