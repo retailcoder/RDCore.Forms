@@ -93,6 +93,10 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     private Border? listBorder;
     private bool locked;
     private readonly ItemIcons icons = new();
+    // The selection a program sees in the edit box; set while it goes to the box, and while SelText writes the component's text.
+    private readonly TextSelection selection;
+    private bool selecting;
+    private bool replacing;
 
     static VBComboBox()
     {
@@ -112,6 +116,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     public VBComboBox(ComponentInstance instance)
     {
         this.instance = instance;
+        selection = new(() => base.Text ?? "", ShowSelection);
         style = instance?.Get(P.ComboBoxStyle) ?? ComboBoxStyle.DropdownCombo;
         IsEditable = style != ComboBoxStyle.DropdownList;
         if (style == ComboBoxStyle.SimpleCombo)
@@ -278,6 +283,107 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     }
 
     /// <summary>
+    /// Where the edit box's selection starts, or its caret's place where nothing is selected: 0 is before the first character.
+    /// </summary>
+    /// <exception cref="FormErrorException">
+    /// Set below 0 or above 65535, or read or set on a Dropdown List, which has no edit box: 380, Invalid property value.
+    /// </exception>
+    /// <remarks>
+    /// As a single-line TextBox's <c>SelStart</c>. A text from code, or an item <see cref="ListIndex"/> selects, selects nothing, the
+    /// caret before the first character.
+    /// </remarks>
+    public int SelStart
+    {
+        get => EditSelection().Start;
+        set => EditSelection().SetStart(value);
+    }
+
+    /// <summary>
+    /// The number of characters selected in the edit box, from <see cref="SelStart"/>.
+    /// </summary>
+    /// <exception cref="FormErrorException">
+    /// Set below 0 or above 65535, or read or set on a Dropdown List: 380, Invalid property value.
+    /// </exception>
+    /// <remarks>
+    /// As a single-line TextBox's <c>SelLength</c>.
+    /// </remarks>
+    public int SelLength
+    {
+        get => EditSelection().Length;
+        set => EditSelection().SetLength(value);
+    }
+
+    /// <summary>
+    /// The text selected in the edit box; "" where nothing is selected.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Set to <see langword="null"/>.</exception>
+    /// <exception cref="FormErrorException">Read or set on a Dropdown List: 380, Invalid property value.</exception>
+    /// <remarks>
+    /// As a single-line TextBox's <c>SelText</c>: setting it puts the text in place of the selection, the caret after it, and raises
+    /// Change once, even where the text does not change. Where an item is selected, it selects none, <see cref="ListIndex"/> -1.
+    /// </remarks>
+    public string SelText
+    {
+        get => EditSelection().Selected;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            foreach (var (text, caret) in EditSelection().Replacing(value, 0, multiLine: false))
+                Replace(text, caret);
+        }
+    }
+
+    // A Dropdown List has no edit box, and no selection to read or set.
+    private TextSelection EditSelection() =>
+        style == ComboBoxStyle.DropdownList ? throw new FormErrorException(FormError.InvalidPropertyValue) : selection;
+
+    // The caret goes to the selection's end first: setting it empties the selection. A combo whose template is not applied yet has no
+    // edit box: the selection goes to it when it has one.
+    private void ShowSelection(int start, int length)
+    {
+        if (editBox is not { } box)
+            return;
+        selecting = true;
+        try
+        {
+            box.CaretIndex = start + length;
+            box.SelectionStart = start;
+            box.SelectionEnd = start + length;
+        }
+        finally
+        {
+            selecting = false;
+        }
+    }
+
+    // The user's selection in the edit box.
+    private void TakeSelection(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (!selecting && sender is TextBox box
+            && (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty || e.Property == TextBox.CaretIndexProperty))
+            selection.Take(box.SelectionStart, box.SelectionEnd);
+    }
+
+    // The component takes the text, the caret goes to its place, and the combo raises its Change: one, whether or not the text changed.
+    // An item selected is selected no more.
+    private void Replace(string text, int caret)
+    {
+        replacing = true;
+        try
+        {
+            if (SelectedIndex >= 0)
+                SelectedIndex = -1;
+            instance.Set(P.Text, text);
+        }
+        finally
+        {
+            replacing = false;
+        }
+        selection.Select(caret, 0);
+        VBControl.Raise(this, VBEvents.Change);
+    }
+
+    /// <summary>
     /// Adds an item.
     /// </summary>
     /// <param name="item">The item's text.</param>
@@ -357,11 +463,15 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (editBox is { } old)
+            old.PropertyChanged -= TakeSelection;
         // The edit box is one line, at a combo's height, too short for a TextBox's own padding.
         editBox = e.NameScope.Find<TextBox>("PART_EditableTextBox");
         listBorder = e.NameScope.Find<Border>("PART_List");
         if (editBox is not { } box)
             return;
+        box.PropertyChanged += TakeSelection;
+        ShowSelection(selection.Start, selection.Length);
         box.IsReadOnly = locked;
         box.MinHeight = 0;
         box.Padding = new Thickness(2, 0);
@@ -387,8 +497,10 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
                 // whose text another shares, the wrong one.
                 if (SelectedIndex != chosen)
                     SelectedIndex = chosen;
-                // A choice is no Change: the component takes the item's text quietly.
+                // A choice is no Change: the component takes the item's text quietly. It selects nothing, the caret before the first
+                // character; a user's pick then selects the whole text.
                 instance.Set(P.Text, base.Text ?? "");
+                selection.Select(0, 0);
             }
             finally
             {
@@ -671,8 +783,10 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
                 {
                     textFromComponent = false;
                 }
+                // A text from code selects nothing, the caret before the first character.
+                selection.Select(0, 0);
             }
-            if (IsEditable && !textFromSelection && !Equals(e.Before, e.After))
+            if (IsEditable && !textFromSelection && !replacing && !Equals(e.Before, e.After))
                 VBControl.Raise(this, VBEvents.Change);
         }
         else if (ReferenceEquals(e.Property, P.List))
