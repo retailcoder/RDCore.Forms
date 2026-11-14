@@ -88,14 +88,14 @@ public sealed class TextBoxPropertyViewTests
     }
 
     [TestMethod]
-    public void AKeyPressHandler_CancelsAMultiLineBoxsEnterWithZero_OrTypesAnotherCharacter()
+    public void AKeyPressHandler_CancelsAMultiLineBoxsEnterAndCtrlEnterWithZero_OrTypesAnotherCharacter()
     {
         var text = UI.Run(() =>
         {
             var instance = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.MultiLine, true);
             var box = new VBTextBox(instance);
             var (window, sink) = ControlHost.Show(box);
-            var codes = new Queue<short>([0, 65]);
+            var codes = new Queue<short>([0, 0, 65]);
             sink.Handler = (_, definition, arguments) =>
             {
                 if (ReferenceEquals(definition, VBEvents.KeyPress))
@@ -103,6 +103,7 @@ public sealed class TextBoxPropertyViewTests
             };
             box.Focus();
             Enter(window);
+            Enter(window, RawInputModifiers.Control);
             Enter(window);
             window.Close();
             return instance.Get(P.Text);
