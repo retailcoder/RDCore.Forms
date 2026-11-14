@@ -3,6 +3,7 @@ using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 using RDCore.Forms.Xaml;
+using RDCore.SDK.Workspace.Pictures;
 using static RDCore.Forms.Tests.Model.TestPictures;
 using K = RDCore.Forms.Xaml.FormXamlDiagnosticKind;
 using P = RDCore.Forms.Model.VB.VBProperties;
@@ -313,6 +314,15 @@ public sealed class FormXamlTests
 
         Assert.AreEqual("two\nlines", form.Find("Label1")!.Get(P.Caption));
         CollectionAssert.AreEqual(Bitmap2x2, form.Find("Image1")!.Get(P.Picture));
+        CollectionAssert.AreEqual(new[] { "InvalidValue Warning" }, Kinds(read));
+    }
+
+    [TestMethod]
+    public void APictureLargerThanAPictureCanBe_IsNotDecoded_AndIsAnInvalidValue()
+    {
+        var read = Read($"""<Image Name="Image1" Picture="{new string('A', (PictureHeader.MaxBytes + 8) / 3 * 4 + 4)}" />""");
+
+        Assert.IsNull(read.Form!.Find("Image1")!.Get(P.Picture));
         CollectionAssert.AreEqual(new[] { "InvalidValue Warning" }, Kinds(read));
     }
 
