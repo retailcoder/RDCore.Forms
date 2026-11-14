@@ -40,7 +40,7 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// </para>
 /// <para>
 /// The root's drawing statements draw on its <see cref="Drawing"/>, under every control. The root's <c>Picture</c> is under its
-/// drawing, at its size in pixels from the top left corner, and a picture it is refused is not drawn (see <see cref="PictureError"/>).
+/// drawing, at its size in pixels from the top left corner, and a picture that is refused is not drawn (see <see cref="PictureError"/>).
 /// </para>
 /// <para>
 /// A press on no control is the root's: it raises MouseDown, MouseMove and MouseUp with <c>X</c> and <c>Y</c> in the root's scale, and
