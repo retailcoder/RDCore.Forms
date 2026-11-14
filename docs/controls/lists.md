@@ -51,8 +51,14 @@ With a `MultiSelect` of Simple or Extended, `ListIndex` is the item with the foc
 
 Every key such a list takes raises Click, whether or not anything changed.
 
-> [!NOTE]
-> **Not implemented.** A ListBox keeps the height the form gives it. VB6 snaps it to whole rows where its `IntegralHeight` is True, its default; a ListBox's model has no `IntegralHeight`.
+### Height
+
+A ListBox's rows are a line of its font high, as a [Simple Combo's](#simple-combo) are, in a border of 2 pixels on each side. The height it is given, from the form or from code, is first rounded to whole pixels, 15 twips to a pixel.
+
+- Where `IntegralHeight` is True, its default, the list is its border and as many whole rows as fit, and at least one: 1000 twips are 840, and 200 are 255.
+- Where it is False, the list takes the height it is given.
+- A font from code snaps the height to the new rows.
+- `Height` keeps the height given where it rounds to the pixels the list takes, and reads those pixels otherwise: 1234 twips stay 1234, drawn as 82 pixels.
 
 ## ComboBox
 

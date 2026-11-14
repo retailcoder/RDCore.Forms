@@ -399,7 +399,7 @@ public static class VBProperties
     public static readonly PropertyDefinition<ComboBoxStyle> ComboBoxStyle = new("Style", PropertyCategory.Behavior, VB.ComboBoxStyle.DropdownCombo);
 
     /// <summary>
-    /// Whether a Simple Combo's height is snapped to whole rows of its list. True by default.
+    /// Whether a ListBox's or a Simple Combo's height is snapped to whole rows of its list. True by default.
     /// </summary>
     public static readonly PropertyDefinition<bool> IntegralHeight = new("IntegralHeight", PropertyCategory.Behavior, true);
 

@@ -118,8 +118,8 @@ public static class VBClasses
     /// <c>VB.ListBox</c>. Its colours default to the window's.
     /// </summary>
     public static readonly ComponentClass ListBox = Control("VB.ListBox", "List",
-        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.DragIcon, P.MousePointer, P.RightToLeft,
-         P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
+        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.IntegralHeight, P.DragIcon, P.MousePointer,
+         P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
         [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
 

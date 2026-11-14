@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
@@ -44,6 +45,10 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// KeyDown, and its KeyPress where it types a character, and before its KeyUp. Where its <c>MultiSelect</c> is None, a character
 /// typed selects the next item that starts with it, after the selected one and from the top again past the last, compared without
 /// regard to case, and raises Click where the selection moved.
+/// </para>
+/// <para>
+/// Its rows are a line of its font high, inside a border of 2 pixels on each side. Where <c>IntegralHeight</c> is True, its height is
+/// snapped to whole rows, at least one, as measured with VB6.
 /// </para>
 /// </remarks>
 public sealed class VBListBox : ListBox, IRaisesKeyEvents
@@ -113,6 +118,13 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents
         multiSelect = instance?.Get(P.MultiSelect) ?? ListBoxMultiSelect.None;
         if (IsMultiSelect)
             SelectionMode = SelectionMode.Multiple;
+        // VB6's border, so that whole rows fill it, and rows a line of text high.
+        BorderThickness = new Thickness(1);
+        Padding = new Thickness(1);
+        Styles.Add(new Style(x => x.OfType<ListBoxItem>())
+        {
+            Setters = { new Setter(PaddingProperty, new Thickness(2, 0)), new Setter(MinHeightProperty, 0d) },
+        });
         ComponentBinding.Bind(this, instance!, VBClasses.ListBox, Apply);
     }
 
@@ -355,14 +367,61 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents
             icons.Take((IReadOnlyList<byte[]?>)e.After!);
             icons.ShowAll(this);
         }
+        else if (ReferenceEquals(e.Property, P.Height))
+        {
+            if (!snapping)
+                Snap((double)e.After!);
+        }
+        else if (ReferenceEquals(e.Property, P.Font))
+        {
+            ComponentBinding.ApplyCommon(this, e.Property, e.After);
+            foreach (var container in GetRealizedContainers())
+                container.Height = Row;
+            Snap(instance.Get(P.Height));
+        }
+        else if (ReferenceEquals(e.Property, P.IntegralHeight))
+            Snap(instance.Get(P.Height));
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
+    }
+
+    // A list's rows are a line of its font high, inside a border of 2 pixels on each side, as measured with VB6.
+    private const double ListBorder = 4;
+
+    private double Row => FormFonts.LineHeight(instance.Get(P.Font));
+
+    // Set while the list writes back the height it takes.
+    private bool snapping;
+
+    // A list's height, as measured with VB6, from the form or from code: the height asked is whole pixels first. Where IntegralHeight
+    // is True, its border and whole rows, at least one; otherwise the pixels asked. The height asked is kept where it rounds to the
+    // pixels taken; otherwise the component's Height takes them.
+    private void Snap(double asked)
+    {
+        var pixels = Math.Round(asked, MidpointRounding.AwayFromZero);
+        var taken = instance.Get(P.IntegralHeight)
+            ? ListBorder + Math.Max(1, Math.Floor((pixels - ListBorder) / Row)) * Row
+            : pixels;
+        Height = taken;
+        var stored = taken == pixels ? asked : taken;
+        if (instance.Get(P.Height) == stored)
+            return;
+        snapping = true;
+        try
+        {
+            instance.Set(P.Height, stored);
+        }
+        finally
+        {
+            snapping = false;
+        }
     }
 
     /// <inheritdoc/>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
+        container.Height = Row;
         icons.Show(container, item, index);
     }
 
