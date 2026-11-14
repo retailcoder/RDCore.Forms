@@ -277,4 +277,150 @@ public sealed class ComboStyleTests
 
         Assert.AreEqual(("", "b"), (whileLocked, after));
     }
+
+    // A Simple Combo of a height, its IntegralHeight and font, in the window: the component's Height and the height drawn, after each
+    // height given from code.
+    private static List<(double Stored, double Drawn)> Heights(double height, bool integral, FormFont? font, params double[] fromCode)
+    {
+        return UI.Run(() =>
+        {
+            var (root, instance) = Form(ComboBoxStyle.SimpleCombo);
+            instance.Set(P.Height, height).Set(P.IntegralHeight, integral);
+            if (font is { } given)
+                instance.Set(P.Font, given);
+            var (window, combo) = Open(root, instance, new RecordingSink());
+            var result = new List<(double, double)> { (instance.Get(P.Height), combo.Bounds.Height) };
+            foreach (var asked in fromCode)
+            {
+                instance.Set(P.Height, asked);
+                Dispatcher.UIThread.RunJobs();
+                result.Add((instance.Get(P.Height), combo.Bounds.Height));
+            }
+            window.Close();
+            return result;
+        });
+    }
+
+    private static string Of(List<(double Stored, double Drawn)> heights) =>
+        string.Join(", ", heights.Select(h => $"{Math.Round(h.Stored * 15)}/{h.Drawn}"));
+
+    // The heights measured with VB6 at the default font, in twips (15 to a pixel) as the form gives them: rows of 13 pixels under an
+    // edit box of 21, in a border of 4; whole pixels first, so that 1140 twips are 76 pixels and 1150 are 77.
+    [TestMethod]
+    [DataRow(1000, 960, 64)]
+    [DataRow(1100, 960, 64)]
+    [DataRow(1140, 960, 64)]
+    [DataRow(1150, 1150, 77)]
+    [DataRow(1200, 1155, 77)]
+    [DataRow(1500, 1350, 90)]
+    [DataRow(2000, 1935, 129)]
+    [DataRow(600, 570, 38)]
+    [DataRow(500, 315, 21)]
+    [DataRow(150, 315, 21)]
+    public void ASimpleCombosHeight_FromTheForm_IsWholeRowsOfItsList_OrItsEditBoxAlone(int twips, int stored, int drawn)
+    {
+        Assert.AreEqual($"{stored}/{drawn}", Of(Heights(twips / 15d, true, null)));
+    }
+
+    [TestMethod]
+    [DataRow(1000, 1000, 67)]
+    [DataRow(500, 500, 33)]
+    [DataRow(375, 315, 21)]
+    [DataRow(150, 315, 21)]
+    public void WithIntegralHeightFalse_ASimpleCombo_TakesTheHeightItIsGiven_UnlessItsListWouldBeNoMoreThanItsBorder(int twips, int stored, int drawn)
+    {
+        Assert.AreEqual($"{stored}/{drawn}", Of(Heights(twips / 15d, false, null)));
+    }
+
+    // From code, a height of the edit box's or less is ignored, and the Height reads the pixels drawn: 1000 twips, 66.67 pixels, read
+    // 1005 after one.
+    [TestMethod]
+    public void AHeightFromCode_IsSnappedAsTheFormsIs_AndOneOfTheEditBoxsOrLess_IsIgnored()
+    {
+        var snapped = Heights(1000 / 15d, true, null, 1234 / 15d, 300 / 15d, 450 / 15d, 1000 / 15d, 322 / 15d, 1160 / 15d);
+        var unsnapped = Heights(1000 / 15d, false, null, 322 / 15d, 330 / 15d, 400 / 15d);
+
+        Assert.AreEqual("960/64, 1155/77, 1155/77, 315/21, 960/64, 960/64, 1160/77", Of(snapped));
+        Assert.AreEqual("1000/67, 1005/67, 315/21, 400/27", Of(unsnapped));
+    }
+
+    // MS Sans Serif 12 is drawn at its 16-pixel size, whose rows VB6 makes 20 pixels high, under an edit box of 28.
+    [TestMethod]
+    public void ASimpleCombosRowsAndEditBox_AreItsFontsLine()
+    {
+        var (heights, edit, row) = UI.Run(() =>
+        {
+            var (root, instance) = Form(ComboBoxStyle.SimpleCombo);
+            instance.Set(P.Height, 100d).Set(P.Font, new FormFont("MS Sans Serif", 12));
+            var (window, combo) = Open(root, instance, new RecordingSink());
+            var result = (Of([(instance.Get(P.Height), combo.Bounds.Height)]),
+                combo.GetVisualDescendants().OfType<TextBox>().Single().Bounds.Height, Item(combo, 0).Bounds.Height);
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual(("1380/92", 28d, 20d), (heights, edit, row));
+    }
+
+    // A font from code keeps the list's pixels and sizes the edit box to the font, then snaps where IntegralHeight is True: 72
+    // pixels at 12 points are 64 at 8, then 60 at 14; with IntegralHeight False, 100 pixels at 12 points are 93 at 8.
+    [TestMethod]
+    public void AFontFromCode_KeepsTheListsPixels_AndSnapsToTheNewRows()
+    {
+        var (snapped, unsnapped) = UI.Run(() =>
+        {
+            var (root, instance) = Form(ComboBoxStyle.SimpleCombo);
+            var other = new ComponentInstance(VBClasses.ComboBox, "Combo2").Set(P.ComboBoxStyle, ComboBoxStyle.SimpleCombo)
+                .Set(P.Left, 160d).Set(P.Top, 8d).Set(P.Width, 140d).Set(P.Height, 100d).Set(P.IntegralHeight, false);
+            other.SetContainer(root);
+            var large = new FormFont("MS Sans Serif", 12);
+            instance.Set(P.Height, 1234 / 15d).Set(P.Font, large);
+            other.Set(P.Font, large);
+            var (window, combo) = Open(root, instance, new RecordingSink());
+            var second = window.View.ControlOf(other)!;
+            var heights = new List<(double, double)> { (instance.Get(P.Height), combo.Bounds.Height) };
+            foreach (var size in new[] { 8.25, 14 })
+            {
+                instance.Set(P.Font, new FormFont("MS Sans Serif", size));
+                Dispatcher.UIThread.RunJobs();
+                heights.Add((instance.Get(P.Height), combo.Bounds.Height));
+            }
+            other.Set(P.Font, FormFont.Default);
+            Dispatcher.UIThread.RunJobs();
+            var result = (Of(heights), Of([(other.Get(P.Height), second.Bounds.Height)]));
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual("1080/72, 960/64, 900/60", snapped);
+        Assert.AreEqual("1395/93", unsnapped);
+    }
+
+    // As measured with VB6: the press selects the item before the focus moves, so the control that loses it and the combo's
+    // GotFocus read the new ListIndex and the text from before; the text is the item's by the Click.
+    [TestMethod]
+    [DataRow(false, DisplayName = "an item selected")]
+    [DataRow(true, DisplayName = "typed text")]
+    public void APressThatMovesTheFocusToASimpleCombo_SelectsTheItemFirst_AndTheGotFocusReadsTheTextFromBefore(bool typed)
+    {
+        var log = UI.Run(() =>
+        {
+            var (root, instance) = Form(ComboBoxStyle.SimpleCombo);
+            var sink = new RecordingSink();
+            var (window, combo) = Open(root, instance, sink, focused: "Text1");
+            if (typed)
+                combo.SetText("typed");
+            else
+                combo.ListIndex = 0;
+            Dispatcher.UIThread.RunJobs();
+            var log = new List<string>();
+            sink.Handler = (source, definition, _) => log.Add($"{source.Name}.{definition.Name} {combo.ListIndex} {combo.Text} {instance.Get(P.Text)}");
+            Press(Item(combo, 2));
+            window.Close();
+            return log.Where(line => !line.Contains(".Key") && !line.Contains(".Mouse")).ToList();
+        });
+
+        var before = typed ? "typed" : "apple";
+        Expect.Lines([$"Text1.LostFocus 2 {before} {before}", $"Combo1.GotFocus 2 {before} {before}", "Combo1.Click 2 cherry cherry"], log);
+    }
 }

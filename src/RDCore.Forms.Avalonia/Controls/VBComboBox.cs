@@ -57,10 +57,13 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// item matches.
 /// </para>
 /// <para>
-/// A Simple Combo shows its edit box, 21 pixels high, with its list always shown under it and no button; the list takes the rest of
-/// its height, and scrolls where its items do not fit. A press on the list picks the item under it, or the last item when the
-/// press is below the items, even the item already selected; a pick raises Click and no Change, and leaves the focus in the edit box.
-/// A double click is one Click, then DblClick. Its list never drops, and it raises no DropDown. Typing does not complete or filter.
+/// A Simple Combo shows its edit box with its list always shown under it and no button; the list takes the rest of its height, and
+/// scrolls where its items do not fit. Its rows are a line of its font high, and its edit box a row and 8 pixels: 13 and 21 at the
+/// default font. Where <c>IntegralHeight</c> is True, its height is snapped to whole rows of its list, or to the edit box alone where
+/// no row fits; a height from code of the edit box's or less is ignored. A press on the list picks the item under it, or the last
+/// item when the press is below the items, even the item already selected; a pick raises Click and no Change, and leaves the focus in
+/// the edit box. A press that moves the focus selects the item before the focus moves, and the text follows before the Click. A double
+/// click is one Click, then DblClick. Its list never drops, and it raises no DropDown. Typing does not complete or filter.
 /// </para>
 /// <para>
 /// A <c>Locked</c> combo keeps out the user, not code: its edit box takes no typing, its list does not drop, and neither the keys nor
@@ -141,17 +144,24 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ComboBox);
 
-    // The edit box's height at VB6's default font, MS Sans Serif 8, where VB6 draws it 21 pixels high.
-    private const double SimpleEditHeight = 21;
+    // A Simple Combo's shape, as measured with VB6: its edit box is a row and 8 pixels high, 21 at the default font, and its list's
+    // border takes 2 pixels on each side.
+    private const double EditBeyondRow = 8;
+    private const double ListBorder = 4;
+
+    private double Row => FormFonts.LineHeight(instance.Get(P.Font));
+
+    private double EditHeight => Row + EditBeyondRow;
 
     // A Simple Combo: its edit box, with its list under it, always shown, and no button. The list scrolls when its items do not fit.
-    // Avalonia's ComboBox requires a popup, which is there and never opens.
+    // Avalonia's ComboBox requires a popup, which is there and never opens. The list's border and padding are VB6's border, so that
+    // whole rows fill it.
     private static readonly FuncControlTemplate<VBComboBox> SimpleTemplate = new((combo, scope) =>
     {
         var edit = new TextBox
         {
             Name = "PART_EditableTextBox",
-            Height = SimpleEditHeight,
+            Height = combo.EditHeight,
             [DockPanel.DockProperty] = Dock.Top,
             [!!TextBox.TextProperty] = combo[!!TextProperty],
             [!TextBox.BackgroundProperty] = combo[!BackgroundProperty],
@@ -167,6 +177,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         {
             Name = "PART_List",
             BorderThickness = new Thickness(1),
+            Padding = new Thickness(1),
             [!Border.BorderBrushProperty] = combo[!BorderBrushProperty],
             [!Border.BackgroundProperty] = combo[!BackgroundProperty],
             Child = new ScrollViewer
@@ -197,9 +208,27 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
             VBControl.Raise(this, VBEvents.DblClick);
             return;
         }
-        SelectedIndex = item is null ? ItemCount - 1 : IndexFromContainer(item);
+        var index = item is null ? ItemCount - 1 : IndexFromContainer(item);
+        // A press that takes the focus selects the item first, as VB6's does: the LostFocus and the GotFocus read its ListIndex, and
+        // the text from before the pick.
+        if (editBox is { IsKeyboardFocusWithin: false } box)
+        {
+            pressed = index;
+            try
+            {
+                box.Focus(NavigationMethod.Pointer);
+            }
+            finally
+            {
+                pressed = null;
+            }
+        }
+        SelectedIndex = index;
         Picked();
     }
+
+    // The item a press on a Simple Combo's list selects, while the press moves the focus to it.
+    private int? pressed;
 
     // Its release is the press's: the list's own release would pick the item a second time.
     private void ReleaseList(object? sender, PointerReleasedEventArgs e)
@@ -225,7 +254,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     /// </remarks>
     public int ListIndex
     {
-        get => SelectedIndex;
+        get => pressed ?? SelectedIndex;
         set
         {
             if (value < -1 || value >= ItemCount)
@@ -437,6 +466,8 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
+        if (style == ComboBoxStyle.SimpleCombo)
+            container.Height = Row;
         icons.Show(container, item, index);
         ShowNarrowing(container, index);
     }
@@ -697,8 +728,66 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
             icons.ShowAll(this);
             ShowSelectedIcon();
         }
+        else if (style == ComboBoxStyle.SimpleCombo && ReferenceEquals(e.Property, P.Height))
+        {
+            if (!snapping)
+                Snap((double)e.After!, Equals(e.Before, e.After) ? null : (double)e.Before!);
+        }
+        else if (style == ComboBoxStyle.SimpleCombo && ReferenceEquals(e.Property, P.IntegralHeight) && !Equals(e.Before, e.After))
+            Snap(instance.Get(P.Height), null);
+        else if (style == ComboBoxStyle.SimpleCombo && ReferenceEquals(e.Property, P.Font) && !Equals(e.Before, e.After))
+        {
+            ComponentBinding.ApplyCommon(this, e.Property, e.After);
+            Refont((FormFont)e.Before!);
+        }
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
+    }
+
+    // Set while a Simple Combo writes back the height it takes.
+    private bool snapping;
+
+    // A Simple Combo's height, as measured with VB6, from the form or, with the height it had, from code. The height asked is whole
+    // pixels first. Where it is no more than the edit box's, the edit box alone, from the form; from code, it is ignored, and the
+    // combo keeps the pixels it has. Where IntegralHeight is True, the list is whole rows, and the edit box alone where not one fits;
+    // otherwise the list takes the rest, and the edit box is alone where its list would be its border or less. The height asked is
+    // kept where it rounds to the pixels taken; otherwise the component's Height takes them.
+    private void Snap(double asked, double? before)
+    {
+        var pixels = Math.Round(asked, MidpointRounding.AwayFromZero);
+        var (edit, row) = (EditHeight, Row);
+        double taken;
+        if (pixels <= edit)
+            taken = before is { } kept ? Math.Round(kept, MidpointRounding.AwayFromZero) : edit;
+        else if (instance.Get(P.IntegralHeight))
+            taken = Math.Floor((pixels - edit - ListBorder) / row) is var rows and >= 1 ? edit + ListBorder + rows * row : edit;
+        else
+            taken = pixels - edit <= ListBorder ? edit : pixels;
+        Height = taken;
+        var stored = taken == pixels ? asked : taken;
+        if (instance.Get(P.Height) == stored)
+            return;
+        snapping = true;
+        try
+        {
+            instance.Set(P.Height, stored);
+        }
+        finally
+        {
+            snapping = false;
+        }
+    }
+
+    // A font from code sizes the edit box and the rows to it, and keeps the list's pixels, as VB6 does; where IntegralHeight is True,
+    // the height then snaps to the new rows.
+    private void Refont(FormFont before)
+    {
+        var list = Math.Max(0, instance.Get(P.Height) - (FormFonts.LineHeight(before) + EditBeyondRow));
+        if (editBox is { } box)
+            box.Height = EditHeight;
+        foreach (var container in GetRealizedContainers())
+            container.Height = Row;
+        Snap(EditHeight + list, null);
     }
 
     private void WriteList()
