@@ -88,6 +88,20 @@ The window follows the root's `Caption`, `Width`, `Height`, `MaxButton`, `MinBut
 |`ToolTipText`|Shown as the control's tooltip; an empty text shows none.|
 |`MousePointer`|The pointer over the control. Custom, drawn from `MouseIcon` in VB6, shows the arrow.|
 
+## Properties set only at design time
+
+Some properties are set only by a designer and a form's file. A running VB6 program can read them and cannot set them: its assignment is error 382. A few it can neither read (error 393) nor set (382). These are the ones RDForms models, as measured in VB6:
+
+|Access from code|Properties|
+|---|---|
+|Read only|Form and MDIForm: `StartUpPosition`. Form: `ShowInTaskbar`, `MaxButton`, `MinButton`. CommandButton, CheckBox, OptionButton and ComboBox: `Style`. TextBox: `MultiLine`, `ScrollBars`. ListBox and FileListBox: `MultiSelect`. Menu: `WindowList`.|
+|Neither read nor set|Menu: `Shortcut`. Timer: `Left`, `Top`.|
+
+The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../api/RDCore.Forms.Model.ComponentClass.yml) and `IsNotAvailableAtRunTime`. A Timer's `Left` and `Top` are the same definitions as other controls', and only the Timer makes them unavailable.
+
+> [!NOTE]
+> **Not implemented.** The runtime does not refuse a program's read or assignment of these properties with 393 or 382.
+
 ## Errors
 
 A member that refuses a value throws a [`FormErrorException`](../api/RDCore.Forms.Model.FormErrorException.yml) that holds VB's error number and description, such as 380 for a `ListIndex` outside the items.

@@ -38,7 +38,7 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 |A default button|In a multi-line box, the form's default button takes Enter, as in a single-line one, and Ctrl+Enter types a new line (RDForms' own).|
 
 > [!NOTE]
-> **Not implemented.** The model marks `MultiLine` and `ScrollBars` read-only at run time, and the runtime does not refuse a program's assignment to them with 382. `SelStart`, `SelLength` and `SelText` are not in the model.
+> **Not implemented.** The runtime does not refuse a program's assignment to `MultiLine` and `ScrollBars` with 382 (see [Properties set only at design time](index.md#properties-set-only-at-design-time)). `SelStart`, `SelLength` and `SelText` are not in the model.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
