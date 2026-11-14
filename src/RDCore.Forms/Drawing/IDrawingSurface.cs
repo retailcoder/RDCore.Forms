@@ -11,7 +11,7 @@ namespace RDCore.Forms.Drawing;
 /// Coordinates are in the component's scale, its <c>ScaleMode</c> with its <c>ScaleLeft</c> and <c>ScaleTop</c>, as
 /// <see cref="DrawingScale"/> converts them. A colour that is <see langword="null"/> is the component's <c>ForeColor</c>. Lines are
 /// drawn <c>DrawWidth</c> pixels wide in its <c>DrawStyle</c>, and figures are filled with its <c>FillColor</c> in its
-/// <c>FillStyle</c>.
+/// <c>FillStyle</c>. Its <c>DrawMode</c> combines each pixel of a line and of a fill with the pixel under it.
 /// </para>
 /// <para>
 /// What is drawn is kept, and shows under the component's controls. Each drawing statement moves <see cref="CurrentX"/> and
@@ -100,8 +100,8 @@ public interface IDrawingSurface
     /// <param name="x">The point's horizontal coordinate, in the component's scale.</param>
     /// <param name="y">The point's vertical coordinate, in the component's scale.</param>
     /// <returns>
-    /// The RGB colour drawn there, or the component's <c>BackColor</c> where nothing is, as a VB colour (red in the low byte); -1 where
-    /// the point is outside the component's inside.
+    /// The RGB colour drawn there, or else the pixel of the component's <c>Picture</c> there, or else its <c>BackColor</c>, as a VB
+    /// colour (red in the low byte); -1 where the point is outside the component's inside.
     /// </returns>
     int Point(double x, double y);
 }

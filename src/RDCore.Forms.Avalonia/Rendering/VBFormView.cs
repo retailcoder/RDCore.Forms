@@ -167,7 +167,7 @@ public sealed class VBFormView : Canvas
                 break;
             case nameof(P.Picture):
                 if (picture.Take((byte[]?)e.After))
-                    pictureLayer.Picture = picture.Picture;
+                    pictureLayer.Picture = Drawing.Picture = picture.Picture;
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);

@@ -378,9 +378,11 @@ public static class VBProperties
 
     /// <summary>
     /// How a Line's colour, or the colour of a form's or a PictureBox's drawing, combines with what is drawn under it: a raster
-    /// operation from 1 to 16. 13, the default, draws the colour as it is.
+    /// operation from 1 to 16, GDI's of the same number. 13, the default, draws the colour as it is. Another value is refused (380 for
+    /// a program).
     /// </summary>
-    public static readonly PropertyDefinition<short> DrawMode = new("DrawMode", PropertyCategory.Appearance, 13);
+    public static readonly PropertyDefinition<short> DrawMode =
+        new("DrawMode", PropertyCategory.Appearance, 13) { Valid = mode => mode is >= 1 and <= 16 };
 
     /// <summary>
     /// How much a scroll bar's value changes when the user clicks its track.

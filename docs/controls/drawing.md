@@ -25,15 +25,48 @@ surface.Line(new GraphicsPoint(10, 10), new GraphicsPoint(100, 50, IsRelative: t
 |`PSet`|A point; a dot `DrawWidth` wide where that is more than 1.|The point.|
 |`Scale`|Nothing. With two points it sets a user scale whose corners they are; with none it sets the scale back to twips.|Unchanged.|
 |`Cls`|Clears the drawing, and keeps the `Picture`.|0, 0.|
-|`Point`|Nothing. It returns the colour at a point, the `BackColor` where nothing is drawn, and -1 outside the surface.|Unchanged.|
+|`Point`|Nothing. It returns the colour at a point: what is drawn there, or else the `Picture`'s pixel, or else the `BackColor`. It returns -1 outside the surface.|Unchanged.|
 
 A point written with `Step` is measured from the current point, and a `Line`'s second point from its first. A colour left out is the component's `ForeColor`.
+
+## Erasing
+
+|Set|The drawing|`CurrentX`, `CurrentY`|
+|---|---|---|
+|`Picture`, to a picture or to none|Erased; the new picture shows.|Kept.|
+|`BackColor` on a PictureBox|Erased, even where the colour is the same.|Kept.|
+|`BackColor` on a form|Erased where the colour changes, kept where it is the same.|Kept.|
 
 ## Pens and fills
 
 - Lines are drawn as a Line control draws them: `DrawWidth` pixels wide, dashed as `DrawStyle` says where they are one pixel wide, and solid where they are wider. Transparent draws no line.
-- A box's or a circle's fill is its `FillColor` in its `FillStyle`: solid, or lines eight pixels apart from the surface's corner. An arc is not filled; a closed sector is.
+- A box's or a circle's fill is its `FillColor` in its `FillStyle`: solid, or lines eight pixels apart from the surface's corner. An arc is not filled; a closed sector is. The fill stops where the edge starts.
 - There is no smoothing.
+
+## DrawMode
+
+`DrawMode` combines each pixel a line, a point or a fill covers with the pixel under it: what is drawn there, or else the `Picture`'s pixel, or else the `BackColor`. Each mode is the Windows raster operation of the same number, applied bit by bit to red, green and blue. P is the pen's colour (or the `FillColor`, for a fill) and D the colour under it.
+
+|`DrawMode`|Name|Result|
+|---|---|---|
+|1|Blackness|Black|
+|2|Not Merge Pen|Not (D Or P)|
+|3|Mask Not Pen|D And Not P|
+|4|Not Copy Pen|Not P|
+|5|Mask Pen Not|P And Not D|
+|6|Invert|Not D|
+|7|Xor Pen|D Xor P|
+|8|Not Mask Pen|Not (D And P)|
+|9|Mask Pen|D And P|
+|10|Not Xor Pen|Not (D Xor P)|
+|11|Nop|D: nothing is drawn.|
+|12|Merge Not Pen|D Or Not P|
+|13|Copy Pen, the default|P|
+|14|Merge Pen Not|P Or Not D|
+|15|Merge Pen|D Or P|
+|16|Whiteness|White|
+
+Xor Pen drawn twice gives back what was there. Another value is error 380, and the `DrawMode` is kept.
 
 ## AutoRedraw and Paint
 
@@ -45,7 +78,7 @@ The surface keeps what it draws whatever the component's `AutoRedraw`, and keeps
 |True|Not raised.|
 
 > [!NOTE]
-> **Not implemented.** Every `DrawMode` draws as Copy Pen (13). `Point` reads the drawing and the `BackColor`; a form's or a PictureBox's `Picture` under the drawing is not read. The `Print` method, `PaintPicture`, `TextWidth` and `TextHeight` have no surface member.
+> **Not implemented.** The `Print` method, `PaintPicture`, `TextWidth` and `TextHeight` have no surface member.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)
