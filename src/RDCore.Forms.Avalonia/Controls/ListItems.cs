@@ -62,7 +62,7 @@ internal static class ListItems
         instance.Set(P.ItemIcon, Spliced(instance.Get(P.ItemIcon), count, values => values[index] = picture));
     }
 
-    // A character typed in a ListBox: the next item after the selected one that starts with it, without regard to
+    // A character typed in a ListBox: the next item after the selected one whose text starts with it, without regard to
     // case, from the top again past the last. None where no item does, and none where only the selected one does.
     public static int? NextStartingWith(System.Collections.IList items, int selected, char character)
     {
@@ -70,7 +70,7 @@ internal static class ListItems
         for (var step = 1; step <= items.Count; step++)
         {
             var index = (selected + step) % items.Count;
-            if (items[index] is string { Length: > 0 } text && char.ToUpperInvariant(text[0]) == wanted)
+            if (items[index]?.ToString() is { Length: > 0 } text && char.ToUpperInvariant(text[0]) == wanted)
                 return index == selected ? null : index;
         }
         return null;

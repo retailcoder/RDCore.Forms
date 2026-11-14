@@ -24,6 +24,12 @@
   <data name="Error53" xml:space="preserve">
     <value>File not found</value>
   </data>
+  <data name="Error68" xml:space="preserve">
+    <value>Device unavailable</value>
+  </data>
+  <data name="Error76" xml:space="preserve">
+    <value>Path not found</value>
+  </data>
   <data name="Error94" xml:space="preserve">
     <value>Invalid use of Null</value>
   </data>

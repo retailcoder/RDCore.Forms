@@ -66,9 +66,19 @@ public static class VBEvents
     public static readonly EventDefinition MouseUp = new("MouseUp", Button, Shift, X, Y);
 
     /// <summary>
-    /// A TextBox's or ComboBox's text, or a scroll bar's value, changed.
+    /// A TextBox's or ComboBox's text, a scroll bar's value, a DirListBox's <c>Path</c> or a DriveListBox's <c>Drive</c> changed.
     /// </summary>
     public static readonly EventDefinition Change = new("Change");
+
+    /// <summary>
+    /// A FileListBox's <c>Path</c> changed.
+    /// </summary>
+    public static readonly EventDefinition PathChange = new("PathChange");
+
+    /// <summary>
+    /// A FileListBox's <c>Pattern</c> changed.
+    /// </summary>
+    public static readonly EventDefinition PatternChange = new("PatternChange");
 
     /// <summary>
     /// A scroll bar's thumb was dragged to a new value. The Change comes once the thumb is released, where the value is not the one

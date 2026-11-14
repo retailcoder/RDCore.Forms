@@ -16,6 +16,7 @@ Frame and PictureBox hold controls; PictureBox and Image draw pictures. The thre
 
 - Its border is a sunken edge when 3-D, and one pixel when flat. The controls it holds are placed inside the border, from its client origin.
 - Its `Picture` is drawn at its own size in pixels from the client origin, clipped, under the controls it holds.
+- Where `AutoSize` is set, it takes its picture's size: see [A size from the picture](#a-size-from-the-picture).
 - Its drawing statements draw over its `Picture` and under its controls; see [Drawing](drawing.md). It raises Paint as its drawing surface does.
 - It takes the focus, whether or not it holds controls. It raises MouseUp before Click, and Click only where the release is over the PictureBox again. Its mouse events' X and Y are in twips.
 
@@ -27,10 +28,24 @@ Its key events are RDForms' own, not measured with VB6. With the focus, it raise
 
 - Its single border is a sunken edge.
 - Its `Picture` is drawn inside its border: stretched over the whole of it where `Stretch` is set, and otherwise at its own size in pixels from the top left corner, clipped.
+- Where `Stretch` is not set, it takes its picture's size: see [A size from the picture](#a-size-from-the-picture).
 - The whole rectangle takes the pointer, where it draws nothing too. It raises MouseUp before Click, and Click only where the release is over the image again.
 
+## A size from the picture
+
+An Image whose `Stretch` is not set, and a PictureBox whose `AutoSize` is set, take the size of their `Picture` inside their border. A sunken border adds 2 pixels on each side, and a flat one 1.
+
+|Case|Image, `Stretch` not set|PictureBox, `AutoSize` set|
+|---|---|---|
+|`Picture` set|Takes the picture's size. Its `Left` and `Top` go to whole pixels.|Takes the picture's size. Its `Left` and `Top` are kept.|
+|A picture from the form's `.frx`|Takes the picture's size as the control is made, whatever size the form file holds.|The same.|
+|`Picture` cleared|Keeps its size.|Keeps its size.|
+|`Stretch` cleared, or `AutoSize` set, where there is a picture|Takes the picture's size.|Takes the picture's size.|
+|`Stretch` set, or `AutoSize` cleared|Keeps its size.|Keeps its size.|
+|`Width` or `Height` set by code|Kept, also when the same picture is set again.|Kept, also when the same picture is set again.|
+
 > [!NOTE]
-> **Not implemented.** An Image whose `Stretch` is not set keeps its size instead of taking its picture's, and a PictureBox's `AutoSize` is not applied.
+> **Not implemented.** A PictureBox raises no Resize. VB6 raises one each time its size changes, by `AutoSize` or by code.
 
 ## Pictures
 

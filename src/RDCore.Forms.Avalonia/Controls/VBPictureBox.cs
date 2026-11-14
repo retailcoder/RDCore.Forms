@@ -22,6 +22,11 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// drawing statements draw on its <see cref="Drawing"/>, over its picture and under its controls.
 /// </para>
 /// <para>
+/// Where <c>AutoSize</c> is set, it takes its picture's size inside its border as its <c>Picture</c> changes or its <c>AutoSize</c>
+/// is set. It keeps its size where its <c>Picture</c> is cleared or its <c>AutoSize</c> is cleared, and a size set by code also when
+/// the same picture is set again. It raises no Resize.
+/// </para>
+/// <para>
 /// It takes the focus, whether or not it holds controls. It raises Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove and
 /// MouseUp, MouseUp before Click; Click only where the release is over the PictureBox again. A press on a control it holds is that
 /// control's. Its mouse events' X and Y are in twips.
@@ -100,6 +105,10 @@ public sealed class VBPictureBox : Control, IVBContainer, IRaisesKeyEvents
             case nameof(P.BorderStyle) or nameof(P.Appearance):
                 edge.Edge = VBEdge.Of(instance.Get(P.BorderStyle), instance.Get(P.Appearance));
                 break;
+            case nameof(P.AutoSize):
+                if (!Equals(e.Before, e.After))
+                    FitToPicture();
+                break;
             case nameof(P.BackColor):
                 background = ComponentBinding.Brush(e.After);
                 InvalidateVisual();
@@ -109,11 +118,25 @@ public sealed class VBPictureBox : Control, IVBContainer, IRaisesKeyEvents
                 break;
             case nameof(P.Picture):
                 if (picture.Take((byte[]?)e.After))
+                {
                     layer.Picture = picture.Picture;
+                    FitToPicture();
+                }
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);
                 break;
         }
+    }
+
+    // A PictureBox whose AutoSize is set takes its picture's size inside its border, as its picture changes or its AutoSize is set.
+    // It keeps its size where it has no picture. It reads AutoSize, BorderStyle and Appearance from its component, whatever order
+    // they are applied in.
+    private void FitToPicture()
+    {
+        if (!instance.Get(P.AutoSize) || picture.Picture is not { } shown)
+            return;
+        var border = 2 * VBEdge.WidthOf(VBEdge.Of(instance.Get(P.BorderStyle), instance.Get(P.Appearance)));
+        instance.Set(P.Width, shown.PixelSize.Width + border).Set(P.Height, shown.PixelSize.Height + border);
     }
 }

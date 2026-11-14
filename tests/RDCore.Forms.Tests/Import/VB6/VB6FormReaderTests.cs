@@ -82,6 +82,26 @@ public sealed class VB6FormReaderTests
     }
 
     [TestMethod]
+    public void TheFileSystemLists_AreRead_AFileListBoxWithItsPatternAndItsAttributes()
+    {
+        var import = VB6FormReader.Read(Form(
+            "   Begin VB.DriveListBox Drive1 ", "      Height          =   315", "      TabIndex        =   0", "      Width           =   2000", "   End",
+            "   Begin VB.DirListBox Dir1 ", "      Height          =   1500", "      TabIndex        =   1", "      Width           =   2000", "   End",
+            "   Begin VB.FileListBox File1 ", "      Height          =   1500", "      Hidden          =   -1  'True",
+            "      Pattern         =   \"*.txt;*.bas\"", "      ReadOnly        =   0   'False", "      System          =   -1  'True",
+            "      TabIndex        =   2", "      Width           =   2000", "   End"));
+        var form = import.Form!;
+        var file = form.Find("File1")!;
+
+        Assert.IsEmpty(import.Diagnostics);
+        Assert.AreSame(VBClasses.DriveListBox, form.Find("Drive1")!.Class);
+        Assert.AreSame(VBClasses.DirListBox, form.Find("Dir1")!.Class);
+        Assert.AreSame(VBClasses.FileListBox, file.Class);
+        Assert.AreEqual(("*.txt;*.bas", true, false, true, true, true), (file.Get(VBProperties.Pattern), file.Get(VBProperties.Hidden),
+            file.Get(VBProperties.ReadOnly), file.Get(VBProperties.SystemFiles), file.Get(VBProperties.Archive), file.Get(VBProperties.Normal)));
+    }
+
+    [TestMethod]
     public void AValueThePropertyCannotHold_IsKeptAsText_AndReported()
     {
         var import = VB6FormReader.Read(Form(Label("Alignment       =   7")));

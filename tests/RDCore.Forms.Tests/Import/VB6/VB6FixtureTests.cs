@@ -267,11 +267,11 @@ public sealed class VB6FixtureTests
     }
 
     [TestMethod]
-    [Ignore("Not implemented: a control written inside a Timer is not offset by the Timer's Left and Top, as VB6 offsets it.")]
     public void AControlInsideATimer_IsPlacedInTheForm_OffsetByTheTimersPosition()
     {
         var label = Read("Misplaced.frm").Form!.Find("lblInTimer")!;
 
+        // VB6 read 720 4800: the label's 600 2400 and the Timer's 120 2400.
         Assert.AreEqual((48d, 320d, 81d, 17d), Bounds(label));
     }
 
@@ -286,8 +286,6 @@ public sealed class VB6FixtureTests
         Assert.AreSame(form.Find("fraHost"), form.Find("cmdDeep")!.Container);
         Assert.AreEqual((4d, 4d, 60d, 25d), Bounds(form.Find("cmdDeep")!));
         Assert.AreSame(form.Root, form.Find("lblInTimer")!.Container);
-        // the designer file's position: VB6 read 720 4800, the Timer's offset added.
-        Assert.AreEqual((40d, 160d, 81d, 17d), Bounds(form.Find("lblInTimer")!));
         Assert.HasCount(3, import.Diagnostics);
         Assert.IsTrue(import.Diagnostics.All(d => d is { Kind: VB6ImportDiagnosticKind.MisplacedComponent, Severity: VB6ImportSeverity.Warning }));
         Assert.AreEqual(17, import.Diagnostics[0].Line);

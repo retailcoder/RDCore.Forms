@@ -141,14 +141,15 @@ public sealed class ListControlTests
         {
             VBClasses.CommandButton, VBClasses.TextBox, VBClasses.Label, VBClasses.Frame, VBClasses.CheckBox, VBClasses.OptionButton,
             VBClasses.ListBox, VBClasses.ComboBox, VBClasses.PictureBox, VBClasses.Image, VBClasses.Timer, VBClasses.HScrollBar,
-            VBClasses.VScrollBar, VBClasses.Shape, VBClasses.Line, VBClasses.Menu,
+            VBClasses.VScrollBar, VBClasses.Shape, VBClasses.Line, VBClasses.DriveListBox, VBClasses.DirListBox,
+            VBClasses.FileListBox, VBClasses.Menu,
         }.Select(type => VBControls.Create(new ComponentInstance(type, "x"))?.GetType().Name ?? "none").ToArray());
 
         Expect.Lines(new[]
         {
             "VBCommandButton", "VBTextBox", "VBLabel", "VBFrame", "VBCheckBox", "VBOptionButton",
             "VBListBox", "VBComboBox", "VBPictureBox", "VBImage", "VBTimer", "VBScrollBar",
-            "VBScrollBar", "VBShape", "VBLine", "none",
+            "VBScrollBar", "VBShape", "VBLine", "VBDriveListBox", "VBDirListBox", "VBFileListBox", "none",
         }, made);
     }
 

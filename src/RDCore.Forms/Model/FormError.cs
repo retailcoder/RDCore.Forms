@@ -43,6 +43,16 @@ public readonly record struct FormError(int Number, string Description)
     public static FormError FileNotFound => Standard(53);
 
     /// <summary>
+    /// Error 68, "Device unavailable".
+    /// </summary>
+    public static FormError DeviceUnavailable => Standard(68);
+
+    /// <summary>
+    /// Error 76, "Path not found".
+    /// </summary>
+    public static FormError PathNotFound => Standard(76);
+
+    /// <summary>
     /// Error 94, "Invalid use of Null".
     /// </summary>
     public static FormError InvalidUseOfNull => Standard(94);

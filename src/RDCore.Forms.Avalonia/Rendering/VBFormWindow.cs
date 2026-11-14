@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.IO.Abstractions;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -101,12 +102,28 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// <param name="form">The form.</param>
     /// <exception cref="ArgumentNullException"><paramref name="form"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The root of <paramref name="form"/> is not a <see cref="VBClasses.Form"/>.</exception>
+    /// <remarks>
+    /// Its file lists show the machine's file system, from the process's current directory.
+    /// </remarks>
     public VBFormWindow(FormDefinition form)
+        : this(form, new FileSystem())
+    {
+    }
+
+    /// <summary>
+    /// Creates a window that shows a form, with the file system its file lists show.
+    /// </summary>
+    /// <param name="form">The form.</param>
+    /// <param name="fileSystem">The file system the form's file lists show, from its current directory.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="form"/> or <paramref name="fileSystem"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The root of <paramref name="form"/> is not a <see cref="VBClasses.Form"/>.</exception>
+    public VBFormWindow(FormDefinition form, IFileSystem fileSystem)
     {
         ArgumentNullException.ThrowIfNull(form);
+        ArgumentNullException.ThrowIfNull(fileSystem);
         if (!ReferenceEquals(form.Root.Class, VBClasses.Form))
             throw new ArgumentException($"The form's root is a {form.Root.Class.TypeName}, not a VB.Form.", nameof(form));
-        View = new VBFormView(form);
+        View = new VBFormView(form, fileSystem);
         MenuBar = new VBMenuBar(form.Root);
         DockPanel.SetDock(MenuBar, Dock.Top);
         // A window of no pixels has no surface to draw: closing it fails as it renders a last frame. The window takes its content's size.
