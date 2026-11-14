@@ -332,8 +332,8 @@ public sealed class ComboStyleTests
         Assert.AreEqual($"{stored}/{drawn}", Of(Heights(twips / 15d, false, null)));
     }
 
-    // From code, a height of the edit box's or less is ignored, and the Height reads the pixels drawn: 1000 twips, 66.67 pixels, read
-    // 1005 after one.
+    // From code, a height of the edit box's or less is ignored, and the Height then reads the pixels drawn: 1000 twips, 66.67 pixels,
+    // read 1005 after an ignored height.
     [TestMethod]
     public void AHeightFromCode_IsSnappedAsTheFormsIs_AndOneOfTheEditBoxsOrLess_IsIgnored()
     {

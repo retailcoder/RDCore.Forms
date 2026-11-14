@@ -87,14 +87,14 @@ The height the combo is given is first rounded to whole pixels, 15 twips to a pi
 
 `Height` keeps the height given where it rounds to the pixels the combo takes, and reads those pixels otherwise: 1150 twips stay 1150, drawn as 77 pixels.
 
-MS Sans Serif's rows are VB6's at each of its sizes. Another font's rows are RDForms' own, not measured with VB6: the line as RDForms draws it, rounded up to a whole pixel.
+MS Sans Serif's rows are VB6's at each of its sizes. Another font's rows are RDForms' own: the line as RDForms draws it, rounded up to a whole pixel. VB6 takes them from the font's hinting, so they can differ from VB6's by a pixel or more.
 
 |Input|Raised|
 |---|---|
 |A press on an item|Click, and the edit box takes the item's text, selected. The item already selected is picked again, with another Click. There is no Change.|
 |A press below the items|The last item is picked, with Click.|
 |A double click on an item|One Click, then DblClick.|
-|A press on the list of a combo without the focus|The item is selected first: the control that loses the focus, then the combo's GotFocus, read its `ListIndex` and the `Text` from before. Then Click, with the item's text. The focus is left in the edit box.|
+|A press on the list of a combo without the focus|The item is selected first: the LostFocus of the control that loses the focus, then the combo's GotFocus, read the combo's new `ListIndex` and its `Text` from before the pick. Then Click, with the item's text. The focus is left in the edit box.|
 |Typing|Change. No item is selected.|
 |Up and Down|Click, as in the other styles.|
 |F4 and Alt+Down|Nothing: the list never drops, and there is no DropDown.|
