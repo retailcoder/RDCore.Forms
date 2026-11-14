@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
+using RDCore.SDK.Workspace.Pictures;
 
 namespace RDCore.Forms.Xaml;
 
@@ -77,7 +78,7 @@ internal static class FormXamlValues
     // A picture's file bytes, in base64. A text that would decode to more than a picture can hold is refused before it is decoded.
     public static byte[]? ParsePicture(string text)
     {
-        if ((long)text.Length * 3 / 4 > FormPictures.MaxBytes + 3)
+        if ((long)text.Length * 3 / 4 > PictureHeader.MaxBytes + 3)
             return null;
         var bytes = new byte[text.Length * 3 / 4 + 3];
         return Convert.TryFromBase64String(text, bytes, out var written) ? bytes[..written] : null;

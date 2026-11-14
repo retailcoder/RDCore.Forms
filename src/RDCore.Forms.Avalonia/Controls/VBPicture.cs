@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using RDCore.Forms.Model;
+using RDCore.SDK.Workspace.Pictures;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -14,7 +15,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </summary>
 /// <remarks>
 /// A picture is decoded only when <see cref="FormPictures.Inspect"/> accepts its header, so a decode allocates at most
-/// <see cref="FormPictures.MaxPixels"/> pixels. A picture the decoder then fails on is refused the same way. Metafiles are recognized
+/// <see cref="PictureHeader.MaxPixels"/> pixels. A picture the decoder then fails on is refused the same way. Metafiles are recognized
 /// and not drawn.
 /// </remarks>
 public static class VBPicture
@@ -40,7 +41,7 @@ public static class VBPicture
             error = refused;
             return null;
         }
-        if (!info.IsDrawn)
+        if (!info.HasPixelSize)
             return null;
         // A cursor is an icon with a hot spot: decoded as one.
         if (info.Format == PictureFormat.Cursor)
@@ -58,7 +59,7 @@ public static class VBPicture
         {
             // A header that passed with a body the decoder cannot read: the picture is invalid, and the form still opens.
         }
-        if (bitmap is not null && bitmap.PixelSize is { Width: > 0 and <= FormPictures.MaxSide, Height: > 0 and <= FormPictures.MaxSide })
+        if (bitmap is not null && bitmap.PixelSize is { Width: > 0 and <= PictureHeader.MaxSide, Height: > 0 and <= PictureHeader.MaxSide })
             return bitmap;
         bitmap?.Dispose();
         error = FormError.InvalidPicture;
