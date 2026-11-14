@@ -152,8 +152,12 @@ public sealed class ComponentInstance
     }
 
     /// <summary>
-    /// The value of <paramref name="property"/>: the value set, or the class's default.
+    /// The value of <paramref name="property"/>: the value set, the value made from the instance's other properties for a property
+    /// that has one (a TextBox's <c>SelText</c>), or the class's default.
     /// </summary>
+    /// <remarks>
+    /// It does not ask whether the instance has the property: see <see cref="TryGet"/>.
+    /// </remarks>
     /// <typeparam name="T">The property's value type.</typeparam>
     /// <param name="property">The property.</param>
     /// <returns>The property's value.</returns>
@@ -167,8 +171,12 @@ public sealed class ComponentInstance
     }
 
     /// <summary>
-    /// The value of <paramref name="property"/>, boxed: the value set, or the class's default.
+    /// The value of <paramref name="property"/>, boxed: the value set, the value made from the instance's other properties for a
+    /// property that has one, or the class's default.
     /// </summary>
+    /// <remarks>
+    /// It does not ask whether the instance has the property: see <see cref="TryGet"/>.
+    /// </remarks>
     /// <param name="property">The property.</param>
     /// <returns>The property's value.</returns>
     /// <exception cref="ArgumentException">The instance's class does not have <paramref name="property"/>.</exception>

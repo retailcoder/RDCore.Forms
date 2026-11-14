@@ -304,7 +304,8 @@ public static class VBProperties
 
     /// <summary>
     /// Where a TextBox's selection starts, or a ComboBox's in its edit box, or the caret's place where nothing is selected: 0 is before
-    /// the first character. It takes 0 to 65535, a value past the end of the text being its end, and setting it selects nothing.
+    /// the first character. It takes 0 to 65535, a value past the end of the text being its end, and refuses another value (380 for a
+    /// program). Setting it selects nothing.
     /// </summary>
     /// <remarks>
     /// Only a running program sets it. A ComboBox whose style is Dropdown List has no edit box, and none of its selection.
@@ -319,7 +320,7 @@ public static class VBProperties
 
     /// <summary>
     /// The number of characters selected from <see cref="SelStart"/>. It takes 0 to 65535, a value past the end of the text selecting
-    /// up to it.
+    /// up to it, and refuses another value (380 for a program).
     /// </summary>
     /// <remarks>
     /// Only a running program sets it, as <see cref="SelStart"/>.
