@@ -453,8 +453,9 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
         opened = true;
         resizedAt = SizeOfRoot();
         VBControl.Raise(View, VBEvents.Resize);
-        // The first Show raises each aligned box's Resize after the form's, the top and bottom ones first.
-        var docked = Aligned.Docked.Where(box => box.Get(P.Visible)).ToArray();
+        // The first Show raises each aligned box's Resize after the form's, the top and bottom ones first: each box whose class has VB's
+        // Resize. A placed UserControl's class has only the events its code declares, and the platform raises none of them, Resize included.
+        var docked = Aligned.Docked.Where(box => box.Get(P.Visible) && box.Class.Events.Any(e => ReferenceEquals(e, VBEvents.Resize))).ToArray();
         foreach (var box in docked.Where(box => box.Get(P.Align) is Align.Top or Align.Bottom)
                      .Concat(docked.Where(box => box.Get(P.Align) is Align.Left or Align.Right)))
         {

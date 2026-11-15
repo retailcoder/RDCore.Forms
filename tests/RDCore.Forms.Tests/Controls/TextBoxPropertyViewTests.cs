@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
+using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 using P = RDCore.Forms.Model.VB.VBProperties;
@@ -169,5 +170,44 @@ public sealed class TextBoxPropertyViewTests
         Assert.AreEqual('*', masked);
         Assert.AreEqual("ab", text);
         Assert.AreEqual('\0', cleared);
+    }
+
+    // A multi-line box takes Enter, and not Tab: Tab moves the focus on through the form's order and types nothing.
+    [TestMethod]
+    public void TabInAMultiLineBox_MovesTheFocus_AndTypesNothing()
+    {
+        var (text, focused, other) = UI.Run(() =>
+        {
+            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+            ComponentInstance Add(string name, double top)
+            {
+                var box = new ComponentInstance(VBClasses.TextBox, name).Set(P.Left, 8d).Set(P.Top, top).Set(P.Width, 160d).Set(P.Height, 33d);
+                box.SetContainer(root);
+                return box;
+            }
+            var text1 = Add("Text1", 8).Set(P.MultiLine, true).Set(P.Height, 60d);
+            Add("Text2", 96);
+            var text3 = Add("Text3", 160);
+            var window = new VBFormWindow(new FormDefinition(root));
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.View.ControlOf(text1)!.Focus();
+            window.KeyTextInput("x");
+            var names = new List<string>();
+            for (var i = 0; i < 2; i++)
+            {
+                window.KeyPress(Key.Tab, RawInputModifiers.None, PhysicalKey.Tab, null);
+                window.KeyRelease(Key.Tab, RawInputModifiers.None, PhysicalKey.Tab, null);
+                Dispatcher.UIThread.RunJobs();
+                names.Add(VBControl.GetInstance((Control)window.FocusManager!.GetFocusedElement()!)!.Name);
+            }
+            window.KeyTextInput("y");
+            window.Close();
+            return (text1.Get(P.Text), names, text3.Get(P.Text));
+        });
+
+        Assert.AreEqual("x", text);
+        Expect.Lines(new[] { "Text2", "Text3" }, focused);
+        Assert.AreEqual("y", other);
     }
 }

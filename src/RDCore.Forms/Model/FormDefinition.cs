@@ -87,6 +87,35 @@ public sealed class FormDefinition
     public bool IsAddedAtRunTime(ComponentInstance component) => added.Contains(component);
 
     /// <summary>
+    /// Makes a copy of the form, which has components of its own: each one a copy of one of this form's, with its class, name, index,
+    /// the values set on it and what it keeps as text, in the same container at the same place. A copy of a control added at run
+    /// time is one the copy added at run time. The copy declares the same control libraries.
+    /// </summary>
+    /// <returns>The copy. A change to it, or to one of its components, leaves this form as it is, and the other way round.</returns>
+    /// <remarks>
+    /// Each UserControl a form places has a copy of its UserControl's definition, so that its controls are its own.
+    /// </remarks>
+    public FormDefinition Copy()
+    {
+        var copies = new Dictionary<ComponentInstance, ComponentInstance>(ReferenceEqualityComparer.Instance);
+        foreach (var component in Components)
+        {
+            var copy = new ComponentInstance(component.Class, component.Name, component.Index);
+            foreach (var (property, value) in component.SetValues)
+                copy.TryRead(property, value);
+            copy.UnmodelledProperties.AddRange(component.UnmodelledProperties);
+            copy.UnmodelledContents.AddRange(component.UnmodelledContents);
+            if (component.Container is { } container)
+                copy.SetContainer(copies[container]);
+            copies.Add(component, copy);
+        }
+        var form = new FormDefinition(copies[Root]);
+        form.ControlLibraries.AddRange(ControlLibraries);
+        form.added.AddRange(added.Select(control => copies[control]));
+        return form;
+    }
+
+    /// <summary>
     /// Adds a control of a VB class to the form, as a program's <c>Controls.Add</c> does: the class named by its ProgID, such as
     /// <c>VB.CommandButton</c>, without regard to case.
     /// </summary>

@@ -10,7 +10,7 @@ using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
-using P =RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.VB.VBProperties;
 
 namespace RDCore.Forms.Avalonia.Rendering;
 
@@ -207,8 +207,11 @@ public sealed class VBFormView : Canvas
             // The root's own place is on the screen, and its Visible whether its window is shown.
             case nameof(P.Left) or nameof(P.Top) or nameof(P.Visible):
                 break;
-            case nameof(P.BackColor):
-                Background = ComponentBinding.Brush(e.After);
+            // A UserControl whose BackStyle is Transparent shows what is behind it, as VB6 shows a windowed one's container.
+            case nameof(P.BackColor) or nameof(P.BackStyle):
+                Background = Form.Root.Class.Has(P.BackStyle) && Form.Root.Get(P.BackStyle) == BackStyle.Transparent
+                    ? null
+                    : ComponentBinding.Brush(Form.Root.Get(P.BackColor));
                 break;
             case nameof(P.Picture):
                 if (picture.Take((byte[]?)e.After))
@@ -240,7 +243,9 @@ public sealed class VBFormView : Canvas
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Handled || e.Key != Key.Tab || e.KeyModifiers is not (KeyModifiers.None or KeyModifiers.Shift))
+        // A placed UserControl's view leaves Tab to the form it is on.
+        if (e.Handled || e.Key != Key.Tab || e.KeyModifiers is not (KeyModifiers.None or KeyModifiers.Shift)
+            || this.FindAncestorOfType<VBFormView>() is not null)
             return;
         var order = TabOrderOf().Select(c => controls[c]).ToList();
         var forward = e.KeyModifiers == KeyModifiers.None;

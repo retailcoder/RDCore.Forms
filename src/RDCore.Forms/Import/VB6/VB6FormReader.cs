@@ -56,7 +56,10 @@ public static partial class VB6FormReader
     /// The companion binary file's bytes, read for every property that cites a companion record, or <see langword="null"/> when there
     /// is none. A property citing one is then kept as text.
     /// </param>
-    /// <param name="options">How strings in the companion are decoded; <see langword="null"/> for <see cref="VB6ImportOptions.Default"/>.</param>
+    /// <param name="options">
+    /// How strings in the companion are decoded, and the project's own classes; <see langword="null"/> for
+    /// <see cref="VB6ImportOptions.Default"/>.
+    /// </param>
     /// <returns>The form, the module text, and what the import reports.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="designerFile"/> is <see langword="null"/>.</exception>
     public static VB6FormImport Read(string designerFile, byte[]? companion = null, VB6ImportOptions? options = null)
@@ -65,7 +68,7 @@ public static partial class VB6FormReader
         options ??= VB6ImportOptions.Default;
 
         var read = companion is null ? null : new Companion(companion, options.Encoding);
-        return Read(designerFile, cited => (read, cited));
+        return Read(designerFile, options, cited => (read, cited));
     }
 
     /// <summary>
@@ -76,7 +79,8 @@ public static partial class VB6FormReader
     /// </summary>
     /// <param name="path">The designer file's path.</param>
     /// <param name="options">
-    /// How the designer file and the strings in its companions are decoded; <see langword="null"/> for <see cref="VB6ImportOptions.Default"/>.
+    /// How the designer file and the strings in its companions are decoded, and the project's own classes; <see langword="null"/> for
+    /// <see cref="VB6ImportOptions.Default"/>.
     /// </param>
     /// <returns>The form, the module text, and what the import reports.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
@@ -94,7 +98,7 @@ public static partial class VB6FormReader
         var folder = Path.GetDirectoryName(fullPath) ?? "";
         var text = options.Encoding.GetString(File.ReadAllBytes(fullPath));
         var companions = new Dictionary<string, (Companion?, string)>(StringComparer.OrdinalIgnoreCase);
-        return Read(text, cited =>
+        return Read(text, options, cited =>
         {
             if (!companions.TryGetValue(cited, out var found))
             {
@@ -107,11 +111,12 @@ public static partial class VB6FormReader
         });
     }
 
-    private static VB6FormImport Read(string designerFile, Func<string, (Companion? Companion, string LookedFor)> companions)
+    private static VB6FormImport Read(string designerFile, VB6ImportOptions options,
+        Func<string, (Companion? Companion, string LookedFor)> companions)
     {
         var diagnostics = new DiagnosticBag();
         var file = DesignerFile.Parse(designerFile, diagnostics);
-        var importer = new Importer(diagnostics, companions);
+        var importer = new Importer(diagnostics, companions, options.Classes);
         var form = file.Root is null ? null : importer.Import(file, file.Root);
         return new VB6FormImport(form, importer.UnmodelledRoot, importer.UnmodelledHeader, file.ModuleText, file.ModuleLine, diagnostics.Items);
     }
@@ -147,7 +152,8 @@ public static partial class VB6FormReader
     [GeneratedRegex("""^"\{(?<id>[0-9A-Fa-f-]{36})\}#(?<version>[^#"]*)#[^"]*"\s*;\s*"(?<file>[^"]*)"$""")]
     private static partial Regex LibraryReference();
 
-    private sealed class Importer(DiagnosticBag diagnostics, Func<string, (Companion? Companion, string LookedFor)> companions)
+    private sealed class Importer(DiagnosticBag diagnostics, Func<string, (Companion? Companion, string LookedFor)> companions,
+        IReadOnlyList<ComponentClass> projectClasses)
     {
         private static readonly Dictionary<string, PropertyDefinition> ClientRectangle = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -230,7 +236,8 @@ public static partial class VB6FormReader
                     continue;
                 }
 
-                var componentClass = VBClasses.ByTypeName(child.TypeName);
+                var componentClass = VBClasses.ByTypeName(child.TypeName)
+                    ?? projectClasses.FirstOrDefault(c => c.TypeName.Equals(child.TypeName, StringComparison.OrdinalIgnoreCase));
                 if (componentClass is null or { Kind: ComponentKind.Root })
                 {
                     diagnostics.Add(VB6ImportDiagnosticKind.UnmodelledClass, child.Line, child.TypeName, child.Name);
@@ -565,7 +572,7 @@ public static partial class VB6FormReader
 }
 
 /// <summary>
-/// How a <see cref="VB6FormReader"/> decodes the text it reads.
+/// How a <see cref="VB6FormReader"/> decodes the text it reads, and the classes it knows beyond VB6's own.
 /// </summary>
 public sealed class VB6ImportOptions
 {
@@ -579,6 +586,13 @@ public sealed class VB6ImportOptions
     /// with: the ANSI code page of the system that wrote them.
     /// </summary>
     public Encoding Encoding { get; init; } = CodePagesEncodingProvider.Instance.GetEncoding(1252)!;
+
+    /// <summary>
+    /// The classes of the project's own controls, such as the ones <see cref="UserControlClasses.Of"/> makes for its UserControls. A
+    /// placed component whose type name, compared without regard to case, is none of <see cref="VBClasses"/> is read as an instance of
+    /// the first of these with that name; one that is none of these either is kept as text. None by default.
+    /// </summary>
+    public IReadOnlyList<ComponentClass> Classes { get; init; } = [];
 }
 
 /// <summary>

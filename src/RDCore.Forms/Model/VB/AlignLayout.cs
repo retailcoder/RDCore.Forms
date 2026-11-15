@@ -9,6 +9,10 @@ namespace RDCore.Forms.Model.VB;
 /// </summary>
 /// <remarks>
 /// <para>
+/// A Data control and a placed UserControl that is <c>Alignable</c> are docked as a box is: a box here is any control whose class has
+/// <c>Align</c> and a place of its own.
+/// </para>
+/// <para>
 /// The boxes docked to the top and the bottom are laid out first, each across the form's whole width, then those docked to the left
 /// and the right, each in the height the others leave. Each edge's boxes go from the edge inwards in the order of
 /// <see cref="Docked"/>, and each takes its own height (or width) in whole pixels. A hidden box keeps its place and takes no room. A
@@ -172,7 +176,10 @@ public sealed class AlignLayout
         _ => value,
     };
 
-    private static bool IsBox(ComponentInstance component) => ReferenceEquals(component.Class, VBClasses.PictureBox);
+    // A control whose class has Align and a place of its own: a PictureBox, a Data control, or a placed UserControl that is Alignable
+    // and not InvisibleAtRuntime.
+    private static bool IsBox(ComponentInstance component) =>
+        component.Class is { Kind: ComponentKind.Control, HasExtent: true } type && type.Has(P.Align);
 
     private static bool IsDocked(ComponentInstance component) =>
         IsBox(component) && component.Container is { Class.Kind: ComponentKind.Root } && component.Get(P.Align) != Align.None;

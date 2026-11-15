@@ -25,6 +25,10 @@ A font keeps the size it reads back, and a font given another name is drawn from
 
 Past 160 pixels, a bitmap font is drawn at whole pixels. That is RDForms' own.
 
+## A font never named
+
+A `StdFont` a program makes and never names reads `MS Sans Serif` and is drawn in a scalable face, at whole pixels as a TrueType font is, except that a size of 2 pixels is drawn at 3 (2.25 points). [`FormFont.IsNamed`](../api/RDCore.Forms.Model.FormFont.yml) is False for it. It is drawn in the sans serif RDForms draws for a family that is not installed, with that face's line and column, never MS Sans Serif's. A font from a form's file is named.
+
 ## MS Sans Serif's line and column
 
 MS Sans Serif's line height and [`Print`](drawing.md) column are VB6's at each size it is drawn at. An italic face's column is RDForms' own: the regular face's. Past 160 pixels, and for another font, they are RDForms' own, as [Drawing](drawing.md) describes.

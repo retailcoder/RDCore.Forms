@@ -120,13 +120,15 @@ public sealed class ComponentClassTests
         Assert.AreEqual(BackStyle.Transparent, VBClasses.Shape.DefaultOf(VBProperties.BackStyle));
     }
 
-    // VB6 gives the three buttons a MaskColor of silver and UseMaskColor False; the model gives them to no other class.
+    // VB6 gives the three buttons a MaskColor of silver and UseMaskColor False, and a UserControl a MaskColor of the button face and no
+    // UseMaskColor; the model gives them to no other class.
     [TestMethod]
-    public void TheCatalog_GivesTheButtonsAMaskColor_SilverAndNotUsed()
+    public void TheCatalog_GivesTheButtonsAMaskColor_SilverAndNotUsed_AndAUserControlTheButtonFace()
     {
         var buttons = new[] { VBClasses.CommandButton, VBClasses.CheckBox, VBClasses.OptionButton };
 
-        CollectionAssert.AreEquivalent(buttons, VBClasses.All.Where(c => c.Has(VBProperties.MaskColor)).ToArray());
+        CollectionAssert.AreEquivalent(buttons.Append(VBClasses.UserControl).ToArray(), VBClasses.All.Where(c => c.Has(VBProperties.MaskColor)).ToArray());
+        Assert.AreEqual(FormColor.FromSystem(SystemColor.ButtonFace), VBClasses.UserControl.DefaultOf(VBProperties.MaskColor));
         CollectionAssert.AreEquivalent(buttons, VBClasses.All.Where(c => c.Has(VBProperties.UseMaskColor)).ToArray());
         Assert.IsTrue(buttons.All(c => c.DefaultOf(VBProperties.MaskColor) == FormColor.FromRgb(0xC0, 0xC0, 0xC0) && !c.DefaultOf(VBProperties.UseMaskColor)));
     }

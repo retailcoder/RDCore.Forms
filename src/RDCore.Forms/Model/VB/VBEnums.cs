@@ -114,7 +114,7 @@ public enum StartUpPosition
 }
 
 /// <summary>
-/// Which edge of its form a VB PictureBox is docked to: its <c>Align</c>.
+/// Which edge of its form a VB PictureBox, Data control or <c>Alignable</c> UserControl is docked to: its <c>Align</c>.
 /// </summary>
 public enum Align
 {
@@ -352,6 +352,141 @@ public enum ButtonStyle
     /// drawn pushed in while it is checked or selected.
     /// </summary>
     Graphical = 1,
+}
+
+/// <summary>
+/// How a control is dragged: its <c>DragMode</c>, as VB6 names its values.
+/// </summary>
+public enum DragMode
+{
+    /// <summary>
+    /// 0, <c>vbManual</c>.
+    /// </summary>
+    Manual = 0,
+    /// <summary>
+    /// 1, <c>vbAutomatic</c>.
+    /// </summary>
+    Automatic = 1,
+}
+
+/// <summary>
+/// A UserControl's <c>ClipBehavior</c>, as VB6's Properties window names its values. The model keeps it, and RDForms acts on none
+/// of them.
+/// </summary>
+public enum ClipBehavior
+{
+    /// <summary>
+    /// 0, None.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// 1, Use Region: a new UserControl's.
+    /// </summary>
+    UseRegion = 1,
+}
+
+/// <summary>
+/// A UserControl's <c>HitBehavior</c>, as VB6's Properties window names its values. The model keeps it, and RDForms acts on none
+/// of them.
+/// </summary>
+public enum HitBehavior
+{
+    /// <summary>
+    /// 0, None.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// 1, Use Region: a new UserControl's.
+    /// </summary>
+    UseRegion = 1,
+    /// <summary>
+    /// 2, Use Paint.
+    /// </summary>
+    UsePaint = 2,
+}
+
+/// <summary>
+/// A UserControl's <c>DataBindingBehavior</c>, as VB6's Properties window names its values. The model keeps it, and RDForms acts
+/// on none of them.
+/// </summary>
+public enum DataBindingBehavior
+{
+    /// <summary>
+    /// 0, <c>vbNone</c>: a new UserControl's.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// 1, <c>vbSimpleBound</c>.
+    /// </summary>
+    SimpleBound = 1,
+    /// <summary>
+    /// 2, <c>vbComplexBound</c>.
+    /// </summary>
+    ComplexBound = 2,
+}
+
+/// <summary>
+/// A UserControl's <c>DataSourceBehavior</c>, as VB6's Properties window names its values. The model keeps it, and RDForms acts on
+/// none of them.
+/// </summary>
+public enum DataSourceBehavior
+{
+    /// <summary>
+    /// 0, <c>vbNone</c>: a new UserControl's.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// 1, <c>vbDataSource</c>.
+    /// </summary>
+    DataSource = 1,
+}
+
+/// <summary>
+/// A UserControl's or a PropertyPage's <c>PaletteMode</c>, as VB6's Properties window names its values. The model keeps it, and
+/// RDForms acts on none of them.
+/// </summary>
+public enum PaletteMode
+{
+    /// <summary>
+    /// 0, Halftone: a new PropertyPage's.
+    /// </summary>
+    Halftone = 0,
+    /// <summary>
+    /// 1, Use Z Order.
+    /// </summary>
+    UseZOrder = 1,
+    /// <summary>
+    /// 2, Custom.
+    /// </summary>
+    Custom = 2,
+    /// <summary>
+    /// 3, Container: a new UserControl's.
+    /// </summary>
+    Container = 3,
+    /// <summary>
+    /// 4, None.
+    /// </summary>
+    None = 4,
+    /// <summary>
+    /// 5, Object.
+    /// </summary>
+    Object = 5,
+}
+
+/// <summary>
+/// A component's <c>OLEDropMode</c>, as VB6's Properties window names its values. The model keeps it, and RDForms acts on none of
+/// them.
+/// </summary>
+public enum OLEDropMode
+{
+    /// <summary>
+    /// 0, None: a new UserControl's.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// 1, Manual.
+    /// </summary>
+    Manual = 1,
 }
 
 /// <summary>

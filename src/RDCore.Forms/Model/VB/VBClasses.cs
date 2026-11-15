@@ -73,15 +73,24 @@ public static class VBClasses
         defaultMember: DefaultMembers["VB.MDIForm"]);
 
     /// <summary>
-    /// <c>VB.UserControl</c>: a UserControl's designer root.
+    /// <c>VB.UserControl</c>: a UserControl's designer root, with the properties VB6's Properties window lists for it and their
+    /// defaults. It is opaque, its <c>MaskColor</c> is the button face's colour, and its palette is its container's. A placed
+    /// UserControl is an instance of the class <see cref="UserControlClasses.Of"/> makes from its designer file.
     /// </summary>
     public static readonly ComponentClass UserControl = Root("VB.UserControl", "UserControl",
-        [P.BackColor, P.Enabled, P.Font, P.ForeColor, P.KeyPreview],
+        [P.AccessKeys, P.Alignable, P.Appearance, P.AutoRedraw, P.BackColor, P.BackStyle, P.BorderStyle, P.CanGetFocus, P.ClipBehavior,
+         P.ClipControls, P.ControlContainer, P.DataBindingBehavior, P.DataSourceBehavior, P.DefaultCancel, P.DrawMode, P.DrawStyle,
+         P.DrawWidth, P.EditAtDesignTime, P.Enabled, P.FillColor, P.FillStyle, P.Font, P.FontTransparent, P.ForeColor, P.ForwardFocus, P.HasDC,
+         P.HitBehavior,
+         P.InvisibleAtRuntime, P.KeyPreview, P.MaskColor, P.MaskPicture, P.MouseIcon, P.MousePointer, P.OLEDropMode, P.Palette,
+         P.PaletteMode, P.Picture, P.Public, P.RightToLeft, P.ToolboxBitmap, P.Windowless],
         [AccessKeyPress, AmbientChanged, AsyncReadComplete, AsyncReadProgress, Click, DblClick, DragDrop, DragOver, EnterFocus, ExitFocus,
          GetDataMember, GotFocus, Hide, HitTest, Initialize, InitProperties, KeyDown, KeyPress, KeyUp, LostFocus, MouseDown, MouseMove,
          MouseUp, OLECompleteDrag, OLEDragDrop, OLEDragOver, OLEGiveFeedback, OLESetData, OLEStartDrag, Paint, ReadProperties, Resize,
          Show, Terminate, WriteProperties],
-        [M.Refresh]);
+        [M.Refresh],
+        Defaults((P.BackStyle, BackStyle.Opaque), (P.MaskColor, FormColor.FromSystem(SystemColor.ButtonFace)),
+            (P.PaletteMode, PaletteMode.Container)));
 
     /// <summary>
     /// <c>VB.PropertyPage</c>: a PropertyPage's designer root.
@@ -291,9 +300,9 @@ public static class VBClasses
     private static PropertyDefinition[] ScaleProperties => [P.ScaleMode, P.ScaleLeft, P.ScaleTop, P.ScaleWidth, P.ScaleHeight];
 
     private static ComponentClass Root(string typeName, string defaultName, PropertyDefinition[] properties, EventDefinition[] events,
-        MethodDefinition[] methods) =>
+        MethodDefinition[] methods, IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null) =>
         new(typeName, defaultName, ComponentKind.Root, [.. properties, P.Left, P.Top, P.Width, P.Height, .. ScaleProperties, P.Tag], events,
-            isContainer: true, methods: methods, defaultMember: DefaultMembers.GetValueOrDefault(typeName));
+            defaults, isContainer: true, methods: methods, defaultMember: DefaultMembers.GetValueOrDefault(typeName));
 
     // A control that takes the mouse also has the ContextMenu of RD-VBA. One that can take the focus has SetFocus. A class's own
     // methods follow the ones every control has.
