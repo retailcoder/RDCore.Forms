@@ -73,7 +73,8 @@ internal static class FormXamlWriter
         }
     }
 
-    // The name, the index, and each property set that is written as text, in the order of the class's properties.
+    // The name, the index, and each property set that is written as text, in the order of the class's properties. A property only a
+    // running program sets is not the form's.
     private static void WriteAttributes(XmlWriter writer, ComponentInstance component)
     {
         writer.WriteAttributeString("Name", component.Name);
@@ -81,7 +82,7 @@ internal static class FormXamlWriter
             writer.WriteAttributeString("Index", index.ToString(CultureInfo.InvariantCulture));
         foreach (var property in component.Class.Properties)
         {
-            if (component.IsSet(property) && FormXamlValues.Format(component.GetBoxed(property)) is { } text)
+            if (!property.RunTimeOnly && component.IsSet(property) && FormXamlValues.Format(component.GetBoxed(property)) is { } text)
                 writer.WriteAttributeString(property.Name, text);
         }
     }

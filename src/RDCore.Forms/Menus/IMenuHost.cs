@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using RDCore.Forms.Model;
 
 namespace RDCore.Forms.Menus;
@@ -49,6 +50,8 @@ public interface IMenuHost
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="menu"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="menu"/> is not one of the form's menus.</exception>
+    [SuppressMessage("Usage", "VSTHRD200:Use \"Async\" suffix for async methods",
+        Justification = "VB's PopupMenu method, by its own name; hosts implement it as it is.")]
     Task PopupMenu(FormMenuItem menu, double? x = null, double? y = null, PopupMenuAlignment alignment = PopupMenuAlignment.Left,
         FormMenuItem? boldItem = null);
 }

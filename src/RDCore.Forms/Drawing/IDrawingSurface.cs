@@ -11,7 +11,7 @@ namespace RDCore.Forms.Drawing;
 /// Coordinates are in the component's scale, its <c>ScaleMode</c> with its <c>ScaleLeft</c> and <c>ScaleTop</c>, as
 /// <see cref="DrawingScale"/> converts them. A colour that is <see langword="null"/> is the component's <c>ForeColor</c>. Lines are
 /// drawn <c>DrawWidth</c> pixels wide in its <c>DrawStyle</c>, and figures are filled with its <c>FillColor</c> in its
-/// <c>FillStyle</c>.
+/// <c>FillStyle</c>. Its <c>DrawMode</c> combines each pixel of a point, a line and a fill with the pixel under it.
 /// </para>
 /// <para>
 /// What is drawn is kept, and shows under the component's controls. Each drawing statement moves <see cref="CurrentX"/> and
@@ -26,12 +26,14 @@ public interface IDrawingSurface
     ComponentInstance Component { get; }
 
     /// <summary>
-    /// The horizontal position the next drawing starts from, in the component's scale. A new surface starts at 0.
+    /// The horizontal position the next drawing starts from, in the component's scale. The point is kept in whole twips from the
+    /// inside's top left corner: a value set is rounded to the nearest twip, and a change of scale keeps the point where it is. A new
+    /// surface starts at the corner.
     /// </summary>
     double CurrentX { get; set; }
 
     /// <summary>
-    /// The vertical position the next drawing starts from, in the component's scale. A new surface starts at 0.
+    /// The vertical position the next drawing starts from, in the component's scale, kept as <see cref="CurrentX"/> is.
     /// </summary>
     double CurrentY { get; set; }
 
@@ -100,8 +102,46 @@ public interface IDrawingSurface
     /// <param name="x">The point's horizontal coordinate, in the component's scale.</param>
     /// <param name="y">The point's vertical coordinate, in the component's scale.</param>
     /// <returns>
-    /// The RGB colour drawn there, or the component's <c>BackColor</c> where nothing is, as a VB colour (red in the low byte); -1 where
-    /// the point is outside the component's inside.
+    /// The RGB colour drawn there, or else the pixel of the component's <c>Picture</c> there, or else its <c>BackColor</c>, as a VB
+    /// colour (red in the low byte); -1 where the point is outside the component's inside.
     /// </returns>
     int Point(double x, double y);
+
+    /// <summary>
+    /// Prints an output list at the current point: VB's <c>Print</c> method.
+    /// </summary>
+    /// <param name="items">The items, in order. An empty list prints nothing.</param>
+    /// <param name="endsLine">
+    /// Whether the list ends the line, as one with no <c>;</c> or <c>,</c> at its end does: <see cref="CurrentX"/> then goes to the
+    /// scale's 0 and <see cref="CurrentY"/> down a line. A list that ends with a comma ends with a <see cref="PrintItem.Tab"/> instead.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// The text is drawn in the component's <c>Font</c> and <c>ForeColor</c>, its top left corner at the current point, on the
+    /// pixel nearest it. <c>FontTransparent</c> False fills each line's cell with the <c>BackColor</c> first. <c>DrawMode</c> does not
+    /// apply to text.
+    /// </para>
+    /// <para>
+    /// A column is the font's average character width, and a print zone 14 columns. Columns and zones count from the scale's 0, and
+    /// a position is moved to the pixel nearest it. A text item moves <see cref="CurrentX"/> to its end and
+    /// <see cref="CurrentY"/> to the pixel it is drawn on. <see cref="PrintItem.Spc"/> moves on its columns, to the column boundary
+    /// at or after that. <see cref="PrintItem.Tab"/> with a column moves to the column's start, or to its start on the next line
+    /// where the current point is past it; with none, it moves to the next zone boundary past the current point.
+    /// </para>
+    /// </remarks>
+    void Print(IReadOnlyList<PrintItem> items, bool endsLine = true);
+
+    /// <summary>
+    /// The width of a text in the component's <c>Font</c>: VB's <c>TextWidth</c> method.
+    /// </summary>
+    /// <param name="text">The text. A carriage return, a line feed, or both together start a new line.</param>
+    /// <returns>The width of its longest line, in the component's horizontal units; 0 for an empty text.</returns>
+    double TextWidth(string text);
+
+    /// <summary>
+    /// The height of a text in the component's <c>Font</c>: VB's <c>TextHeight</c> method.
+    /// </summary>
+    /// <param name="text">The text. A carriage return, a line feed, or both together start a new line.</param>
+    /// <returns>Its lines times the font's line height, in the component's vertical units; one line for an empty text.</returns>
+    double TextHeight(string text);
 }

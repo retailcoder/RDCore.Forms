@@ -5,7 +5,7 @@ Aucun paquet n'est publié : un projet utilise donc RDCore.Forms à partir de se
 
 ## Compiler
 
-À partir de la racine du [référentiel](https://github.com/rubberduck-vba/RDCore.Forms), avec le SDK .NET 10 :
+À partir de la racine du [référentiel](https://github.com/rubberduck-vba/RDCore.Forms), avec le SDK .NET 11 :
 
 ```
 dotnet build RDCore.Forms.slnx

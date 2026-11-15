@@ -74,9 +74,10 @@ public sealed class VBPictureBox : Control, IVBContainer, IRaisesKeyEvents
         this.instance = instance;
         VisualChildren.Add(edge);
         LogicalChildren.Add(edge);
-        ComponentBinding.Bind(this, instance, VBClasses.PictureBox, Apply);
-        // What its drawing statements draw is over its picture and under the controls it holds.
+        // What its drawing statements draw is over its picture and under the controls it holds. The layer is made first: it reads the
+        // picture the binding decodes.
         Drawing = new VBDrawingLayer(instance);
+        ComponentBinding.Bind(this, instance, VBClasses.PictureBox, Apply);
         edge.Child = new Panel { Children = { layer, Drawing, ChildHost } };
     }
 
@@ -134,6 +135,7 @@ public sealed class VBPictureBox : Control, IVBContainer, IRaisesKeyEvents
                 if (picture.Take((byte[]?)e.After))
                 {
                     layer.Picture = picture.Picture;
+                    Drawing.Picture = picture.Picture;
                     FitToPicture();
                 }
                 break;

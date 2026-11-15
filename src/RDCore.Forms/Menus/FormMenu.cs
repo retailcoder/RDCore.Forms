@@ -16,6 +16,8 @@ namespace RDCore.Forms.Menus;
 public sealed class FormMenu
 {
     private static readonly ConditionalWeakTable<ComponentInstance, FormMenu> menus = new();
+    private readonly Dictionary<string, FormMenuArray> arrays = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<ComponentInstance> loaded = [];
 
     private FormMenu(ComponentInstance root) => Root = root;
 
@@ -54,6 +56,81 @@ public sealed class FormMenu
     /// Every item of the form, each menu before its own items.
     /// </summary>
     public IEnumerable<FormMenuItem> AllItems => Items.SelectMany(item => item.WithAllItems());
+
+    /// <summary>
+    /// The form's menu arrays: one for each name its indexed items have, in the order of their first item.
+    /// </summary>
+    public IReadOnlyList<FormMenuArray> Arrays =>
+        [.. AllItems.Where(item => item.Index is not null).Select(item => item.Component.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase).Select(name => ArrayOf(name)!)];
+
+    /// <summary>
+    /// Raised after <see cref="FormMenuArray.Load"/> places an element in its menu, or on the bar.
+    /// </summary>
+    public event EventHandler<FormMenuItemEventArgs>? ItemLoaded;
+
+    /// <summary>
+    /// Raised after <see cref="FormMenuArray.Unload"/> takes an element out of its menu, or off the bar.
+    /// </summary>
+    public event EventHandler<FormMenuItemEventArgs>? ItemUnloaded;
+
+    /// <summary>
+    /// The menu array whose items have a name, compared without regard to case.
+    /// </summary>
+    /// <param name="name">The array's name.</param>
+    /// <returns>The array, the same object each time for the same name; <see langword="null"/> where no item of that name has an index.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    public FormMenuArray? ArrayOf(string name)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        if (!AllItems.Any(item => item.Index is not null && string.Equals(item.Component.Name, name, StringComparison.OrdinalIgnoreCase)))
+            return null;
+        if (!arrays.TryGetValue(name, out var array))
+            arrays.Add(name, array = new FormMenuArray(this, name));
+        return array;
+    }
+
+    /// <summary>
+    /// Whether an item is an element a program loaded with <see cref="FormMenuArray.Load"/>, and has not unloaded.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <returns><see langword="true"/> for an element loaded at run time; <see langword="false"/> for one of the form's file.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="item"/> is <see langword="null"/>.</exception>
+    public bool IsLoadedAtRunTime(FormMenuItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        return loaded.Contains(item.Component);
+    }
+
+    internal void Loaded(FormMenuItem item, ComponentInstance container)
+    {
+        loaded.Add(item.Component);
+        ItemLoaded?.Invoke(this, new FormMenuItemEventArgs(item, container));
+    }
+
+    internal void Unloaded(FormMenuItem item, ComponentInstance container)
+    {
+        loaded.Remove(item.Component);
+        ItemUnloaded?.Invoke(this, new FormMenuItemEventArgs(item, container));
+    }
+}
+
+/// <summary>
+/// The data of <see cref="FormMenu.ItemLoaded"/> and <see cref="FormMenu.ItemUnloaded"/>.
+/// </summary>
+/// <param name="item">The element loaded or unloaded.</param>
+/// <param name="container">The menu component it was placed in or taken out of, or the form's root for the menu bar.</param>
+public sealed class FormMenuItemEventArgs(FormMenuItem item, ComponentInstance container) : EventArgs
+{
+    /// <summary>
+    /// The element loaded or unloaded.
+    /// </summary>
+    public FormMenuItem Item { get; } = item;
+
+    /// <summary>
+    /// The menu component the element was placed in or taken out of, or the form's root for the menu bar.
+    /// </summary>
+    public ComponentInstance Container { get; } = container;
 }
 
 /// <summary>
@@ -114,6 +191,56 @@ public sealed class FormMenuItem
     /// Whether the item is a separator: its <see cref="Caption"/> is a hyphen.
     /// </summary>
     public bool IsSeparator => Caption == "-";
+
+    /// <summary>
+    /// The item's index in its menu array, or <see langword="null"/> for an item that is not an element of one.
+    /// </summary>
+    public int? Index => Component.Index;
+
+    /// <summary>
+    /// The menu array the item is an element of, or <see langword="null"/> for an item that is not an element of one, or that is
+    /// unloaded.
+    /// </summary>
+    public FormMenuArray? Array => Index is not null && RootOf(Component) is { } root ? FormMenu.Of(root).ArrayOf(Component.Name) : null;
+
+    /// <summary>
+    /// Loads the item, as a program's <c>Load</c> statement does with it.
+    /// </summary>
+    /// <exception cref="FormErrorException">
+    /// Always. An element of a menu array is loaded already: 360, Object already loaded; one that is unloaded is not one of the array's:
+    /// 340. An item that is not an element of an array cannot be loaded: 361, Can't load or unload this object. A program loads an
+    /// element with <see cref="FormMenuArray.Load"/>.
+    /// </exception>
+    public void Load()
+    {
+        if (Index is not { } index)
+            throw new FormErrorException(FormError.CantLoadOrUnloadThisObject);
+        throw new FormErrorException(Array is null ? FormError.ControlArrayElementDoesntExist(index) : FormError.ObjectAlreadyLoaded);
+    }
+
+    /// <summary>
+    /// Unloads the item, as a program's <c>Unload</c> statement does with it: <see cref="FormMenuArray.Unload"/> for an element of a
+    /// menu array.
+    /// </summary>
+    /// <exception cref="FormErrorException">
+    /// The item is not an element of an array: 361, Can't load or unload this object. It is unloaded already: 340. Otherwise as
+    /// <see cref="FormMenuArray.Unload"/>.
+    /// </exception>
+    public void Unload()
+    {
+        if (Index is not { } index)
+            throw new FormErrorException(FormError.CantLoadOrUnloadThisObject);
+        (Array ?? throw new FormErrorException(FormError.ControlArrayElementDoesntExist(index))).Unload(index);
+    }
+
+    /// <summary>
+    /// The context number of the item's help topic. A program reads and sets it.
+    /// </summary>
+    public int HelpContextID
+    {
+        get => Component.Get(P.HelpContextID);
+        set => Component.Set(P.HelpContextID, value);
+    }
 
     /// <summary>
     /// The item's text. An ampersand marks the character after it as its access key, and two ampersands show one.
@@ -220,4 +347,13 @@ public sealed class FormMenuItem
     internal IEnumerable<FormMenuItem> WithAllItems() => [this, .. Items.SelectMany(item => item.WithAllItems())];
 
     private static bool IsMenu(ComponentInstance component) => ReferenceEquals(component.Class, VBClasses.Menu);
+
+    // The root the item is placed under, or null for an item taken out of its form.
+    private static ComponentInstance? RootOf(ComponentInstance component)
+    {
+        var at = component.Container;
+        while (at is not null && at.Class.Kind != ComponentKind.Root)
+            at = at.Container;
+        return at;
+    }
 }

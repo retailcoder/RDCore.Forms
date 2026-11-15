@@ -2,11 +2,13 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using RDCore.Forms.Menus;
+using RDCore.SDK.Workspace.Pictures;
 
 namespace RDCore.Forms.Model.VB;
 
 /// <summary>
-/// The properties of VB's intrinsic forms and controls that a designer file sets, with their VB6 defaults.
+/// The properties of VB's intrinsic forms and controls that a designer file sets, with their VB6 defaults, and the few that only a
+/// running program sets, such as a TextBox's <see cref="SelStart"/>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -24,33 +26,52 @@ public static class VBProperties
 {
     /// <summary>
     /// A control's left edge in its container, in pixels whatever the container's scale; a form's client area's left edge on the
-    /// screen, in pixels. A program's code reads it in its own unit: see <see cref="CodeUnits"/>.
+    /// screen, in pixels. A program's code reads it in its own unit: see <see cref="CodeUnits"/>. An aligned PictureBox keeps the one
+    /// its <see cref="AlignLayout"/> gives it.
     /// </summary>
-    public static readonly PropertyDefinition<double> Left = new("Left", PropertyCategory.Position);
+    public static readonly PropertyDefinition<double> Left = new("Left", PropertyCategory.Position)
+    {
+        Coerce = (component, left) => AlignLayout.Kept(component, Left!, left),
+    };
 
     /// <summary>
     /// A control's top edge in its container, in pixels whatever the container's scale; a form's client area's top edge on the
-    /// screen, in pixels. A program's code reads it in its own unit: see <see cref="CodeUnits"/>.
+    /// screen, in pixels. A program's code reads it in its own unit: see <see cref="CodeUnits"/>. An aligned PictureBox keeps the one
+    /// its <see cref="AlignLayout"/> gives it.
     /// </summary>
-    public static readonly PropertyDefinition<double> Top = new("Top", PropertyCategory.Position);
+    public static readonly PropertyDefinition<double> Top = new("Top", PropertyCategory.Position)
+    {
+        Coerce = (component, top) => AlignLayout.Kept(component, Top!, top),
+    };
 
     /// <summary>
     /// A control's width, in pixels whatever its container's scale; a form's client area's width, in pixels. A program's code reads it
-    /// in its own unit: see <see cref="CodeUnits"/>.
+    /// in its own unit: see <see cref="CodeUnits"/>. A PictureBox aligned to the top or the bottom keeps the form's.
     /// </summary>
-    public static readonly PropertyDefinition<double> Width = new("Width", PropertyCategory.Position);
+    public static readonly PropertyDefinition<double> Width = new("Width", PropertyCategory.Position)
+    {
+        Coerce = (component, width) => AlignLayout.Kept(component, Width!, width),
+    };
 
     /// <summary>
     /// A control's height, in pixels whatever its container's scale; a form's client area's height, in pixels. A program's code reads
-    /// it in its own unit: see <see cref="CodeUnits"/>.
+    /// it in its own unit: see <see cref="CodeUnits"/>. A PictureBox aligned to the left or the right keeps the one its
+    /// <see cref="AlignLayout"/> gives it.
     /// </summary>
-    public static readonly PropertyDefinition<double> Height = new("Height", PropertyCategory.Position);
+    public static readonly PropertyDefinition<double> Height = new("Height", PropertyCategory.Position)
+    {
+        Coerce = (component, height) => AlignLayout.Kept(component, Height!, height),
+    };
 
     /// <summary>
     /// The unit of a form's or a PictureBox's scale: the unit of its <c>ScaleLeft</c>, <c>ScaleTop</c>, <c>ScaleWidth</c> and
     /// <c>ScaleHeight</c>, and of the ends of the Lines it holds. Its controls' positions and sizes are in pixels whatever its scale.
+    /// A value that is not a <see cref="Model.ScaleMode"/> is refused.
     /// </summary>
-    public static readonly PropertyDefinition<ScaleMode> ScaleMode = new("ScaleMode", PropertyCategory.Position, Model.ScaleMode.Twip);
+    public static readonly PropertyDefinition<ScaleMode> ScaleMode = new("ScaleMode", PropertyCategory.Position, Model.ScaleMode.Twip)
+    {
+        Valid = static mode => Enum.IsDefined(mode),
+    };
 
     /// <summary>
     /// The horizontal coordinate of a form's or a PictureBox's inside left edge, in its own scale.
@@ -64,15 +85,17 @@ public static class VBProperties
 
     /// <summary>
     /// The inside width of a form or a PictureBox, in its own scale. A designer file writes it for every Form, UserControl and
-    /// PropertyPage; in a scale other than <see cref="Model.ScaleMode.User"/> it follows from the component's size.
+    /// PropertyPage; in a scale other than <see cref="Model.ScaleMode.User"/> it follows from the component's size
+    /// (<see cref="Drawing.ScaleRules"/>). It is never 0; a negative width runs the scale right to left.
     /// </summary>
-    public static readonly PropertyDefinition<double> ScaleWidth = new("ScaleWidth", PropertyCategory.Position);
+    public static readonly PropertyDefinition<double> ScaleWidth = new("ScaleWidth", PropertyCategory.Position) { Valid = static width => width != 0 };
 
     /// <summary>
     /// The inside height of a form or a PictureBox, in its own scale. A designer file writes it for every Form, UserControl and
-    /// PropertyPage; in a scale other than <see cref="Model.ScaleMode.User"/> it follows from the component's size.
+    /// PropertyPage; in a scale other than <see cref="Model.ScaleMode.User"/> it follows from the component's size
+    /// (<see cref="Drawing.ScaleRules"/>). It is never 0; a negative height runs the scale bottom to top.
     /// </summary>
-    public static readonly PropertyDefinition<double> ScaleHeight = new("ScaleHeight", PropertyCategory.Position);
+    public static readonly PropertyDefinition<double> ScaleHeight = new("ScaleHeight", PropertyCategory.Position) { Valid = static height => height != 0 };
 
     /// <summary>
     /// The text of a form's title bar, a property page's tab, a button's face, a label, a frame's title or a menu item, or the text
@@ -126,9 +149,13 @@ public static class VBProperties
     public static readonly PropertyDefinition<int> WhatsThisHelpID = new("WhatsThisHelpID", PropertyCategory.Misc);
 
     /// <summary>
-    /// The font of the component's text.
+    /// The font of the component's text. A component holds a font at the size VB6 draws it at, <see cref="FormFont.AtDrawnSize"/>, as
+    /// VB6 holds it: MS Sans Serif set to 8 points holds 8.25, and a font that takes another name then is drawn from 8.25.
     /// </summary>
-    public static readonly PropertyDefinition<FormFont> Font = new("Font", PropertyCategory.Appearance, FormFont.Default);
+    public static readonly PropertyDefinition<FormFont> Font = new("Font", PropertyCategory.Appearance, FormFont.Default)
+    {
+        Coerce = (_, font) => font.AtDrawnSize(),
+    };
 
     /// <summary>
     /// How the control aligns its text, or its caption.
@@ -172,15 +199,26 @@ public static class VBProperties
     public static readonly PropertyDefinition<bool> WordWrap = new("WordWrap", PropertyCategory.Misc);
 
     /// <summary>
-    /// The edge of its form a PictureBox is docked to.
+    /// The edge of its form a PictureBox is docked to: see <see cref="AlignLayout"/>. Setting it on a box in another container, or to
+    /// <see cref="VB.Align.None"/> on a box of an MDI form, leaves it as it was.
     /// </summary>
-    public static readonly PropertyDefinition<Align> Align = new("Align", PropertyCategory.Position);
+    public static readonly PropertyDefinition<Align> Align = new("Align", PropertyCategory.Position)
+    {
+        Valid = Enum.IsDefined,
+        Coerce = AlignLayout.Taken,
+    };
 
     /// <summary>
     /// Whether a form or a PictureBox keeps what its drawing methods draw and raises no Paint event. RDForms keeps the drawing either
     /// way; where this is False, it raises Paint.
     /// </summary>
     public static readonly PropertyDefinition<bool> AutoRedraw = new("AutoRedraw", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// Whether the text a form's or a PictureBox's <c>Print</c> method draws leaves what is under it. Where it is False, each line's
+    /// cell is filled with the <c>BackColor</c> first. True by default.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> FontTransparent = new("FontTransparent", PropertyCategory.Appearance, true);
 
     /// <summary>
     /// The width in pixels of the lines a form's or a PictureBox's drawing methods draw.
@@ -197,6 +235,13 @@ public static class VBProperties
     /// <see langword="null"/> for none.
     /// </summary>
     public static readonly PropertyDefinition<byte[]?> Picture = new("Picture", PropertyCategory.Appearance, null);
+
+    /// <summary>
+    /// Where a Label draws its <see cref="Picture"/> against its caption: an RD-VBA addition, as MSForms' Label has it.
+    /// <see cref="VB.PicturePosition.AboveCenter"/> by default.
+    /// </summary>
+    public static readonly PropertyDefinition<PicturePosition> PicturePosition =
+        new("PicturePosition", PropertyCategory.Appearance, VB.PicturePosition.AboveCenter) { Valid = Enum.IsDefined };
 
     /// <summary>
     /// The picture a graphical button shows in place of its <see cref="Picture"/> while it is pressed, checked or selected, as the bytes
@@ -268,7 +313,8 @@ public static class VBProperties
     public static readonly PropertyDefinition<bool> Normal = new("Normal", PropertyCategory.Behavior, true);
 
     /// <summary>
-    /// Whether a FileListBox lists read-only files.
+    /// Whether a FileListBox lists read-only files, or whether a Data control opens its database for reading only, which a Data
+    /// control's class defaults to False.
     /// </summary>
     public static readonly PropertyDefinition<bool> ReadOnly = new("ReadOnly", PropertyCategory.Behavior, true);
 
@@ -276,6 +322,66 @@ public static class VBProperties
     /// Whether a FileListBox lists system files: VB's <c>System</c> property.
     /// </summary>
     public static readonly PropertyDefinition<bool> SystemFiles = new("System", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// The kind of database a Data control opens, and the connection's parameters for one that is not Jet's own, such as
+    /// <c>Excel 8.0;</c>.
+    /// </summary>
+    public static readonly PropertyDefinition<string> Connect = new("Connect", PropertyCategory.Misc, "Access");
+
+    /// <summary>
+    /// The database a Data control opens: a file, or a folder for a database of files.
+    /// </summary>
+    public static readonly PropertyDefinition<string> DatabaseName = new("DatabaseName", PropertyCategory.Misc, "");
+
+    /// <summary>
+    /// The table, query or SQL statement a Data control's recordset comes from.
+    /// </summary>
+    public static readonly PropertyDefinition<string> RecordSource = new("RecordSource", PropertyCategory.Misc, "");
+
+    /// <summary>
+    /// Whether a Data control opens its database for its program alone.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> Exclusive = new("Exclusive", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// The options a Data control opens its recordset with, a sum of DAO's <c>RecordsetOptionEnum</c> values.
+    /// </summary>
+    public static readonly PropertyDefinition<short> Options = new("Options", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// What a Data control does when its user moves before the first record. Another value is 380.
+    /// </summary>
+    public static readonly PropertyDefinition<DataBOFAction> BOFAction =
+        new("BOFAction", PropertyCategory.Behavior) { Valid = Enum.IsDefined };
+
+    /// <summary>
+    /// What a Data control does when its user moves past the last record. Another value is 380.
+    /// </summary>
+    public static readonly PropertyDefinition<DataEOFAction> EOFAction =
+        new("EOFAction", PropertyCategory.Behavior) { Valid = Enum.IsDefined };
+
+    /// <summary>
+    /// The kind of recordset a Data control opens. Another value is 380.
+    /// </summary>
+    public static readonly PropertyDefinition<DataRecordsetType> RecordsetType =
+        new("RecordsetType", PropertyCategory.Behavior, DataRecordsetType.Dynaset) { Valid = Enum.IsDefined };
+
+    /// <summary>
+    /// The database engine a Data control opens its database with. Another value is 380.
+    /// </summary>
+    public static readonly PropertyDefinition<DataDefaultType> DefaultType =
+        new("DefaultType", PropertyCategory.Behavior, DataDefaultType.UseJet) { Valid = Enum.IsDefined };
+
+    /// <summary>
+    /// The cursor an ODBCDirect Data control opens. A program can set a value that names none, such as 3, as VB6 lets it.
+    /// </summary>
+    public static readonly PropertyDefinition<DataDefaultCursorType> DefaultCursorType = new("DefaultCursorType", PropertyCategory.Behavior);
+
+    /// <summary>
+    /// A Data control's <c>Negotiate</c>, which the model keeps as written. A program can neither read it nor set it.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> Negotiate = new("Negotiate", PropertyCategory.Misc) { NotAvailableAtRunTime = true };
 
     /// <summary>
     /// A ListBox's or ComboBox's items, in order.
@@ -307,12 +413,69 @@ public static class VBProperties
 
     /// <summary>
     /// The text a TextBox or a ComboBox holds. A TextBox with a <see cref="MaxLength"/> holds that many characters of a text set, at
-    /// most.
+    /// most. A different text selects nothing (<see cref="SelStart"/> and <see cref="SelLength"/> 0); the same text keeps the
+    /// selection.
     /// </summary>
     public static readonly PropertyDefinition<string> Text = new("Text", PropertyCategory.Misc, "")
     {
         Coerce = (component, text) =>
             component.Class.Has(MaxLength) && component.Get(MaxLength) is > 0 and var length && text.Length > length ? text[..length] : text,
+        Assign = TextAssigned,
+    };
+
+    /// <summary>
+    /// Where a TextBox's selection starts, or a ComboBox's in its edit box, or the caret's place where nothing is selected: 0 is before
+    /// the first character. It takes 0 to 65535, a value past the end of the text being its end, and refuses another value (380 for a
+    /// program). Setting it selects nothing.
+    /// </summary>
+    /// <remarks>
+    /// Only a running program sets it. A ComboBox whose style is Dropdown List has no edit box, and none of its selection.
+    /// </remarks>
+    public static readonly PropertyDefinition<int> SelStart = new("SelStart", PropertyCategory.Misc)
+    {
+        RunTimeOnly = true,
+        Valid = Selectable,
+        Present = HasEditBox,
+        Assign = StartAssigned,
+    };
+
+    /// <summary>
+    /// The number of characters selected from <see cref="SelStart"/>. It takes 0 to 65535, a value past the end of the text selecting
+    /// up to it, and refuses another value (380 for a program).
+    /// </summary>
+    /// <remarks>
+    /// Only a running program sets it, as <see cref="SelStart"/>.
+    /// </remarks>
+    public static readonly PropertyDefinition<int> SelLength = new("SelLength", PropertyCategory.Misc)
+    {
+        RunTimeOnly = true,
+        Valid = Selectable,
+        Present = HasEditBox,
+        Assign = LengthAssigned,
+    };
+
+    /// <summary>
+    /// The selected text, "" where nothing is selected. Setting it puts the text in place of the selection, or at the caret, and
+    /// leaves the caret after it with nothing selected: it sets <see cref="Text"/>, <see cref="SelStart"/> and <see cref="SelLength"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Where a TextBox has a <see cref="MaxLength"/>, what does not fit is left out. A box that is not multi-line takes the text in
+    /// one step, even where its text does not change, and in none where nothing is selected and a text other than "" does not fit at
+    /// all. A multi-line box takes it in two steps: the selection is deleted, where there is one, then the text is inserted, where
+    /// some of it fits. A view raises a Change for each step.
+    /// </para>
+    /// <para>
+    /// Only a running program sets it, as <see cref="SelStart"/>. A <see langword="null"/> text is refused with an
+    /// <see cref="ArgumentNullException"/>.
+    /// </para>
+    /// </remarks>
+    public static readonly PropertyDefinition<string> SelText = new("SelText", PropertyCategory.Misc, "")
+    {
+        RunTimeOnly = true,
+        Present = HasEditBox,
+        Read = Selected,
+        Assign = Replacing,
     };
 
     /// <summary>
@@ -390,9 +553,11 @@ public static class VBProperties
 
     /// <summary>
     /// How a Line's colour, or the colour of a form's or a PictureBox's drawing, combines with what is drawn under it: a raster
-    /// operation from 1 to 16. 13, the default, draws the colour as it is.
+    /// operation from 1 to 16, GDI's of the same number. 13, the default, draws the colour as it is. Another value is refused (380 for
+    /// a program).
     /// </summary>
-    public static readonly PropertyDefinition<short> DrawMode = new("DrawMode", PropertyCategory.Appearance, 13);
+    public static readonly PropertyDefinition<short> DrawMode =
+        new("DrawMode", PropertyCategory.Appearance, 13) { Valid = mode => mode is >= 1 and <= 16 };
 
     /// <summary>
     /// How much a scroll bar's value changes when the user clicks its track.
@@ -526,6 +691,15 @@ public static class VBProperties
     public static readonly PropertyDefinition<MenuShortcut?> Shortcut = new("Shortcut", PropertyCategory.Misc) { NotAvailableAtRunTime = true };
 
     /// <summary>
+    /// Where a top-level menu goes on its form's menu bar while an object of an OLE container is active. A program can neither read
+    /// nor set it.
+    /// </summary>
+    public static readonly PropertyDefinition<NegotiatePosition> NegotiatePosition = new("NegotiatePosition", PropertyCategory.Misc)
+    {
+        NotAvailableAtRunTime = true,
+    };
+
+    /// <summary>
     /// Whether choosing a menu item ticks or unticks it before its Click: an RD-VBA addition. False, the default, leaves
     /// <c>Checked</c> to the program, as a VB6 menu does.
     /// </summary>
@@ -537,4 +711,58 @@ public static class VBProperties
     /// pops up none.
     /// </summary>
     public static readonly PropertyDefinition<string> ContextMenu = new("ContextMenu", PropertyCategory.Behavior, "");
+
+    private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> TextAssigned(ComponentInstance component, string text) =>
+        component.Class.Has(SelStart) && text != component.Get(Text)
+            ? [[(Text, text), (SelStart, 0), (SelLength, 0)]]
+            : [[(Text, text)]];
+
+    private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> StartAssigned(ComponentInstance component, int start) =>
+        [[(SelStart, Math.Min(start, component.Get(Text).Length)), (SelLength, 0)]];
+
+    private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> LengthAssigned(ComponentInstance component, int length) =>
+        [[(SelLength, Math.Min(length, Math.Max(0, component.Get(Text).Length - component.Get(SelStart))))]];
+
+    private static bool Selectable(int value) => value is >= 0 and <= 65535;
+
+    // A Dropdown List shows its item where a ComboBox of another style has its edit box.
+    private static bool HasEditBox(ComponentInstance component) =>
+        !component.Class.Has(ComboBoxStyle) || component.Get(ComboBoxStyle) != VB.ComboBoxStyle.DropdownList;
+
+    // The selection within the text: a text a designer resets can be shorter than the selection.
+    private static (int Start, int Length) Selection(ComponentInstance component, string text)
+    {
+        var start = Math.Min(component.Get(SelStart), text.Length);
+        return (start, Math.Min(component.Get(SelLength), text.Length - start));
+    }
+
+    private static string Selected(ComponentInstance component)
+    {
+        var text = component.Get(Text);
+        var (start, length) = Selection(component, text);
+        return text.Substring(start, length);
+    }
+
+    // SelText's steps, each a text with the caret after what it inserts.
+    private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> Replacing(ComponentInstance component, string value)
+    {
+        var text = component.Get(Text);
+        var (from, count) = Selection(component, text);
+        var limit = component.Class.Has(MaxLength) ? component.Get(MaxLength) : 0;
+        var room = limit == 0 ? value.Length : Math.Max(0, limit - (text.Length - count));
+        var inserted = value.Length > room ? value[..room] : value;
+        if (!component.Class.Has(MultiLine) || !component.Get(MultiLine))
+            return count > 0 || inserted.Length > 0 || value.Length == 0
+                ? [Replaced(text.Remove(from, count).Insert(from, inserted), from + inserted.Length)]
+                : [];
+        var steps = new List<IReadOnlyList<(PropertyDefinition, object?)>>();
+        if (count > 0)
+            steps.Add(Replaced(text = text.Remove(from, count), from));
+        if (inserted.Length > 0)
+            steps.Add(Replaced(text.Insert(from, inserted), from + inserted.Length));
+        return steps;
+    }
+
+    private static IReadOnlyList<(PropertyDefinition, object?)> Replaced(string text, int caret) =>
+        [(Text, text), (SelStart, caret), (SelLength, 0)];
 }

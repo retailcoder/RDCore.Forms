@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <None Include="Import\VB6\Fixtures\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Controls\Fixtures\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -21,7 +21,12 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <remarks>
 /// <para>
 /// The component's <c>Text</c> is the box's: typing sets it, and a change to it from code shows in the box. <c>Change</c> is raised
-/// from the component's <c>Text</c>, whichever way it changed, and only when it changed.
+/// from the component's <c>Text</c>, whichever way it changed, and only when it changed, except that each step of a <c>SelText</c>
+/// raises one, whether or not it changed the text.
+/// </para>
+/// <para>
+/// The component's <c>SelStart</c> and <c>SelLength</c> are the box's selection: a selection set from code shows in the box, and the
+/// user's sets them.
 /// </para>
 /// <para>
 /// It raises KeyDown, KeyPress and KeyUp. A character typed is a KeyPress first, with its <c>KeyAscii</c>: a handler that sets it to
@@ -38,13 +43,7 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     // Set while the box's text goes to the component, or the component's comes to the box.
     private bool syncing;
 
-    // Set while SelText writes the component's text: it raises the box's Change itself.
-    private bool replacing;
-
-    // The selection a program sees.
-    private readonly TextSelection selection;
-
-    // Set while the selection goes to the box.
+    // Set while the component's selection goes to the box, and the box's to the component.
     private bool selecting;
 
     static VBTextBox()
@@ -65,7 +64,6 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     public VBTextBox(ComponentInstance instance)
     {
         this.instance = instance;
-        selection = new(() => Text ?? "", ShowSelection);
         Padding = new Thickness(1);
         NewLine = "\r\n";
         ComponentBinding.Bind(this, instance, VBClasses.TextBox, Apply);
@@ -75,7 +73,8 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     protected override Type StyleKeyOverride => typeof(TextBox);
 
     /// <summary>
-    /// Where the selection starts, or the caret's place where nothing is selected: 0 is before the first character.
+    /// The component's <c>SelStart</c>: where the selection starts, or the caret's place where nothing is selected; 0 is before the
+    /// first character.
     /// </summary>
     /// <exception cref="FormErrorException">Set below 0 or above 65535: 380, Invalid property value.</exception>
     /// <remarks>
@@ -83,12 +82,12 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     /// </remarks>
     public int SelStart
     {
-        get => selection.Start;
-        set => selection.SetStart(value);
+        get => instance.Get(P.SelStart);
+        set => Select(P.SelStart, value);
     }
 
     /// <summary>
-    /// The number of characters selected, from <see cref="SelStart"/>.
+    /// The component's <c>SelLength</c>: the number of characters selected, from <see cref="SelStart"/>.
     /// </summary>
     /// <exception cref="FormErrorException">Set below 0 or above 65535: 380, Invalid property value.</exception>
     /// <remarks>
@@ -96,12 +95,12 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     /// </remarks>
     public int SelLength
     {
-        get => selection.Length;
-        set => selection.SetLength(value);
+        get => instance.Get(P.SelLength);
+        set => Select(P.SelLength, value);
     }
 
     /// <summary>
-    /// The selected text; "" where nothing is selected.
+    /// The component's <c>SelText</c>: the selected text; "" where nothing is selected.
     /// </summary>
     /// <exception cref="ArgumentNullException">Set to <see langword="null"/>.</exception>
     /// <remarks>
@@ -113,24 +112,34 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
     /// </remarks>
     public string SelText
     {
-        get => selection.Selected;
+        get => instance.Get(P.SelText);
         set
         {
             ArgumentNullException.ThrowIfNull(value);
-            foreach (var (text, caret) in selection.Replacing(value, instance.Get(P.MaxLength), instance.Get(P.MultiLine)))
-                Replace(text, caret);
+            Select(P.SelText, value);
         }
     }
 
-    // The caret goes to the selection's end first: setting it empties the selection.
-    private void ShowSelection(int start, int length)
+    private void Select(PropertyDefinition property, object value)
     {
+        if (!instance.TrySet(property, value))
+            throw new FormErrorException(FormError.InvalidPropertyValue);
+    }
+
+    // The component's selection, in the box. The caret goes to the selection's end first: setting it empties the selection. The
+    // component's selection can start or end between the CR and the LF of a new line, where the box's caret does not stop: the box
+    // shows it as near as it can.
+    private void ShowSelection()
+    {
+        var length = (Text ?? "").Length;
+        var start = Math.Min(instance.Get(P.SelStart), length);
+        var end = Math.Min(start + instance.Get(P.SelLength), length);
         selecting = true;
         try
         {
-            CaretIndex = start + length;
+            CaretIndex = end;
             SelectionStart = start;
-            SelectionEnd = start + length;
+            SelectionEnd = end;
         }
         finally
         {
@@ -138,32 +147,37 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
         }
     }
 
-    // The component takes the text, the caret goes to its place, and the box raises its Change: one, whether or not the text changed.
-    private void Replace(string text, int caret)
+    // The user's selection, from its anchor to its caret, goes to the component.
+    private void TakeSelection()
     {
-        replacing = true;
+        selecting = true;
         try
         {
-            instance.Set(P.Text, text);
+            instance.Set(P.SelStart, Math.Min(SelectionStart, SelectionEnd));
+            instance.Set(P.SelLength, Math.Abs(SelectionEnd - SelectionStart));
         }
         finally
         {
-            replacing = false;
+            selecting = false;
         }
-        selection.Select(caret, 0);
-        VBControl.Raise(this, VBEvents.Change);
     }
 
     /// <inheritdoc/>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        // A property set as the box is made comes before its component is.
+        if (instance is null)
+            return;
         if (change.Property == TextProperty && !syncing)
+        {
+            // The text the user changes selects nothing in the component: the box's caret, which a deletion leaves in place, is put back.
             Sync(() => instance.Set(P.Text, Text ?? ""));
+            TakeSelection();
+        }
         else if ((change.Property == SelectionStartProperty || change.Property == SelectionEndProperty || change.Property == CaretIndexProperty)
-            && !selecting)
-            // A property set as the box is made comes before its selection is.
-            selection?.Take(SelectionStart, SelectionEnd);
+            && !selecting && !syncing)
+            TakeSelection();
     }
 
     /// <inheritdoc/>
@@ -235,14 +249,19 @@ public sealed class VBTextBox : TextBox, IRaisesKeyEvents
         if (ReferenceEquals(e.Property, P.Text))
         {
             var text = (string)e.After!;
-            // A text from code selects nothing, the caret before the first character.
             if (!syncing && Text != text)
-            {
                 Sync(() => Text = text);
-                selection.Select(0, 0);
-            }
-            if (!replacing && !Equals(e.Before, e.After))
+            if (!Equals(e.Before, e.After) || ReferenceEquals(e.AssignedProperty, P.SelText))
                 VBControl.Raise(this, VBEvents.Change);
+        }
+        else if (ReferenceEquals(e.Property, P.SelStart) || ReferenceEquals(e.Property, P.SelLength))
+        {
+            if (!syncing && !selecting)
+                ShowSelection();
+        }
+        else if (ReferenceEquals(e.Property, P.SelText))
+        {
+            // Made from the text and the selection, which show it.
         }
         else if (ReferenceEquals(e.Property, P.Locked))
             IsReadOnly = (bool)e.After!;

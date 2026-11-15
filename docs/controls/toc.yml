@@ -12,8 +12,12 @@
   href: containers.md
 - name: Timers, scroll bars and shapes
   href: timers-scrollbars-shapes.md
+- name: Data control
+  href: data.md
 - name: Drawing
   href: drawing.md
+- name: Fonts
+  href: fonts.md
 - name: Form events
   href: form-events.md
 - name: Methods

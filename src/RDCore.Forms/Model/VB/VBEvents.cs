@@ -263,4 +263,21 @@ public static class VBEvents
     /// The controls a PropertyPage edits changed.
     /// </summary>
     public static readonly EventDefinition SelectionChanged = new("SelectionChanged");
+
+    /// <summary>
+    /// A Data control is about to leave its current record, for the reason <c>Action</c> gives; <c>Save</c> says whether a bound
+    /// control's data changed.
+    /// </summary>
+    public static readonly EventDefinition Validate = new("Validate", new EventParameter("Action", "Integer"), new EventParameter("Save", "Integer"));
+
+    /// <summary>
+    /// A Data control met a data access error while no code of the program was running. The handler's <c>Response</c> says whether
+    /// the error's message is shown.
+    /// </summary>
+    public static readonly EventDefinition Error = new("Error", new EventParameter("DataErr", "Integer"), new EventParameter("Response", "Integer"));
+
+    /// <summary>
+    /// Another of a Data control's records became current.
+    /// </summary>
+    public static readonly EventDefinition Reposition = new("Reposition");
 }

@@ -21,6 +21,7 @@ An argument left out is `null`, and the list ends at the last one given. A `Vari
 |A control that can take the focus|`Move`, `Refresh`, `SetFocus`, `ZOrder`|
 |Label, Frame, Image, Shape|`Move`, `Refresh`, `ZOrder`|
 |Line|`Refresh`, `ZOrder`|
+|Data|`Move`, `Refresh`, `ZOrder`, `UpdateRecord`, `UpdateControls`: see [Data control](data.md#members-a-running-program-uses)|
 |Timer, Menu|None|
 
 ## Move

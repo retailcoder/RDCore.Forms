@@ -39,6 +39,7 @@ public sealed class ComponentClassTests
     [DataRow("VB.Shape", "Shape")]
     [DataRow("VB.Line", "Visible")]
     [DataRow("VB.Timer", "Enabled")]
+    [DataRow("VB.Data", "Caption")]
     [DataRow("VB.Menu", "Enabled")]
     [DataRow("VB.UserControl", null)]
     [DataRow("VB.PropertyPage", null)]

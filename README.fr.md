@@ -22,7 +22,7 @@ RDCore.Forms est en développement **pré-alpha**. Aucun paquet n'est publié.
 
 ## Compiler
 
-À partir de la racine du référentiel, avec le SDK .NET 10 :
+À partir de la racine du référentiel, avec le SDK .NET 11 :
 
 ```
 dotnet build RDCore.Forms.slnx

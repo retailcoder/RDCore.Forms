@@ -85,7 +85,7 @@ A ListBox's rows are a line of its font high, as a [Simple Combo's](#simple-comb
 
 |Case|Behaviour|
 |---|---|
-|`ListIndex` from code|The edit box takes the item's text with nothing selected, the caret before the first character, then Click is raised: its handler reads a `SelStart` and a `SelLength` of 0.|
+|`ListIndex` from code|The edit box takes the item's text with nothing selected, even where the item's text is the text already in the box, the caret before the first character, then Click is raised: its handler reads a `SelStart` and a `SelLength` of 0.|
 |`SelText` set over a chosen item|The combo selects no item, `ListIndex` -1, and raises its Change, even where the text does not change.|
 |`Text` from code, the same text|The selection and `ListIndex` stay as they are.|
 
@@ -104,7 +104,7 @@ The height the combo is given is first rounded to whole pixels, 15 twips to a pi
 
 `Height` keeps the height given where it rounds to the pixels the combo takes, and reads those pixels otherwise: 1150 twips stay 1150, drawn as 77 pixels.
 
-MS Sans Serif's rows are VB6's at each of its sizes. Another font's rows are RDForms' own: the line as RDForms draws it, rounded up to a whole pixel. VB6 takes them from the font's hinting, so they can differ from VB6's by a pixel or more.
+MS Sans Serif's rows are VB6's at each size it is drawn at, its line height in [Fonts](fonts.md). Another font's rows are RDForms' own: the line as RDForms draws it, rounded up to a whole pixel. VB6 takes them from the font's hinting, so they can differ from VB6's by a pixel or more.
 
 |Input|Raised|
 |---|---|

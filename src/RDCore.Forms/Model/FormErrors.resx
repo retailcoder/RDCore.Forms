@@ -30,8 +30,17 @@
   <data name="Error76" xml:space="preserve">
     <value>Path not found</value>
   </data>
+  <data name="Error91" xml:space="preserve">
+    <value>Object variable or With block variable not set</value>
+  </data>
   <data name="Error94" xml:space="preserve">
     <value>Invalid use of Null</value>
+  </data>
+  <data name="Error340" xml:space="preserve">
+    <value>Control array element '{0}' doesn't exist</value>
+  </data>
+  <data name="Error341" xml:space="preserve">
+    <value>Invalid object array index</value>
   </data>
   <data name="Error343" xml:space="preserve">
     <value>Object not an array</value>

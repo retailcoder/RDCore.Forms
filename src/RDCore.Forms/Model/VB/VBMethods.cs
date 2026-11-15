@@ -26,4 +26,14 @@ public static class VBMethods
     /// <c>Refresh</c>: draws a component and its contents again.
     /// </summary>
     public static readonly MethodDefinition Refresh = new("Refresh");
+
+    /// <summary>
+    /// <c>UpdateRecord</c>: writes the values of a Data control's bound controls to its current record.
+    /// </summary>
+    public static readonly MethodDefinition UpdateRecord = new("UpdateRecord");
+
+    /// <summary>
+    /// <c>UpdateControls</c>: gives a Data control's bound controls the values of its current record again.
+    /// </summary>
+    public static readonly MethodDefinition UpdateControls = new("UpdateControls");
 }

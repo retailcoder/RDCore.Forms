@@ -9,7 +9,8 @@ using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using RDCore.Forms.Model.VB;
+using P =RDCore.Forms.Model.VB.VBProperties;
 
 namespace RDCore.Forms.Avalonia.Rendering;
 
@@ -97,6 +98,8 @@ public sealed class VBFormView : Canvas
         ArgumentNullException.ThrowIfNull(fileSystem);
         this.fileSystem = fileSystem;
         Form = form;
+        // The aligned boxes are laid out before their controls follow them, so a box's own Resize comes after the ones it causes.
+        AlignLayout.Of(form);
         // What the form's drawing statements draw is under every control, the windowless ones included, and its picture is under that.
         Children.Add(pictureLayer);
         Drawing = new VBDrawingLayer(form.Root) { ZIndex = int.MinValue };
@@ -209,7 +212,7 @@ public sealed class VBFormView : Canvas
                 break;
             case nameof(P.Picture):
                 if (picture.Take((byte[]?)e.After))
-                    pictureLayer.Picture = picture.Picture;
+                    pictureLayer.Picture = Drawing.Picture = picture.Picture;
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);

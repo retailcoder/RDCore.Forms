@@ -141,6 +141,66 @@ public enum Align
 }
 
 /// <summary>
+/// Where a Label draws its picture against its caption: its <c>PicturePosition</c>, an RD-VBA addition with the values of MSForms'
+/// <c>fmPicturePosition</c>. The first word places the picture, the second aligns the caption with it.
+/// </summary>
+public enum PicturePosition
+{
+    /// <summary>
+    /// The picture left of the caption, their tops aligned.
+    /// </summary>
+    LeftTop = 0,
+    /// <summary>
+    /// The picture left of the caption, their centres aligned.
+    /// </summary>
+    LeftCenter = 1,
+    /// <summary>
+    /// The picture left of the caption, their bottoms aligned.
+    /// </summary>
+    LeftBottom = 2,
+    /// <summary>
+    /// The picture right of the caption, their tops aligned.
+    /// </summary>
+    RightTop = 3,
+    /// <summary>
+    /// The picture right of the caption, their centres aligned.
+    /// </summary>
+    RightCenter = 4,
+    /// <summary>
+    /// The picture right of the caption, their bottoms aligned.
+    /// </summary>
+    RightBottom = 5,
+    /// <summary>
+    /// The picture above the caption, their left edges aligned.
+    /// </summary>
+    AboveLeft = 6,
+    /// <summary>
+    /// The picture above the caption, their centres aligned: the default.
+    /// </summary>
+    AboveCenter = 7,
+    /// <summary>
+    /// The picture above the caption, their right edges aligned.
+    /// </summary>
+    AboveRight = 8,
+    /// <summary>
+    /// The picture below the caption, their left edges aligned.
+    /// </summary>
+    BelowLeft = 9,
+    /// <summary>
+    /// The picture below the caption, their centres aligned.
+    /// </summary>
+    BelowCenter = 10,
+    /// <summary>
+    /// The picture below the caption, their right edges aligned.
+    /// </summary>
+    BelowRight = 11,
+    /// <summary>
+    /// The caption over the picture, both centred.
+    /// </summary>
+    Center = 12,
+}
+
+/// <summary>
 /// The figure a VB Shape draws: its <c>Shape</c>.
 /// </summary>
 public enum ShapeType
@@ -169,6 +229,94 @@ public enum ShapeType
     /// A square with rounded corners.
     /// </summary>
     RoundedSquare = 5,
+}
+
+/// <summary>
+/// What a VB Data control does when its user moves before the first record: its <c>BOFAction</c>.
+/// </summary>
+public enum DataBOFAction
+{
+    /// <summary>
+    /// The first record stays current: <c>vbBOFActionMoveFirst</c>, the default.
+    /// </summary>
+    MoveFirst = 0,
+    /// <summary>
+    /// The position before the first record becomes current: <c>vbBOFActionBOF</c>.
+    /// </summary>
+    BOF = 1,
+}
+
+/// <summary>
+/// What a VB Data control does when its user moves past the last record: its <c>EOFAction</c>.
+/// </summary>
+public enum DataEOFAction
+{
+    /// <summary>
+    /// The last record stays current: <c>vbEOFActionMoveLast</c>, the default.
+    /// </summary>
+    MoveLast = 0,
+    /// <summary>
+    /// The position after the last record becomes current: <c>vbEOFActionEOF</c>.
+    /// </summary>
+    EOF = 1,
+    /// <summary>
+    /// A new record is added: <c>vbEOFActionAddNew</c>.
+    /// </summary>
+    AddNew = 2,
+}
+
+/// <summary>
+/// The kind of recordset a VB Data control opens: its <c>RecordsetType</c>.
+/// </summary>
+public enum DataRecordsetType
+{
+    /// <summary>
+    /// A table: <c>vbRSTypeTable</c>.
+    /// </summary>
+    Table = 0,
+    /// <summary>
+    /// A dynaset, the default: <c>vbRSTypeDynaset</c>.
+    /// </summary>
+    Dynaset = 1,
+    /// <summary>
+    /// A snapshot: <c>vbRSTypeSnapShot</c>.
+    /// </summary>
+    Snapshot = 2,
+}
+
+/// <summary>
+/// The database engine a VB Data control opens its database with: its <c>DefaultType</c>.
+/// </summary>
+public enum DataDefaultType
+{
+    /// <summary>
+    /// ODBCDirect: <c>dbUseODBC</c>.
+    /// </summary>
+    UseODBC = 1,
+    /// <summary>
+    /// The Jet engine, the default: <c>dbUseJet</c>.
+    /// </summary>
+    UseJet = 2,
+}
+
+/// <summary>
+/// The cursor an ODBCDirect VB Data control opens: its <c>DefaultCursorType</c>. A program can set a value that names none of these,
+/// as VB6 lets it.
+/// </summary>
+public enum DataDefaultCursorType
+{
+    /// <summary>
+    /// The driver chooses: <c>vbUseDefaultCursor</c>, the default.
+    /// </summary>
+    Default = 0,
+    /// <summary>
+    /// The ODBC cursor library: <c>vbUseODBCCursor</c>.
+    /// </summary>
+    ODBC = 1,
+    /// <summary>
+    /// The server's cursors: <c>vbUseServerSideCursor</c>.
+    /// </summary>
+    ServerSide = 2,
 }
 
 /// <summary>
@@ -431,4 +579,27 @@ public enum MousePointer
     /// The object's <c>MouseIcon</c>.
     /// </summary>
     Custom = 99,
+}
+
+/// <summary>
+/// Where a top-level menu goes on its form's menu bar while an object of an OLE container is active: its <c>NegotiatePosition</c>.
+/// </summary>
+public enum NegotiatePosition
+{
+    /// <summary>
+    /// Not shown while an object is active, the default.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// On the left.
+    /// </summary>
+    Left = 1,
+    /// <summary>
+    /// In the middle.
+    /// </summary>
+    Middle = 2,
+    /// <summary>
+    /// On the right.
+    /// </summary>
+    Right = 3,
 }

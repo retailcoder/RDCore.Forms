@@ -5,7 +5,7 @@ No package is published, so a project uses RDCore.Forms from its source.
 
 ## Building
 
-From the root of the [repository](https://github.com/rubberduck-vba/RDCore.Forms), with the .NET 10 SDK:
+From the root of the [repository](https://github.com/rubberduck-vba/RDCore.Forms), with the .NET 11 SDK:
 
 ```
 dotnet build RDCore.Forms.slnx

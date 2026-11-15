@@ -8,6 +8,7 @@ using Avalonia.Platform;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
+using RDCore.SDK.Workspace.Pictures;
 using static RDCore.Forms.Tests.Model.TestPictures;
 using P = RDCore.Forms.Model.VB.VBProperties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
@@ -96,10 +97,10 @@ public sealed class PictureControlTests
                 {
                     using var bitmap = VBPicture.Decode(bytes, out var error);
                     if (bitmap is null)
-                        Assert.IsTrue(error is null ? bytes.Length == 0 || FormPictures.Inspect(bytes, out var info) is null && !info.IsDrawn
+                        Assert.IsTrue(error is null ? bytes.Length == 0 || FormPictures.Inspect(bytes, out var info) is null && !info.HasPixelSize
                             : error == FormError.InvalidPicture);
                     else
-                        Assert.IsTrue(bitmap.PixelSize.Width is > 0 and <= FormPictures.MaxSide && bitmap.PixelSize.Height is > 0 and <= FormPictures.MaxSide);
+                        Assert.IsTrue(bitmap.PixelSize.Width is > 0 and <= PictureHeader.MaxSide && bitmap.PixelSize.Height is > 0 and <= PictureHeader.MaxSide);
                     count++;
                 }
             }

@@ -47,7 +47,11 @@ public sealed class TextBoxPropertyTests
     {
         var box = Box().Set(P.MaxLength, 3);
         var changes = new List<object?>();
-        box.PropertyChanged += (_, e) => changes.Add(e.After);
+        box.PropertyChanged += (_, e) =>
+        {
+            if (ReferenceEquals(e.Property, P.Text))
+                changes.Add(e.After);
+        };
 
         box.Set(P.Text, "abcdef");
         var tried = box.TrySet(P.Text, "uvwxyz");

@@ -26,9 +26,14 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// one that holds none as it is chosen, alone. Choosing an item leaves its <c>Checked</c> as the program set it, unless its
 /// <c>CheckOnClick</c> is True: then it ticks or unticks it, before Click. <see cref="Choose"/> chooses an item as its shortcut does.
 /// </para>
+/// <para>
+/// An element a program loads into a menu array is shown in its place among the items, and one it unloads is taken away.
+/// </para>
 /// </remarks>
 public sealed class VBMenuBar : Menu
 {
+    private readonly Dictionary<ComponentInstance, Control> shown = [];
+
     /// <summary>
     /// Creates the menu bar of a form.
     /// </summary>
@@ -40,6 +45,8 @@ public sealed class VBMenuBar : Menu
         Menu = FormMenu.Of(root);
         foreach (var item in Menu.Items)
             Items.Add(Create(item));
+        Menu.ItemLoaded += (_, e) => ShowLoaded(e);
+        Menu.ItemUnloaded += (_, e) => DropUnloaded(e);
         Follow();
     }
 
@@ -88,7 +95,33 @@ public sealed class VBMenuBar : Menu
     // The bar is shown while one of its items is.
     internal void Follow() => IsVisible = Menu.ShowsTheBar;
 
-    internal Control Create(FormMenuItem item) => item.IsSeparator ? new VBMenuSeparator(this, item) : new VBMenuItem(this, item);
+    internal Control Create(FormMenuItem item)
+    {
+        Control control = item.IsSeparator ? new VBMenuSeparator(this, item) : new VBMenuItem(this, item);
+        shown[item.Component] = control;
+        return control;
+    }
+
+    // The menu that shows a container's items: the bar for the root.
+    private ItemsControl? Showing(ComponentInstance container) =>
+        ReferenceEquals(container, Menu.Root) ? this : shown.GetValueOrDefault(container) as ItemsControl;
+
+    private void ShowLoaded(FormMenuItemEventArgs e)
+    {
+        if (Showing(e.Container) is not { } menu)
+            return;
+        var items = ReferenceEquals(e.Container, Menu.Root) ? Menu.Items : FormMenuItem.Of(e.Container).Items;
+        var position = Math.Min(items.ToList().IndexOf(e.Item), menu.Items.Count);
+        menu.Items.Insert(position < 0 ? menu.Items.Count : position, Create(e.Item));
+        Follow();
+    }
+
+    private void DropUnloaded(FormMenuItemEventArgs e)
+    {
+        if (shown.Remove(e.Item.Component, out var control))
+            Showing(e.Container)?.Items.Remove(control);
+        Follow();
+    }
 
     // VB's caption as Avalonia's header: an ampersand marks the access key, two show one, and an underscore is shown as itself.
     internal static string Header(string caption)

@@ -12,8 +12,30 @@ Label and TextBox. The behaviour below was measured with VB6.
 |`Alignment`, `WordWrap`|Align and wrap the caption.|
 |`BackStyle`|Transparent paints no background.|
 |`BorderStyle`, `Appearance`|A single border is a sunken edge when 3-D, and one pixel when flat.|
+|`Picture`, `PicturePosition`|RD-VBA addition: a picture laid out against the caption, as MSForms' Label lays it out. See [Picture](#picture).|
 
 It raises MouseUp before Click, and Click only where the release is over the label again.
+
+### Picture
+
+A Label's `Picture` and `PicturePosition` are an RD-VBA addition: VB6's Label has neither. They follow MSForms' Label, as measured in Excel.
+
+- The picture and the caption make one block, centred in the label. A block larger than the label starts at its edge.
+- `PicturePosition` takes MSForms' values, 0 to 12. The first word places the picture, the second aligns the caption with it. The default is 7, `AboveCenter`.
+
+|`PicturePosition`|Layout|
+|---|---|
+|0 to 5, `LeftTop` to `RightBottom`|The picture beside the caption, one pixel from it, their tops, centres or bottoms aligned.|
+|6 to 11, `AboveLeft` to `BelowRight`|The picture above or below the caption, one pixel from it, their left edges, centres or right edges aligned.|
+|12, `Center`|The caption over the picture, both centred.|
+
+- `Alignment` aligns the caption's lines within the block and leaves the block where it is.
+- A picture larger than the room it has is shrunk on that axis alone. Beside the caption, its width leaves the caption room; above or below the caption, its height does not, and the caption is clipped.
+- The colour of a BMP's lower-left pixel is transparent, so a BMP of one colour draws nothing. A GIF keeps its own transparent colour and is drawn whole otherwise. RDForms also draws a JPEG, a PNG or an icon as it is.
+- The space between picture and caption follows RDForms' text measurement, so the caption can be a pixel from where MSForms puts it.
+
+> [!NOTE]
+> **Not implemented.** `AutoSize` does not fit a Label to its caption or to its picture.
 
 ## TextBox
 
@@ -42,7 +64,7 @@ It raises MouseUp before Click, and Click only where the release is over the lab
 
 ### Selection
 
-`SelStart`, `SelLength` and `SelText` are the box's selection. A program reads and sets them on a loaded form as on a shown one, and reads back a selection the user makes.
+`SelStart`, `SelLength` and `SelText` are the box's selection. A program reads and sets them on a loaded form as on a shown one, and reads back a selection the user makes. The component holds them, with or without a control to show them, and only a running program sets them ([`PropertyDefinition.RunTimeOnly`](../api/RDCore.Forms.Model.PropertyDefinition.yml)): a form's file does not hold them.
 
 |Member|Behaviour|
 |---|---|

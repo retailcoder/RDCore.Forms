@@ -67,6 +67,16 @@ public sealed class FormErrorTests
     }
 
     [TestMethod]
+    public void Error340_NamesTheElementsIndex_InEitherLanguage()
+    {
+        Assert.AreEqual("Control array element '12' doesn't exist",
+            InCulture("en-CA", () => FormError.ControlArrayElementDoesntExist(12).Description));
+        Assert.AreEqual("L'élément « 12 » du groupe de contrôles n'existe pas",
+            InCulture("fr-CA", () => FormError.ControlArrayElementDoesntExist(12).Description));
+        Assert.AreEqual(340, FormError.ControlArrayElementDoesntExist(12).Number);
+    }
+
+    [TestMethod]
     public void EveryErrorThatNamesSomething_NamesItInEitherLanguage()
     {
         var named = typeof(FormError).GetMethods(BindingFlags.Public | BindingFlags.Static)

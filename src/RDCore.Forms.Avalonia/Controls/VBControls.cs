@@ -74,6 +74,8 @@ public static class VBControls
             return new VBShape(instance);
         if (ReferenceEquals(type, VBClasses.Line))
             return new VBLine(instance);
+        if (ReferenceEquals(type, VBClasses.Data))
+            return new VBData(instance);
         return null;
     }
 }

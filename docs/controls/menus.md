@@ -50,8 +50,38 @@ A [`MenuShortcut`](../api/RDCore.Forms.Menus.MenuShortcut.yml) is a key, by its 
 |`Enabled` False on a separator|387, 'Enabled' property can't be set on this control|
 |`Visible` False on the last visible item of a menu, a separator included|387, 'Visible' property can't be set on this control|
 |A `Caption` of `-` on an item that is not a separator|395, Cannot use separator bar as menu name for this control|
+|`NegotiatePosition`, read or set|393, Get not supported at runtime; 382, Set not supported at runtime. A designer file's value is read and kept.|
+
+A program reads and sets an item's `HelpContextID`, any Long.
 
 The last visible item of the bar can be hidden, and the bar goes with it.
+
+## Menu arrays
+
+Items that share a name and each have an `Index` are a menu array, a [`FormMenuArray`](../api/RDCore.Forms.Menus.FormMenuArray.yml): `FormMenu.ArrayOf` gives it by name, and `FormMenuItem.Array` for one of its elements. Its elements are in the same menu, or all on the bar. A program's `Load` and `Unload` of an element are its `Load` and `Unload`; the bar shows a loaded element at once, and drops an unloaded one.
+
+```csharp
+var recent = FormMenu.Of(form.Root).ArrayOf("mnuRecent")!;
+recent.Load(1).Caption = "&1 Report.txt";  // Load mnuRecent(1)
+recent.Unload(1);                           // Unload mnuRecent(1)
+```
+
+- A loaded element goes among the others in the order of their indexes: after the one with the highest index below its own, or, with none below, before the one with the lowest index above.
+- It copies the element with the lowest index loaded at the time: its `Caption`, `Checked`, `Enabled`, `Visible`, `Tag` and `HelpContextID`. It does not copy its `Shortcut`, or the items of its menu, so a copy of a menu opens none. RDForms' own: it also copies `CheckOnClick` and `Picture`.
+- `Count` is the number of elements loaded, `LBound` the lowest index and `UBound` the highest. A program's `For Each` goes through them in index order.
+
+|Statement|Error|
+|---|---|
+|`Load` of an element that is loaded|360, Object already loaded|
+|`Load` with a negative index|341, Invalid object array index|
+|`Load` with an index above 32767|6, Overflow|
+|`Unload` of an element of the form's file|362, Can't unload controls created at design time|
+|`Unload` of an element that is not loaded|340, Control array element doesn't exist|
+|`Unload` of the last visible item of a menu|361, Can't load or unload this object|
+|`Load` or `Unload` of an item that is not an element of an array|361, Can't load or unload this object|
+|`Load` or `Unload` of an array's name with no index|361, Can't load or unload this object|
+
+The last visible item of the bar can be unloaded, and the bar goes with it.
 
 ## Pop-up menus
 
@@ -81,7 +111,7 @@ The menu raises its Click as it opens, as it does on the bar, and an item chosen
 |`ContextMenu`|On the form and on each control that raises mouse events: the name of one of the form's menus, compared without regard to case. A right release over the component pops it up at the pointer, after the component's MouseUp and Click. Empty, the default, or a name that is no menu of the form's pops up none.|
 
 > [!NOTE]
-> **Not implemented.** The `WindowList` of an MDI form's menu, and the `NegotiatePosition` and `HelpContextID` of a menu, which the model keeps as written. Menu control arrays: a menu with an `Index` is read, and has none of an array's members.
+> **Not implemented.** The `WindowList` of an MDI form's menu, which the model keeps as written.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

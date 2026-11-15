@@ -244,7 +244,8 @@ public static partial class VB6FormReader
 
                 foreach (var property in child.Properties)
                 {
-                    if (componentClass.Property(property.Name) is { } definition)
+                    // a property only a running program sets is not the form's: one in the file is kept as it is.
+                    if (componentClass.Property(property.Name) is { RunTimeOnly: false } definition)
                     {
                         SetFromText(instance, definition, property, instance.ToString());
                     }

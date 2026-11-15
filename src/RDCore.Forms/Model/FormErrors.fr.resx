@@ -30,8 +30,17 @@
   <data name="Error76" xml:space="preserve">
     <value>Chemin d'accès introuvable</value>
   </data>
+  <data name="Error91" xml:space="preserve">
+    <value>Variable objet ou variable de bloc With non définie</value>
+  </data>
   <data name="Error94" xml:space="preserve">
     <value>Utilisation incorrecte de Null</value>
+  </data>
+  <data name="Error340" xml:space="preserve">
+    <value>L'élément « {0} » du groupe de contrôles n'existe pas</value>
+  </data>
+  <data name="Error341" xml:space="preserve">
+    <value>Index de tableau d'objets incorrect</value>
   </data>
   <data name="Error343" xml:space="preserve">
     <value>L'objet n'est pas un tableau</value>

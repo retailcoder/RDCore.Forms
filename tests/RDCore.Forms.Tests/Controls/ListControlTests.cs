@@ -267,4 +267,14 @@ public sealed class ListControlTests
     {
         Assert.AreEqual("1035/69, 960/64", Heights(1100, true, [], new FormFont("MS Sans Serif", 12)));
     }
+
+    // As measured with VB6: MS Sans Serif 27 is drawn at its 36-pixel size and 36 at its 48-pixel size, whose rows are 48 and 58
+    // pixels high, so 73 pixels hold one row of either.
+    [TestMethod]
+    [DataRow(27, "1035/69, 780/52")]
+    [DataRow(36, "1035/69, 930/62")]
+    public void ALargeMSSansSerif_SnapsAListBoxToItsRows(double size, string expected)
+    {
+        Assert.AreEqual(expected, Heights(1100, true, [], new FormFont("MS Sans Serif", size)));
+    }
 }

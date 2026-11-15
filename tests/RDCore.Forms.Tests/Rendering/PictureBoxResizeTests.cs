@@ -146,6 +146,91 @@ public sealed class PictureBoxResizeTests
         ], log);
     }
 
+    // Picture3 is aligned to the top and Picture5 to the left, on the same form as VB6's. The form's own Resize is logged with its size.
+    [TestMethod]
+    public void AnAlignedBox_RaisesResize_AfterTheFormsAndAfterTheBoxesItMoves()
+    {
+        var log = UI.Run(() =>
+        {
+            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d).Set(P.ScaleMode, ScaleMode.Twip);
+            var three = Box(root, "Picture3", 0, 0).Set(P.Align, Align.Top).Set(P.Height, 600 / TwipsPerPixel);
+            var five = Box(root, "Picture5", 0, 600).Set(P.Align, Align.Left).Set(P.Width, 900 / TwipsPerPixel);
+
+            var log = new List<string>();
+            var sink = new RecordingSink
+            {
+                Handler = (source, raised, _) =>
+                {
+                    if (raised.Name == "Resize")
+                        log.Add($"  {source.Name}.Resize {Twips(source.Get(P.Width))}x{Twips(source.Get(P.Height))}");
+                },
+            };
+            log.Add("> Load Form1");
+            var window = new VBFormWindow(new FormDefinition(root));
+            VBControl.SetEventSink(window, sink);
+            void Step(string statement, Action change)
+            {
+                log.Add($"> {statement}");
+                try
+                {
+                    change();
+                }
+                catch (FormErrorException e)
+                {
+                    log.Add($"  err={e.Error.Number}");
+                }
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            Step("Form1.Show", window.Show);
+            Step("Picture3.Height = 900", () => VBRunTime.Assign(three, P.Height, 900 / TwipsPerPixel));
+            Step("Picture3.Width = 1000", () => VBRunTime.Assign(three, P.Width, 1000 / TwipsPerPixel));
+            Step("Picture3.Move 0, 0, 1000, 700", () => window.Invoke(three, M.Move, [S(0), S(0), S(1000), S(700)], CodeUnit.VB6));
+            Step("Picture5.Width = 1200", () => VBRunTime.Assign(five, P.Width, 1200 / TwipsPerPixel));
+            Step("Form1.Width = Form1.Width + 1500", () => root.Set(P.Width, root.Get(P.Width) + 100));
+            Step("Form1.Height = Form1.Height + 1500", () => root.Set(P.Height, root.Get(P.Height) + 100));
+            Step("Form1.Move Form1.Left, Form1.Top, Form1.Width - 1500, Form1.Height - 1500", () => window.Invoke(root, M.Move,
+                [S(root.Get(P.Left) * TwipsPerPixel), S(root.Get(P.Top) * TwipsPerPixel), S(6000), S(4500)], CodeUnit.VB6));
+            Step("Picture3.Align = 0", () => VBRunTime.Assign(three, P.Align, Align.None));
+            Step("Picture3.Align = 2", () => VBRunTime.Assign(three, P.Align, Align.Bottom));
+            window.Close();
+            return log;
+        });
+
+        Expect.Lines(
+        [
+            "> Load Form1",
+            "> Form1.Show",
+            "  Form1.Resize 6000x4500",
+            "  Picture3.Resize 6000x600",
+            "  Picture5.Resize 900x3900",
+            "> Picture3.Height = 900",
+            "  Picture5.Resize 900x3600",
+            "  Picture3.Resize 6000x900",
+            "> Picture3.Width = 1000",
+            "  err=387",
+            "> Picture3.Move 0, 0, 1000, 700",
+            "  Picture5.Resize 900x3795",
+            "  Picture3.Resize 6000x700",
+            "> Picture5.Width = 1200",
+            "  Picture5.Resize 1200x3795",
+            "> Form1.Width = Form1.Width + 1500",
+            "  Form1.Resize 7500x4500",
+            "  Picture3.Resize 7500x700",
+            "> Form1.Height = Form1.Height + 1500",
+            "  Form1.Resize 7500x6000",
+            "  Picture5.Resize 1200x5295",
+            "> Form1.Move Form1.Left, Form1.Top, Form1.Width - 1500, Form1.Height - 1500",
+            "  Form1.Resize 6000x4500",
+            "  Picture3.Resize 6000x700",
+            "  Picture5.Resize 1200x3795",
+            "> Picture3.Align = 0",
+            "  Picture5.Resize 1200x4500",
+            "> Picture3.Align = 2",
+            "  Picture5.Resize 1200x3795",
+        ], log);
+    }
+
     [TestMethod]
     public void APictureBox_DeclaresResize() =>
         Assert.IsNotNull(VBClasses.PictureBox.Event("Resize"));

@@ -22,7 +22,7 @@ RDCore.Forms is in **pre-alpha** development. No package is published.
 
 ## Building
 
-From the repository root, with the .NET 10 SDK:
+From the repository root, with the .NET 11 SDK:
 
 ```
 dotnet build RDCore.Forms.slnx
