@@ -12,9 +12,9 @@ namespace RDCore.Forms.Model.VB;
 /// </summary>
 /// <remarks>
 /// Each class lists the properties of it that the model holds, then the ones every class of its kind has: <c>Left</c> and
-/// <c>Top</c> for a component with a place, <c>Width</c> and <c>Height</c> for one with a size, <c>Visible</c> for a control a
-/// running program shows, and <c>Tag</c>. A property a designer file sets that a class does not list is kept as an
-/// <see cref="UnmodelledProperty"/>. Its methods are among <see cref="VBMethods"/>: a control's are <c>Move</c>, <c>Refresh</c> and
+/// <c>Top</c> for a component with a place, <c>Width</c> and <c>Height</c> for one with a size, <c>Visible</c> and RD-VBA's
+/// <see cref="VBProperties.Opacity"/> for a control a running program shows, and <c>Tag</c>. A property a designer file sets that a class does
+/// not list is kept as an <see cref="UnmodelledProperty"/>. Its methods are among <see cref="VBMethods"/>: a control's are <c>Move</c>, <c>Refresh</c> and
 /// <c>ZOrder</c>, and <c>SetFocus</c> where it can take the focus.
 /// </remarks>
 public static class VBClasses
@@ -253,7 +253,7 @@ public static class VBClasses
     /// <c>Width</c> or <c>Height</c>. It raises no events, and its colour defaults to the window's text colour.
     /// </summary>
     public static readonly ComponentClass Line = new("VB.Line", "Line", ComponentKind.Control,
-        [P.BorderColor, P.ShapeBorderStyle, P.BorderWidth, P.DrawMode, P.X1, P.X2, P.Y1, P.Y2, P.Visible, P.Tag], [],
+        [P.BorderColor, P.ShapeBorderStyle, P.BorderWidth, P.DrawMode, P.X1, P.X2, P.Y1, P.Y2, P.Visible, P.Opacity, P.Tag], [],
         Defaults((P.BorderColor, WindowForeground)), isWindowless: true, methods: [M.Refresh, M.ZOrder],
         defaultMember: DefaultMembers["VB.Line"]);
 
@@ -315,7 +315,8 @@ public static class VBClasses
         IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null, bool isContainer = false, bool isWindowless = false,
         MethodDefinition[]? methods = null) =>
         new(typeName, defaultName, ComponentKind.Control,
-            [.. properties, P.Left, P.Top, P.Width, P.Height, P.Visible, P.Tag, .. events.Contains(MouseUp) ? [P.ContextMenu] : Array.Empty<PropertyDefinition>()],
+            [.. properties, P.Left, P.Top, P.Width, P.Height, P.Visible, P.Opacity, P.Tag,
+             .. events.Contains(MouseUp) ? [P.ContextMenu] : Array.Empty<PropertyDefinition>()],
             events, defaults, isContainer, isWindowless,
             methods: [M.Move, M.Refresh, .. events.Contains(GotFocus) ? [M.SetFocus] : Array.Empty<MethodDefinition>(), M.ZOrder, .. methods ?? []],
             defaultMember: DefaultMembers.GetValueOrDefault(typeName));
