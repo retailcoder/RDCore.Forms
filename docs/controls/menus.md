@@ -58,7 +58,7 @@ The last visible item of the bar can be hidden, and the bar goes with it.
 
 ## Menu arrays
 
-Items that share a name and each have an `Index` are a menu array, a [`FormMenuArray`](../api/RDCore.Forms.Menus.FormMenuArray.yml): `FormMenu.ArrayOf` gives it by name, and `FormMenuItem.Array` for one of its elements. Its elements are in the same menu, or all on the bar. A program's `Load` and `Unload` of an element are its `Load` and `Unload`; the bar shows a loaded element at once, and drops an unloaded one.
+Items that share a name and each have an `Index` are a menu array, a [`FormMenuArray`](../api/RDCore.Forms.Menus.FormMenuArray.yml): `FormMenu.ArrayOf` gives it by name, and `FormMenuItem.Array` for one of its elements. Its elements are in the same menu, or all on the bar. A program's `Load` and `Unload` of an element are its `Load` and `Unload`; the bar shows a loaded element at once, and drops an unloaded one. The arrays of other controls are [control arrays](index.md#control-arrays).
 
 ```csharp
 var recent = FormMenu.Of(form.Root).ArrayOf("mnuRecent")!;
