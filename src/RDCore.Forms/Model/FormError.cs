@@ -116,6 +116,15 @@ public readonly record struct FormError(int Number, string Description)
     public static FormError SetNotSupportedReadOnly => Standard(383);
 
     /// <summary>
+    /// Error 383, "'<paramref name="name"/>' property is read-only": the description VB6 gives an assignment to a control's read-only
+    /// property, such as a ListBox's <c>ListCount</c>.
+    /// </summary>
+    /// <param name="name">The property's name.</param>
+    /// <returns>The error.</returns>
+    public static FormError PropertyIsReadOnly(string name) =>
+        new(383, string.Format(CultureInfo.CurrentUICulture, Descriptions.GetString("Error383Named", CultureInfo.CurrentUICulture) ?? "'{0}' property is read-only", name));
+
+    /// <summary>
     /// Error 387, "'<paramref name="property"/>' property can't be set on this control": a value the property takes, refused on
     /// this component, such as <c>Checked</c> on a top-level menu.
     /// </summary>

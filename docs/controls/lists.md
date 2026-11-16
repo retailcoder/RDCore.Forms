@@ -15,6 +15,49 @@ Both controls have the same members for their items:
 |`GetItemIcon`, `SetItemIcon`|An item's icon, the bytes of a picture file.|381 for an index outside the items; 481 for a picture that is refused (see [Pictures](containers.md#pictures)).|
 |`ListCount`|The number of items.||
 |`ListIndex`|The selected item, or -1 for none. Setting it raises Click when it moves the selection.|380 for a value outside -1 to `ListCount` - 1.|
+|`NewIndex`|The index of the item the last `AddItem` added, and -1 where none was added. After a `RemoveItem`, a `Clear` or a new `List` of the component, it is -1 again.||
+|`GetList`, `SetList`|An item's text. `GetList` gives "" for an index outside the items. `SetList` keeps the item's data, its icon and its selection, and raises nothing. Where the item is the selected one, a combo's edit box takes its new text, as a choice of the item puts it there.|381 for an index outside the items, on `SetList`.|
+
+`NewIndex` after a `RemoveItem`, a `Clear` or a new `List`, `GetList` and `SetList` follow RDForms' own rules.
+
+## A program's calls
+
+A program's code reaches a list's members by name through the form's window, as it does a [method](methods.md): `VBFormWindow.Invoke` runs `AddItem`, `RemoveItem` and `Clear`, and reads a property; `VBFormWindow.Assign` assigns one. Each is a [`MethodDefinition`](../api/RDCore.Forms.Model.MethodDefinition.yml) of the class, shared from [`VBMethods`](../api/RDCore.Forms.Model.VB.VBMethods.yml). A property's definition has a `Value`: the type it holds.
+
+```csharp
+// cboPlayer.AddItem "Human", then cboPlayer.ListIndex = 0 and x = cboPlayer.List(0) in VB6 code.
+var combo = form.Components.First(c => c.Name == "cboPlayer");
+window.Invoke(combo, VBMethods.AddItem, [FormValue.FromString("Human")]);
+window.Assign(combo, VBMethods.ListIndex, [], FormValue.FromInteger(0));
+var x = window.Invoke(combo, VBMethods.List, [FormValue.FromInteger(0)]).AsString();
+```
+
+|Member|Kind|ListBox|ComboBox|
+|---|---|---|---|
+|`AddItem Item, [Index]`|Method|yes|yes|
+|`RemoveItem Index`|Method|yes|yes|
+|`Clear`|Method|yes|yes|
+|`List(Index)` As String|Property|yes|yes|
+|`ItemData(Index)` As Long|Property|yes|yes|
+|`Selected(Index)` As Boolean|Property|yes|no|
+|`ListIndex` As Integer|Property|yes|yes|
+|`ListCount` As Integer|Read-only property|yes|yes|
+|`NewIndex` As Integer|Read-only property|yes|yes|
+|`SelCount` As Integer|Read-only property|yes|no|
+|`Text` As String|Property|yes|yes|
+
+|Rule|Behaviour|
+|---|---|
+|Index|An Integer, rounded half to even. Null is error 94, and a number past an Integer's range error 6.|
+|Arguments|`List` without its index is error 449, and with two arguments error 450.|
+|Read-only|An assignment is error 383, "'ListCount' property is read-only" for `ListCount`. A value of the wrong type is error 13 first.|
+|`Text`|A ListBox's and a Dropdown List's is the selected item's text, and setting it selects the first item whose whole text it is (383 on a Dropdown List where none has it). Another combo's is its edit box's: see [ComboBox](#combobox).|
+|`Column`|Error 438: VB6's ListBox has no `Column`, which is an MSForms ListBox's.|
+
+The index and argument rules follow RDForms' own rules, as a method's do. A ListBox or ComboBox that `Controls.Add` adds takes the same members as one of the form's file.
+
+> [!NOTE]
+> **Not implemented.** `Sorted` and `TopIndex` are not modelled: a program's `TopIndex` is error 438, and a list whose file sets `Sorted` to True holds its items in the order they are added.
 
 ## Item icons
 

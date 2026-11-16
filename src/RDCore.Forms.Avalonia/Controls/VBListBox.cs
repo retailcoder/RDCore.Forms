@@ -51,13 +51,14 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// snapped to whole rows, at least one, as measured with VB6.
 /// </para>
 /// </remarks>
-public sealed class VBListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
+public sealed class VBListBox : ListBox, IRaisesKeyEvents, IMultiSelectList, IVBList
 {
     private readonly ComponentInstance instance;
     // A multi-select list's selection; none where its MultiSelect is None.
     private readonly MultiSelection? multi;
     // Set while the list writes its own items to the component.
     private bool writingList;
+    private int newIndex = -1;
     private readonly ItemIcons icons = new();
 
     static VBListBox()
@@ -137,9 +138,47 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
     }
 
     /// <summary>
+    /// The index of the item the last <see cref="AddItem"/> added; -1 where none was added, and after a <see cref="RemoveItem"/>, a
+    /// <see cref="Clear"/> or a new <c>List</c> of the component.
+    /// </summary>
+    public int NewIndex => newIndex;
+
+    /// <summary>
     /// The number of items selected.
     /// </summary>
     public int SelCount => multi?.Count ?? (SelectedIndex >= 0 ? 1 : 0);
+
+    /// <summary>
+    /// Gets an item's text, as code's <c>List(Index)</c> does.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <returns>The item's text, or "" for an index outside the items.</returns>
+    public string GetList(int index) => ListMembers.ItemAt(Items, index);
+
+    /// <summary>
+    /// Sets an item's text, as code's <c>List(Index) = text</c> does. The item keeps its data, its icon and its selection, and the
+    /// list raises nothing.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <param name="text">The text.</param>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the items: 381, Invalid property array index.</exception>
+    public void SetList(int index, string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        RequireItem(index);
+        var selected = multi?.IsSelected(index) ?? index == SelectedIndex;
+        var focus = multi?.Focus;
+        Items[index] = text;
+        if (multi is not null)
+        {
+            if (selected)
+                Selection.Select(index);
+            multi.Focus = focus!.Value;
+        }
+        else if (selected)
+            SelectedIndex = index;
+        WriteList();
+    }
 
     /// <summary>
     /// The text of the item at <see cref="ListIndex"/>, or "" where there is none.
@@ -217,6 +256,7 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
         Items.Insert(at, item);
         WriteList();
         ListItems.Inserted(instance, ItemCount - 1, at);
+        newIndex = at;
     }
 
     /// <summary>
@@ -232,6 +272,7 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
         multi?.Removed();
         WriteList();
         ListItems.Removed(instance, ItemCount + 1, index);
+        newIndex = -1;
     }
 
     /// <summary>
@@ -243,6 +284,7 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
         multi?.Reset();
         WriteList();
         ListItems.Cleared(instance);
+        newIndex = -1;
     }
 
     /// <summary>
@@ -323,6 +365,7 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
             foreach (var item in (IReadOnlyList<string>)e.After!)
                 Items.Add(item);
             multi?.Reset();
+            newIndex = -1;
         }
         else if (ReferenceEquals(e.Property, P.ItemIcon))
         {
@@ -400,9 +443,5 @@ public sealed class VBListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
         }
     }
 
-    private void RequireItem(int index)
-    {
-        if (index < 0 || index >= ItemCount)
-            throw new FormErrorException(FormError.InvalidPropertyArrayIndex);
-    }
+    private void RequireItem(int index) => ListMembers.Require(ItemCount, index);
 }

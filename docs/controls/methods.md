@@ -22,6 +22,7 @@ An argument left out is `null`, and the list ends at the last one given. A `Vari
 |Label, Frame, Image, Shape|`Move`, `Refresh`, `ZOrder`|
 |Line|`Refresh`, `ZOrder`|
 |Data|`Move`, `Refresh`, `ZOrder`, `UpdateRecord`, `UpdateControls`: see [Data control](data.md#members-a-running-program-uses)|
+|ListBox, ComboBox|`Move`, `Refresh`, `SetFocus`, `ZOrder`, and the list members: see [Lists](lists.md#a-programs-calls)|
 |Timer, Menu|None|
 
 ## Move
