@@ -242,7 +242,7 @@ public sealed class FormDefinition
     public void RemoveControl(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
-        // VB6 takes the name for the array object, which is no control.
+        // VB6 takes the name for the array object, which lacks the interface of a control.
         if (ArrayOf(name) is not null)
             throw new FormErrorException(FormError.NoSuchInterface);
         var control = Root.Descendants().FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase))
