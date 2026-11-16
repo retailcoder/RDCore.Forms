@@ -80,6 +80,20 @@ The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`,
 |Tab order|One order across the whole form, by `TabIndex`, the form's order deciding a tie. A `TabIndex` past the last place takes the first free place, in the form's order.|
 |Focus|Tab skips a control that takes no focus (a Label, a Frame, an Image, a Timer, a Shape, a Line or a Data control), one whose `TabStop` is False, and one that is hidden or disabled or in a hidden or disabled container.|
 
+## A control's container at run time
+
+A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(control, container)`. It places the control, with the controls it holds, in the form or in a Frame or a PictureBox of the same form, and raises `FormDefinition.ContainerChanged`. A shown form's view moves the control at once. Every control has a `Container` except a Timer (`ComponentClass.HasContainer`); a menu item has none.
+
+|Rule|Behaviour|
+|---|---|
+|Place|The control keeps its place in pixels in its container's client area. A program reads its `Left` and `Top` in the new container's scale: 200, 300 twips in a form is 13.33333, 20 in a PictureBox whose `ScaleMode` is pixels. A Line's ends are given again in the new container's scale.|
+|Stacking|On top of the windowed controls of its new container, even where that is the container it was in.|
+|Unchanged|`Visible`, every `TabIndex`, and the removal of a control added at run time.|
+|Focus|A control that has the focus keeps it, and no LostFocus or GotFocus is raised.|
+|Order|The control is last in its new container's contents, so `FormDefinition.Controls` and a tie of `TabIndex` follow the new order (RDForms' own).|
+
+`SetContainer` refuses with error 425, Invalid object use, and changes nothing, where the container is `Nothing`, holds no controls (a TextBox, a menu item), is the control itself or a control it holds, or is another form or a control of another form.
+
 ## Common properties
 
 |Property|Behaviour|
