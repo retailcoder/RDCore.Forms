@@ -46,6 +46,9 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
     // The picture's pixels as its layer draws them, copied when they are first read.
     private int[]? pictureDrawn;
     private PixelSize pictureSize;
+    // The picture PaintPicture last drew, decoded once for the same bytes, and its pixels.
+    private readonly VBPicture.Holder painted = new();
+    private int[]? paintedPixels;
     private PixelSize inside;
     private bool attached;
     private bool paintPending;
@@ -328,6 +331,135 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
         return PrintFont.Lines(text).Length * font.Line * ScaleModeExtensions.TwipsPerPixel / Math.Abs(ScaleOf(Component).TwipsDown);
     }
 
+    /// <inheritdoc/>
+    public void PaintPicture(byte[] picture, double x1, double y1, double? width1 = null, double? height1 = null, double? x2 = null,
+        double? y2 = null, double? width2 = null, double? height2 = null, int opcode = 0xCC0020)
+    {
+        ArgumentNullException.ThrowIfNull(picture);
+        if (picture.Length == 0)
+            throw new FormErrorException(FormError.InvalidPicture);
+        if (painted.Take(picture))
+            paintedPixels = null;
+        if (painted.Error is { } refused)
+            throw new FormErrorException(refused);
+
+        var scale = ScaleOf(Component);
+        int Across(double units) => Pixels(units * scale.TwipsAcross);
+        int Down(double units) => Pixels(units * scale.TwipsDown);
+        var (atX, atY) = scale.ToTwips(x1, y1);
+        var (left, top) = (Pixels(atX), Pixels(atY));
+        // A metafile is recognized and has no pixels to draw.
+        if (painted.Picture is not { } source)
+            return;
+        var (pictureWidth, pictureHeight) = (source.PixelSize.Width, source.PixelSize.Height);
+        var (fromX, fromY) = (x2 is { } sourceX ? Across(sourceX) : 0, y2 is { } sourceY ? Down(sourceY) : 0);
+        var sourceWidth = width2 is { } across ? Across(across) : pictureWidth - fromX;
+        var sourceHeight = height2 is { } down ? Down(down) : pictureHeight - fromY;
+        var width = width1 is { } wide ? Across(wide) : sourceWidth;
+        var height = height1 is { } high ? Down(high) : sourceHeight;
+        if (width == 0 || height == 0 || sourceWidth == 0 || sourceHeight == 0)
+            throw new FormErrorException(FormError.InvalidProcedureCall);
+        if (!Overlaps(fromX, sourceWidth, pictureWidth) | !Overlaps(fromY, sourceHeight, pictureHeight))
+            return;
+
+        var operation = opcode >> 16 & 0xFF;
+        var style = Component.Class.Has(P.FillStyle) ? Component.Get(P.FillStyle) : FillStyle.Transparent;
+        // An operation reads the pattern where its result differs between a pattern bit of 1 (the high four bits) and of 0.
+        if (style == FillStyle.Transparent && (operation >> 4) != (operation & 0xF))
+            return;
+
+        Grow();
+        // The destination's pixels: rightward and downward from its corner, or leftward and upward for a negative size.
+        static (long From, long To) Span(int start, int size) => size > 0 ? (start, (long)start + size - 1) : ((long)start + size + 1, start);
+        var (spanX, spanY) = (Span(left, width), Span(top, height));
+        var (areaLeft, areaTop) = (Math.Max(0, spanX.From), Math.Max(0, spanY.From));
+        var (areaRight, areaBottom) = (Math.Min(bitmap!.PixelSize.Width, spanX.To + 1), Math.Min(bitmap.PixelSize.Height, spanY.To + 1));
+        if (areaRight <= areaLeft || areaBottom <= areaTop)
+            return;
+        var area = new PixelRect((int)areaLeft, (int)areaTop, (int)(areaRight - areaLeft), (int)(areaBottom - areaTop));
+
+        // The source pixel under a destination pixel's centre, counted from the source's edge in its own direction.
+        static long SourceOf(long step, int size, int start, int sourceSize) =>
+            start + Math.Sign(sourceSize) * (long)Math.Floor((step + 0.5) * Math.Abs(sourceSize) / Math.Abs(size));
+        var pixels = paintedPixels ??= PixelsOf(source);
+        var fill = Rgb(Component.Get(P.FillColor));
+        var back = Rgb(Component.Get(P.BackColor));
+        var stride = bitmap.PixelSize.Width;
+        using var combined = new WriteableBitmap(area.Size, new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Premul);
+        using (var target = combined.Lock())
+        {
+            var row = new int[area.Width];
+            for (var y = 0; y < area.Height; y++)
+            {
+                var atRow = area.Y + y;
+                var fromRow = SourceOf(height > 0 ? atRow - top : top - atRow, height, fromY, sourceHeight);
+                for (var x = 0; x < area.Width; x++)
+                {
+                    row[x] = 0;
+                    var atColumn = area.X + x;
+                    var fromColumn = SourceOf(width > 0 ? atColumn - left : left - atColumn, width, fromX, sourceWidth);
+                    if (fromRow < 0 || fromRow >= pictureHeight || fromColumn < 0 || fromColumn >= pictureWidth)
+                        continue;
+                    var there = Under(atColumn, atRow);
+                    var pattern = style == FillStyle.Solid || GdiDrawing.IsHatched(style, atColumn, atRow) ? fill : back;
+                    var colour = TernaryRasterOperation(operation, pattern, Over(pixels[fromRow * pictureWidth + fromColumn], there), there);
+                    row[x] = unchecked((int)0xFF000000) | colour;
+                    drawn![atRow * stride + atColumn] = row[x];
+                }
+                Marshal.Copy(row, 0, target.Address + y * target.RowBytes, area.Width);
+            }
+        }
+        using (var onto = bitmap.CreateDrawingContext(false))
+        using (onto.PushRenderOptions(Aliased))
+            onto.DrawImage(combined, new Rect(area.X, area.Y, area.Width, area.Height));
+        InvalidateVisual();
+
+        // Whether a source span reaches into the picture: error 5 where it lies wholly before it or starts at its far edge, as VB6 has it.
+        static bool Overlaps(int start, int size, int extent)
+        {
+            var (low, high) = (Math.Min(start, (long)start + size), Math.Max(start, (long)start + size));
+            if (high <= 0 || low == extent)
+                throw new FormErrorException(FormError.InvalidProcedureCall);
+            return low < extent;
+        }
+    }
+
+    // GDI's ternary raster operation of an operation index, on the RGB of the pattern, the source and what is there: each bit of the result is
+    // the bit of the index that the three bits select, the pattern's weighing 4, the source's 2 and what is there 1.
+    internal static int TernaryRasterOperation(int operation, int pattern, int source, int there)
+    {
+        var result = 0;
+        for (var bit = 0; bit < 8; bit++)
+            if ((operation >> bit & 1) != 0)
+                result |= ((bit & 4) != 0 ? pattern : ~pattern) & ((bit & 2) != 0 ? source : ~source) & ((bit & 1) != 0 ? there : ~there);
+        return result & 0xFFFFFF;
+    }
+
+    // A position or a size in twips as the pixel nearest it: error 6 past what a pixel position can hold.
+    private static int Pixels(double twips)
+    {
+        var pixels = Math.Round(Math.Round(twips, MidpointRounding.ToEven) / ScaleModeExtensions.TwipsPerPixel);
+        if (double.IsNaN(pixels) || pixels is > int.MaxValue or < int.MinValue)
+            throw new FormErrorException(FormError.Overflow);
+        return (int)pixels;
+    }
+
+    private static int Rgb(FormColor color)
+    {
+        var rgb = FormPalette.ToColor(color);
+        return rgb.R << 16 | rgb.G << 8 | rgb.B;
+    }
+
+    // A premultiplied picture pixel over the RGB under it.
+    private static int Over(int pixel, int under)
+    {
+        var alpha = (uint)pixel >> 24;
+        if (alpha == 255)
+            return pixel & 0xFFFFFF;
+        int Channel(int shift) => Math.Min(255, (pixel >> shift & 0xFF) + (int)((under >> shift & 0xFF) * (255 - alpha) / 255));
+        return Channel(16) << 16 | Channel(8) << 8 | Channel(0);
+    }
+
     // The twips of the pixel nearest a position in twips.
     private static double AtPixel(double twips) =>
         Pixel(Math.Round(twips, MidpointRounding.ToEven)) * ScaleModeExtensions.TwipsPerPixel;
@@ -466,10 +598,13 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
         if (style == FillStyle.Solid)
             return context => context.DrawGeometry(brush, null, figure);
         var (width, height) = (Math.Max(inside.Width, bitmap?.PixelSize.Width ?? 0), Math.Max(inside.Height, bitmap?.PixelSize.Height ?? 0));
+        // GDI's hatch brush is aligned to the surface's corner, its lines on the rows and columns IsHatched says, so a line can start before the corner.
+        var phase = Matrix.CreateTranslation(GdiDrawing.SurfaceHatchColumn - GdiDrawing.HatchSpacing, GdiDrawing.SurfaceHatchRow - GdiDrawing.HatchSpacing);
         return context =>
         {
             using var clip = context.PushGeometryClip(figure);
-            GdiDrawing.Hatch(context, brush, style, width, height);
+            using var aligned = context.PushTransform(phase);
+            GdiDrawing.Hatch(context, brush, style, width + GdiDrawing.HatchSpacing, height + GdiDrawing.HatchSpacing);
         };
     }
 

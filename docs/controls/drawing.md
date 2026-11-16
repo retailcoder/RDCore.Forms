@@ -1,6 +1,6 @@
 # Drawing
 
-A form and a PictureBox each have a drawing surface, a [`VBDrawingLayer`](../api/RDCore.Forms.Avalonia.Controls.VBDrawingLayer.yml): the destination of VB's drawing statements, `Line`, `Circle`, `PSet` and `Scale`, and of the `Cls`, `Point`, `Print`, `TextWidth` and `TextHeight` methods. A program reaches it through the [`IDrawingSurface`](../api/RDCore.Forms.Drawing.IDrawingSurface.yml) interface, which [`DrawingSurfaces.Of`](../api/RDCore.Forms.Drawing.DrawingSurfaces.yml) gives for a shown form's root or PictureBox. The interface is part of `RDCore.Forms` and has no Avalonia types.
+A form and a PictureBox each have a drawing surface, a [`VBDrawingLayer`](../api/RDCore.Forms.Avalonia.Controls.VBDrawingLayer.yml): the destination of VB's drawing statements, `Line`, `Circle`, `PSet` and `Scale`, and of the `Cls`, `Point`, `Print`, `TextWidth`, `TextHeight` and `PaintPicture` methods. A program reaches it through the [`IDrawingSurface`](../api/RDCore.Forms.Drawing.IDrawingSurface.yml) interface, which [`DrawingSurfaces.Of`](../api/RDCore.Forms.Drawing.DrawingSurfaces.yml) gives for a shown form's root or PictureBox. The interface is part of `RDCore.Forms` and has no Avalonia types.
 
 ```csharp
 using RDCore.Forms.Drawing;
@@ -79,7 +79,7 @@ Another font's column and line height are RDForms' own: the column is the OS/2 a
 ## Pens and fills
 
 - Lines are drawn as a Line control draws them: `DrawWidth` pixels wide, dashed as `DrawStyle` says where they are one pixel wide, and solid where they are wider. Transparent draws no line.
-- A box's or a circle's fill is its `FillColor` in its `FillStyle`: solid, or lines eight pixels apart from the surface's corner. An arc is not filled; a closed sector is. The fill stops where the edge starts.
+- A box's or a circle's fill is its `FillColor` in its `FillStyle`: solid, or lines eight pixels apart: horizontal ones on rows 3, 11, 19… and vertical ones on columns 4, 12, 20… from the surface's corner, wherever the figure is, as VB6 draws them. An arc is not filled; a closed sector is. The fill stops where the edge starts.
 - There is no smoothing.
 
 ## DrawMode
@@ -107,6 +107,28 @@ Another font's column and line height are RDForms' own: the column is the OS/2 a
 
 Xor Pen drawn twice gives back what was there. Another value is error 380, and the `DrawMode` is kept.
 
+## PaintPicture
+
+`PaintPicture picture, x1, y1, width1, height1, x2, y2, width2, height2, opcode` draws a picture, or a rectangle of it, stretched to a rectangle of the surface ([`IDrawingSurface.PaintPicture`](../api/RDCore.Forms.Drawing.IDrawingSurface.yml)). It follows VB6's rules, as measured.
+
+- Every position and size, the source's included, is in the component's scale, and is placed on the pixel nearest it. The picture's own size is its size at 96 pixels an inch.
+- `x2` and `y2` default to 0, `width2` and `height2` to the rest of the picture from them, and `width1` and `height1` to the source's size.
+- A negative `width1` or `height1` mirrors the picture, and so does a negative `width2` or `height2`; both negative draw it the right way round.
+- A destination pixel takes the source pixel under its centre. A part of the source outside the picture draws nothing, and the destination is cut in proportion. A transparent part of the picture shows what is under it.
+- `opcode` (`vbSrcCopy` by default) is the GDI ternary raster operation of its third byte, over the pattern, the source and what is there, on each of red, green and blue. The pattern is the component's fill: its `FillColor` where `FillStyle` is Solid, and its `FillColor` lines over its `BackColor` where it is hatched, in the phase of a box's fill. Where `FillStyle` is Transparent, an opcode that reads the pattern draws nothing.
+- `DrawMode` plays no part. `CurrentX`, `CurrentY` and the `Picture` are kept, and `Cls` erases what `PaintPicture` drew.
+
+|Case|Error|
+|---|---|
+|An empty picture, or one that is not a picture|481|
+|A position or a size too large for a pixel|6|
+|A width or a height under half a pixel|5|
+|A source wholly left of or above the picture, or starting at its right or bottom edge|5|
+|A source starting past that edge|None: nothing is drawn.|
+
+> [!NOTE]
+> **Not implemented.** A mirrored source that reaches past the picture's edge is drawn one or two pixels off VB6's: VB6 cuts the destination on another side than the one the source is cut on.
+
 ## AutoRedraw and Paint
 
 The surface keeps what it draws whatever the component's `AutoRedraw`, and keeps it as the component shrinks and grows again.
@@ -115,9 +137,6 @@ The surface keeps what it draws whatever the component's `AutoRedraw`, and keeps
 |---|---|
 |False, the default|Raised once the surface is shown, and each time the component's inside grows. One is raised for the changes made before it comes, so a window grown across and down at once raises one.|
 |True|Not raised.|
-
-> [!NOTE]
-> **Not implemented.** `PaintPicture` has no surface member.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

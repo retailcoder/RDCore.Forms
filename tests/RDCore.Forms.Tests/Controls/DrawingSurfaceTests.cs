@@ -76,6 +76,25 @@ public sealed class DrawingSurfaceTests
         CollectionAssert.AreEqual(new[] { Green, Green, Green, White }, filled);
     }
 
+    // As measured with VB6: a box from 0,0 to 9,9 filled with vertical lines has one, on column 4; the lines fall on columns 4, 12, 20, 28...
+    // and rows 3, 11, 19, 27... from the surface's corner, wherever the figure is.
+    [TestMethod]
+    [DataRow(FillStyle.VerticalLine, 0, 0, true, "W W W W R W W W W W")]
+    [DataRow(FillStyle.VerticalLine, 20, 0, true, "R W W W W W W W R W")]
+    [DataRow(FillStyle.HorizontalLine, 0, 0, false, "W W W R W W W W W W")]
+    [DataRow(FillStyle.HorizontalLine, 0, 20, false, "W W W W W W W R W W")]
+    public void AHatchedFill_IsAlignedToTheSurfacesCorner(FillStyle style, int left, int top, bool across, string expected)
+    {
+        var colours = UI.Run(() =>
+        {
+            var surface = Surface(Root().Set(P.FillStyle, style));
+            surface.Line(new GraphicsPoint(left - 1, top - 1), new GraphicsPoint(left + 10, top + 10), FormColor.FromRgb(255, 255, 255), LineBox.Box);
+            return Points(surface, [.. Enumerable.Range(0, 10).Select(i => across ? ((double)(left + i), top + 2d) : (left + 2d, (double)(top + i)))]);
+        });
+
+        Assert.AreEqual(expected, string.Join(" ", colours.Select(colour => colour == Red ? "R" : colour == White ? "W" : colour.ToString("X"))));
+    }
+
     [TestMethod]
     public void ACircle_IsCentredOnItsPoint_FilledAsFillStyleSays_AndLeavesTheCurrentPointThere()
     {
