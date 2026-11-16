@@ -14,7 +14,8 @@ namespace RDCore.Forms.Model.VB;
 /// <item><term>Every placed control</term><description><c>Left</c> and <c>Top</c>.</description></item>
 /// <item>
 /// <term><c>InvisibleAtRuntime</c> False</term>
-/// <description><c>Width</c>, <c>Height</c>, <c>Visible</c>, <c>DragMode</c>, <c>ToolTipText</c>, <c>WhatsThisHelpID</c> and <c>Tag</c>.</description>
+/// <description><c>Width</c>, <c>Height</c>, <c>Visible</c>, <c>DragMode</c>, <c>ToolTipText</c>, <c>WhatsThisHelpID</c> and <c>Tag</c>, and RD-VBA's
+/// <c>Opacity</c>.</description>
 /// </item>
 /// <item>
 /// <term><c>InvisibleAtRuntime</c> True</term>
@@ -64,7 +65,7 @@ public static class UserControlClasses
 
         List<PropertyDefinition> properties = [P.Left, P.Top];
         if (!invisible)
-            properties.AddRange([P.Width, P.Height, P.Visible, P.DragMode, P.ToolTipText, P.WhatsThisHelpID, P.Tag]);
+            properties.AddRange([P.Width, P.Height, P.Visible, P.Opacity, P.DragMode, P.ToolTipText, P.WhatsThisHelpID, P.Tag]);
         if (!invisible && (canGetFocus || forwardFocus))
             properties.Add(P.TabIndex);
         if (takesFocus)

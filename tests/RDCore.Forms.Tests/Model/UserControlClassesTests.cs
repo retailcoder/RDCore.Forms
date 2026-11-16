@@ -8,7 +8,8 @@ namespace RDCore.Forms.Tests.Model;
 [TestClass]
 public sealed class UserControlClassesTests
 {
-    private const string Visible = "Left Top Width Height Visible DragMode ToolTipText WhatsThisHelpID Tag";
+    // VB6's extender members, and RD-VBA's Opacity.
+    private const string Visible = "Left Top Width Height Visible Opacity DragMode ToolTipText WhatsThisHelpID Tag";
     private const string Focus = "TabIndex TabStop CausesValidation HelpContextID";
 
     private static string Ctl(params string[] settings) =>
