@@ -178,6 +178,62 @@ public sealed class ScaleRulesTests
         Assert.AreEqual(2250d, picture.Get(P.ScaleWidth));
     }
 
+    private static ComponentInstance Line(ComponentInstance container, double x1, double y1, double x2, double y2)
+    {
+        var line = new ComponentInstance(VBClasses.Line, "Line1").Set(P.X1, x1).Set(P.Y1, y1).Set(P.X2, x2).Set(P.Y2, y2);
+        line.SetContainer(container);
+        return line;
+    }
+
+    private static (double X1, double Y1, double X2, double Y2) Ends(ComponentInstance line) =>
+        (Math.Round(line.Get(P.X1), 4), Math.Round(line.Get(P.Y1), 4), Math.Round(line.Get(P.X2), 4), Math.Round(line.Get(P.Y2), 4));
+
+    // VB6 gave a Line's ends again in the new scale: 200, 233.3333 pixels read 3000, 3500 once the PictureBox's ScaleMode was twips.
+    [TestMethod]
+    public void AScaleChange_GivesAHeldLinesEnds_InTheNewScale()
+    {
+        var picture = Picture();
+        var line = Line(picture, 3000, 3500, 4000, 3900);
+        (string Name, object Value, double X1, double Y1, double X2, double Y2)[] steps =
+        [
+            ("ScaleMode", ScaleMode.Pixel, 200, 233.3333, 266.6667, 260),
+            ("ScaleLeft", 100d, 300, 233.3333, 366.6667, 260),
+            ("ScaleWidth", 800d, 500, 233.3333, 633.3333, 260),
+            ("ScaleMode", ScaleMode.Twip, 3000, 3500, 4000, 3900),
+        ];
+
+        foreach (var (name, value, x1, y1, x2, y2) in steps)
+        {
+            Assert.IsTrue(picture.TrySet(picture.Class.Property(name)!, value), $"{name} = {value}");
+            Assert.AreEqual((x1, y1, x2, y2), Ends(line), $"{name} = {value}");
+        }
+    }
+
+    [TestMethod]
+    public void AResize_InAUserScale_KeepsAHeldLinesEnds()
+    {
+        var picture = Picture();
+        var line = Line(picture, 3000, 3500, 4000, 3900);
+        picture.TrySet(P.ScaleWidth, 3000d);
+        var user = Ends(line);
+        picture.TrySet(P.Width, 300d);
+
+        Assert.AreEqual((1500d, 3500d, 2000d, 3900d), user);
+        Assert.AreEqual(user, Ends(line));
+    }
+
+    [TestMethod]
+    public void AScaleChange_LeavesALineInAFrame_AsItIs()
+    {
+        var picture = Picture();
+        var frame = new ComponentInstance(VBClasses.Frame, "Frame1");
+        frame.SetContainer(picture);
+        var line = Line(frame, 3000, 3500, 4000, 3900);
+        picture.TrySet(P.ScaleMode, ScaleMode.Pixel);
+
+        Assert.AreEqual((3000d, 3500d, 4000d, 3900d), Ends(line));
+    }
+
     [TestMethod]
     public void AComponent_NotFollowed_KeepsWhatIsSet()
     {
