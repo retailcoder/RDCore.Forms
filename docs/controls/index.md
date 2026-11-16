@@ -102,7 +102,7 @@ A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(con
 |Property|Behaviour|
 |---|---|
 |`Visible`, `Enabled`|Hide or disable the control, and every control it holds. A disabled form takes no input in any of its controls.|
-|`Opacity`|RD-VBA addition. How solid the control is drawn, a Single from 0 to 1 (the default, solid). See [Opacity](#opacity).|
+|`Opacity`|RD-VBA addition. How solid the control is drawn: a Single from 0, not seen, to 1, solid, which is the default. See [Opacity](#opacity).|
 |`BackColor`, `ForeColor`|A system colour is drawn in Windows 11's default palette ([`FormPalette`](../api/RDCore.Forms.Avalonia.Controls.FormPalette.yml)), on every platform.|
 |`Font`|The control's font, held at the size VB6 draws it at: see [Fonts](fonts.md).|
 |`ToolTipText`|Shown as the control's tooltip; an empty text shows none.|
@@ -114,9 +114,9 @@ A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(con
 
 |Case|Effect|
 |---|---|
-|0 to 1|The whole control fades by that much over what is under it: its background, border, caption and picture, and every control it holds. 0 is not seen, 1 is solid.|
+|0 to 1|The whole control is drawn that solid over what is under it: its background, border, caption and picture, and every control it holds. 0 is not seen, 1 is solid.|
 |Outside 0 to 1|Error 380, Invalid property value, and the value is unchanged. A designer refuses it too. A form's file that holds one keeps the line as written.|
-|Mouse|A control at 0 still takes the mouse and raises its mouse events. Only `Visible` False takes it out of the way.|
+|Mouse|A control at 0 still takes the mouse and raises its mouse events. Only `Visible` False stops it taking the mouse.|
 |Order|Unchanged: a windowless control at any `Opacity` stays under every windowed control.|
 
 ## Run-time controls

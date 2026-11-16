@@ -114,9 +114,9 @@ public static class VBProperties
     public static readonly PropertyDefinition<bool> Visible = new("Visible", PropertyCategory.Behavior, true);
 
     /// <summary>
-    /// How solid a control is drawn, a Single from 0, not seen, to 1, solid, the default: an RD-VBA addition. The whole control fades, its background,
-    /// border, caption and picture, and the controls it holds with it. A control at 0 still takes the mouse and raises its mouse events; only
-    /// <see cref="Visible"/> False takes it out. Its place among the other controls is unchanged. A value outside 0 to 1 is refused (380).
+    /// How solid a control is drawn, a Single from 0, not seen, to 1, solid, the default: an RD-VBA addition. The whole control is drawn that solid,
+    /// its background, border, caption and picture, and the controls it holds with it. A control at 0 still takes the mouse and raises its mouse
+    /// events; only <see cref="Visible"/> False stops that. Its place among the other controls is unchanged. A value outside 0 to 1 is refused (380).
     /// </summary>
     public static readonly PropertyDefinition<double> Opacity =
         new("Opacity", PropertyCategory.Appearance, 1d) { Valid = static opacity => opacity is >= 0 and <= 1 };
