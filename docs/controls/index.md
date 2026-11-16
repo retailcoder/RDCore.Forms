@@ -89,10 +89,13 @@ A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(con
 |Place|The control keeps its place in pixels in its container's client area. A program reads its `Left` and `Top` in the new container's scale: 200, 300 twips in a form is 13.33333, 20 in a PictureBox whose `ScaleMode` is pixels. A Line's ends are given again in the new container's scale.|
 |Stacking|On top of the windowed controls of its new container, even where that is the container it was in.|
 |Unchanged|`Visible`, every `TabIndex`, and the removal of a control added at run time.|
-|Focus|A control that has the focus keeps it, and no LostFocus or GotFocus is raised.|
+|Focus|A control that has the focus and is placed in a Frame or a PictureBox keeps it, and no LostFocus or GotFocus is raised.|
 |Order|The control is last in its new container's contents, so `FormDefinition.Controls` and a tie of `TabIndex` follow the new order (RDForms' own).|
 
 `SetContainer` refuses with error 425, Invalid object use, and changes nothing, where the container is `Nothing`, holds no controls (a TextBox, a menu item), is the control itself or a control it holds, or is another form or a control of another form.
+
+> [!NOTE]
+> **Not implemented.** A control that has the focus keeps it when it is placed back in the form, too. In VB6, a TextBox placed from a Frame back in the form, outside the Frame's area, raised LostFocus and gave the focus to the Frame (observed once).
 
 ## Common properties
 
