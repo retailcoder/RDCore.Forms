@@ -42,6 +42,9 @@
   <data name="Error341" xml:space="preserve">
     <value>Index de tableau d'objets incorrect</value>
   </data>
+  <data name="Error341Control" xml:space="preserve">
+    <value>Index de groupe de contrôles incorrect</value>
+  </data>
   <data name="Error343" xml:space="preserve">
     <value>L'objet n'est pas un tableau</value>
   </data>

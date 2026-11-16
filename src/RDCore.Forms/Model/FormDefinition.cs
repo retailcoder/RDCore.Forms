@@ -19,6 +19,9 @@ public sealed class FormDefinition
     // The controls added at run time and not removed, in the order they were added.
     private readonly List<ComponentInstance> added = [];
 
+    // The control arrays asked for, by name, so that each is one object.
+    private readonly Dictionary<string, FormControlArray> arrays = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Creates the definition of a form whose root is <paramref name="root"/>.
     /// </summary>
@@ -63,7 +66,24 @@ public sealed class FormDefinition
         Components.FirstOrDefault(c => c.Index == index && string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
-    /// Raised after <see cref="AddControl(ComponentClass, string, ComponentInstance?)"/> places a control in the form.
+    /// The form's control array of a name, the name compared without regard to case: the controls of that name that have an index.
+    /// Menu items are in menu arrays (<see cref="Menus.FormMenu.ArrayOf"/>).
+    /// </summary>
+    /// <param name="name">The array's name.</param>
+    /// <returns>The array, the same object each time; <see langword="null"/> when no control of that name has an index.</returns>
+    public FormControlArray? ArrayOf(string name)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        if (!Root.Descendants().Any(component => FormControlArray.IsElement(component, name)))
+            return null;
+        if (!arrays.TryGetValue(name, out var array))
+            arrays.Add(name, array = new FormControlArray(this, name));
+        return array;
+    }
+
+    /// <summary>
+    /// Raised after <see cref="AddControl(ComponentClass, string, ComponentInstance?)"/> places a control in the form, and after
+    /// <see cref="FormControlArray.Load"/> loads an element of a control array.
     /// </summary>
     public event EventHandler<FormControlEventArgs>? ControlAdded;
 
@@ -158,6 +178,28 @@ public sealed class FormDefinition
         added.Add(control);
         ControlAdded?.Invoke(this, new FormControlEventArgs(control, container));
         return control;
+    }
+
+    // A new element of a control array, of an index, copied from another (FormControlArray.Load): hidden, with the next TabIndex, last in
+    // the other's container, and added at run time, so that Unload can take it out.
+    internal ComponentInstance LoadElement(ComponentInstance source, int index)
+    {
+        var container = source.Container!;
+        var element = new ComponentInstance(source.Class, source.Name, index);
+        foreach (var (property, value) in source.SetValues)
+        {
+            if (property != VBProperties.Visible && property != VBProperties.TabIndex)
+                element.TryRead(property, value);
+        }
+
+        if (element.Class.Has(VBProperties.Visible))
+            element.Set(VBProperties.Visible, false);
+        if (element.Class.Has(VBProperties.TabIndex))
+            element.Set(VBProperties.TabIndex, (short)Root.Descendants().Count(c => c.Class.Has(VBProperties.TabIndex)));
+        element.SetContainer(container);
+        added.Add(element);
+        ControlAdded?.Invoke(this, new FormControlEventArgs(element, container));
+        return element;
     }
 
     /// <summary>
