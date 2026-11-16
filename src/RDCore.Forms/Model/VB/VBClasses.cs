@@ -62,14 +62,14 @@ public static class VBClasses
         [M.Move, M.Refresh, M.SetFocus]);
 
     /// <summary>
-    /// <c>VB.MDIForm</c>: an MDI form's designer root. Its background defaults to the application workspace's colour. It has no font
-    /// and no scale of its own.
+    /// <c>VB.MDIForm</c>: an MDI form's designer root. Its background defaults to the application workspace's colour. It has no font,
+    /// no scale of its own and, as VB6's has none, no <c>Refresh</c>.
     /// </summary>
     public static readonly ComponentClass MDIForm = new("VB.MDIForm", "MDIForm", ComponentKind.Root,
         [P.Caption, P.BackColor, P.Enabled, P.Icon, P.MousePointer, P.MouseIcon, P.Picture, P.StartUpPosition, P.Appearance, P.RightToLeft,
          P.HelpContextID, P.Visible, P.Left, P.Top, P.Width, P.Height, P.Tag],
         [Click, DblClick, MouseDown, MouseMove, MouseUp, Initialize, Load, Resize, Activate, Deactivate, QueryUnload, Unload, Terminate],
-        Defaults((P.BackColor, FormColor.FromSystem(SystemColor.AppWorkspace))), isContainer: true, methods: [M.Move, M.Refresh, M.SetFocus],
+        Defaults((P.BackColor, FormColor.FromSystem(SystemColor.AppWorkspace))), isContainer: true, methods: [M.Move, M.SetFocus],
         defaultMember: DefaultMembers["VB.MDIForm"]);
 
     /// <summary>
