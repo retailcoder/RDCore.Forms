@@ -204,14 +204,17 @@ public sealed class FormControlArrayTests
     }
 
     [TestMethod]
-    [Ignore("not measured: what VB6 does with a Controls.Remove of an element a program loaded, which RDForms lets through as it does for a control Controls.Add added")]
-    public void ControlsRemove_OfAnElementLoaded_IsRefused()
+    public void ControlsRemove_OfAnElement_Is729_EvenOneLoaded_AndOfTheArraysName_IsNoSuchInterface()
     {
         var form = Read();
-        var loaded = form.ArrayOf("picCell")!.Load(1);
+        var picCell = form.ArrayOf("picCell")!;
+        var loaded = picCell.Load(1);
 
-        Assert.ThrowsExactly<FormErrorException>(() => form.RemoveControl(loaded));
-        Assert.IsTrue(form.ArrayOf("picCell")!.IsLoaded(1));
+        Assert.AreEqual(729, Error(() => form.RemoveControl(loaded)));
+        Assert.AreEqual(729, Error(() => form.RemoveControl(picCell[0])));
+        Assert.AreEqual(unchecked((int)0x80004002), Error(() => form.RemoveControl("picCell")));
+        Assert.AreEqual((2, true), (picCell.Count, picCell.IsLoaded(1)));
+        Assert.IsTrue(form.IsAddedAtRunTime(loaded));
     }
 
     private static void Expect(string[] expected, IEnumerable<string> actual) =>

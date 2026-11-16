@@ -252,6 +252,12 @@ public readonly record struct FormError(int Number, string Description)
     public static FormError ContainerHoldsADesignTimeControl(string name) => Formatted(740, name);
 
     /// <summary>
+    /// Error -2147467262 (&amp;H80004002), "System Error &amp;H80004002 (-2147467262). No such interface supported": the object is not of
+    /// the kind asked for, such as the name of a control array given to <c>Controls.Remove</c>.
+    /// </summary>
+    public static FormError NoSuchInterface => Standard(unchecked((int)0x80004002));
+
+    /// <summary>
     /// The error's number and description, such as <c>380: Invalid property value</c>.
     /// </summary>
     /// <returns>The error's number and description.</returns>

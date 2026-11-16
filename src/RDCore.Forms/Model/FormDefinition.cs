@@ -236,11 +236,15 @@ public sealed class FormDefinition
     /// </summary>
     /// <param name="name">The control's name, compared without regard to case.</param>
     /// <exception cref="FormErrorException">
-    /// The form has no control of that name: 730, Control not found. Otherwise as <see cref="RemoveControl(ComponentInstance)"/>.
+    /// The form has no control of that name: 730, Control not found. The name is a control array's: -2147467262 (&amp;H80004002), No such
+    /// interface supported. Otherwise as <see cref="RemoveControl(ComponentInstance)"/>.
     /// </exception>
     public void RemoveControl(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
+        // VB6 takes the name for the array object, which lacks the interface of a control.
+        if (ArrayOf(name) is not null)
+            throw new FormErrorException(FormError.NoSuchInterface);
         var control = Root.Descendants().FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase))
                       ?? throw new FormErrorException(FormError.ControlNotFound(name));
         RemoveControl(control);
@@ -252,8 +256,8 @@ public sealed class FormDefinition
     /// </summary>
     /// <param name="control">The control.</param>
     /// <exception cref="FormErrorException">
-    /// The control is not one of the form's: 730, Control not found. It was not added at run time: 729. It holds a control that was
-    /// not added at run time: 740, and nothing is removed.
+    /// The control is not one of the form's: 730, Control not found. It was not added at run time, or is an element of a control array,
+    /// even one a program's <c>Load</c> added: 729. It holds a control that was not added at run time: 740. Nothing is removed.
     /// </exception>
     /// <remarks>
     /// The form's other <c>TabIndex</c> values close up over those taken out, so that they run on from 0 with no gap.
@@ -263,8 +267,17 @@ public sealed class FormDefinition
         ArgumentNullException.ThrowIfNull(control);
         if (!Root.Descendants().Contains(control))
             throw new FormErrorException(FormError.ControlNotFound(control.Name));
-        if (!added.Contains(control))
+        // an element a program loaded is the Unload statement's to take out (FormControlArray.Unload).
+        if (!added.Contains(control) || control.Index is not null)
             throw new FormErrorException(FormError.CanOnlyRemoveAddedControls);
+        RemoveAdded(control);
+    }
+
+    // An element of a control array that a program loaded, which Unload takes out as Controls.Remove takes out a control it added.
+    internal void UnloadElement(ComponentInstance element) => RemoveAdded(element);
+
+    private void RemoveAdded(ComponentInstance control)
+    {
         var removed = control.Descendants().Prepend(control).ToList();
         if (removed.FirstOrDefault(c => !added.Contains(c)) is { } placed)
             throw new FormErrorException(FormError.ContainerHoldsADesignTimeControl(placed.Name));

@@ -130,4 +130,7 @@ Looking for object with ProgID: {0}</value>
   <data name="Error383Named" xml:space="preserve">
     <value>'{0}' property is read-only</value>
   </data>
+  <data name="Error-2147467262" xml:space="preserve">
+    <value>System Error &amp;H80004002 (-2147467262). No such interface supported</value>
+  </data>
 </root>

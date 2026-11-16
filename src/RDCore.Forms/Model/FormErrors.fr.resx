@@ -130,4 +130,7 @@ Recherche de l'objet dont le ProgID est : {0}</value>
   <data name="Error383Named" xml:space="preserve">
     <value>La propriété « {0} » est en lecture seule</value>
   </data>
+  <data name="Error-2147467262" xml:space="preserve">
+    <value>Erreur système &amp;H80004002 (-2147467262). Interface non prise en charge</value>
+  </data>
 </root>
