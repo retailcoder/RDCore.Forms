@@ -16,6 +16,28 @@ internal static class GdiDrawing
     // The spacing of a hatched fill's lines.
     public const int HatchSpacing = 8;
 
+    // Where a drawing surface's hatch lines fall from its corner, as VB6's PaintPicture pattern and Line fill draw them: horizontal lines
+    // on rows 3, 11, 19..., and vertical ones on columns 4, 12, 20....
+    public const int SurfaceHatchRow = 3, SurfaceHatchColumn = 4;
+
+    // Whether a hatched fill covers a pixel of a drawing surface. A diagonal line goes through the corner of the horizontal and the
+    // vertical lines.
+    public static bool IsHatched(FillStyle style, int x, int y)
+    {
+        var (across, down) = (x - SurfaceHatchColumn, y - SurfaceHatchRow);
+        bool On(int value) => (value % HatchSpacing + HatchSpacing) % HatchSpacing == 0;
+        return style switch
+        {
+            FillStyle.HorizontalLine => On(down),
+            FillStyle.VerticalLine => On(across),
+            FillStyle.Cross => On(down) || On(across),
+            FillStyle.UpwardDiagonal => On(across + down),
+            FillStyle.DownwardDiagonal => On(across - down),
+            FillStyle.DiagonalCross => On(across + down) || On(across - down),
+            _ => false,
+        };
+    }
+
     // The runs of pixels on and off a one-pixel GDI pen draws for a style, from where it starts (measured with VB6's Line).
     public static double[]? Dashes(ShapeBorderStyle style) => style switch
     {

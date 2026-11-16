@@ -36,7 +36,19 @@ internal sealed class PrintFont
         Column = measured?.Column ?? Math.Max(1, AverageWidth() is > 0 and var average
             ? (int)Math.Round(average * unit, MidpointRounding.AwayFromZero)
             : Advance(Glyph('x')));
+        // The underline is below the baseline and the strikethrough above it, wherever a face's tables put the sign.
+        Underline = font.Underline ? Band(Ascent + Math.Abs(metrics.UnderlinePosition * unit), metrics.UnderlineThickness) : null;
+        Strikethrough = font.Strikethrough ? Band(Ascent - Math.Abs(metrics.StrikethroughPosition * unit), metrics.StrikethroughThickness) : null;
     }
+
+    // The underline a line of text is drawn with, as its offset from the line's top and its thickness, in pixels, or null for none.
+    public (int Top, int Thickness)? Underline { get; }
+
+    // The strikethrough a line of text is drawn with, as its offset from the line's top and its thickness, in pixels, or null for none.
+    public (int Top, int Thickness)? Strikethrough { get; }
+
+    private (int Top, int Thickness) Band(double top, double thickness) =>
+        ((int)Math.Round(top, MidpointRounding.AwayFromZero), Math.Max(1, (int)Math.Round(Math.Abs(thickness * unit), MidpointRounding.AwayFromZero)));
 
     // The width of a column, in pixels.
     public int Column { get; }

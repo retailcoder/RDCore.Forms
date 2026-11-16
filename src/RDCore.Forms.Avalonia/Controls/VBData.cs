@@ -150,6 +150,8 @@ public sealed class VBData : Control
         var text = new FormattedText(caption, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
             new Typeface(FormFonts.ToFontFamily(font), font.Italic ? FontStyle.Italic : FontStyle.Normal, font.Bold ? FontWeight.Bold : FontWeight.Normal),
             FormFonts.ToFontSize(font), IsEffectivelyEnabled ? fore : Brush(SystemColor.GrayText));
+        if (FormFonts.ToTextDecorations(font) is { } decorations)
+            text.SetTextDecorations(decorations);
         var top = strip.Y + Math.Floor((strip.Height - FormFonts.LineHeight(font)) / 2);
         using (context.PushClip(strip))
             context.DrawText(text, new Point(strip.X + 3, top));
