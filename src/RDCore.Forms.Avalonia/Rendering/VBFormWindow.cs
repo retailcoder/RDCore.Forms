@@ -381,7 +381,9 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// The value assigned, of the property's type (<see cref="MethodDefinition.Value"/>): a number for a number, which the window rounds
     /// and checks as it does an argument.
     /// </param>
-    /// <exception cref="ArgumentNullException"><paramref name="component"/>, <paramref name="property"/> or <paramref name="arguments"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="component"/>, <paramref name="property"/> or <paramref name="arguments"/> is <see langword="null"/>.
+    /// </exception>
     /// <exception cref="ArgumentException">
     /// <paramref name="component"/> is not shown on the form, or <paramref name="property"/> is not a property of its class.
     /// </exception>

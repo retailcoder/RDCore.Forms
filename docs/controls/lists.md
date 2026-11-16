@@ -57,7 +57,7 @@ var x = window.Invoke(combo, VBMethods.List, [FormValue.FromInteger(0)]).AsStrin
 The index and argument rules follow RDForms' own rules, as a method's do. A ListBox or ComboBox that `Controls.Add` adds takes the same members as one of the form's file.
 
 > [!NOTE]
-> **Not implemented.** `Sorted` and `TopIndex` are not modelled: a program's `TopIndex` is error 438, and a list whose file sets `Sorted` to True holds its items in the order they are added.
+> **Not implemented.** `Sorted` and `TopIndex` are not modeled: a program's `TopIndex` is error 438, and a list whose file sets `Sorted` to True holds its items in the order they are added.
 
 ## Item icons
 
