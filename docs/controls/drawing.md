@@ -30,6 +30,7 @@ In a form's window, the form's scale and each PictureBox's follow VB6's rules ([
 - A `ScaleWidth` or `ScaleHeight` of 0 is error 380, and a negative one runs the scale right to left or bottom to top.
 - A `ScaleMode` outside 0 to 7 is error 380, and the scale is unchanged. VB6 then reads the refused `ScaleMode` back; RDForms keeps the one it had.
 - A change of `BorderStyle` or `Appearance` changes the inside as a change of size does (RDForms' own, not measured with VB6).
+- A Line the form or the PictureBox holds stays where it is when a set changes the scale: its `X1`, `Y1`, `X2` and `Y2` are given again in the new scale. 200, 233.3333 in a PictureBox whose `ScaleMode` is pixels read 3000, 3500 once it is twips. A change of size leaves them as they are. A Line in a Frame is in the Frame's twips, which no scale changes (RDForms' own: a Frame has no scale).
 
 ## Statements and methods
 
