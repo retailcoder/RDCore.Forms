@@ -48,8 +48,8 @@ public static class FormFonts
     /// <param name="control">The control.</param>
     /// <param name="font">The font.</param>
     /// <remarks>
-    /// The underline and the strikethrough are drawn under and through the text of the control's text blocks, as long as the text.
-    /// A text box's text is drawn without them.
+    /// The underline and the strikethrough are drawn under and through the text of each of the control's text blocks, along the
+    /// whole text. A text box's text is drawn without them.
     /// </remarks>
     public static void Apply(Control control, FormFont font)
     {

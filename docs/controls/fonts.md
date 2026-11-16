@@ -25,6 +25,15 @@ A font keeps the size it reads back, and a font given another name is drawn from
 
 Past 160 pixels, a bitmap font is drawn at whole pixels. That is RDForms' own.
 
+## Underline and strikethrough
+
+A font's `Underline` and `Strikethrough` (`FontUnderline` and `FontStrikethru`) draw a line under and through the text of a Label, a CheckBox, an OptionButton, a CommandButton, a Frame, a list's items and a Data control's caption.
+
+[`Print`](drawing.md) draws them as long as the printed text, its spaces included, as VB6 does: spaces alone draw the lines from the text's left edge. Their position and thickness come from the face's own tables, and are RDForms' own.
+
+> [!NOTE]
+> **Not implemented.** A TextBox's text is drawn without an underline or a strikethrough.
+
 ## A font never named
 
 A `StdFont` a program makes and never names reads `MS Sans Serif` and is drawn in a scalable face, at whole pixels as a TrueType font is, except that a size of 2 pixels is drawn at 3 (2.25 points). [`FormFont.IsNamed`](../api/RDCore.Forms.Model.FormFont.yml) is False for it. It is drawn in the sans serif RDForms draws for a family that is not installed, with that face's line and column, never MS Sans Serif's. A font from a form's file is named.
