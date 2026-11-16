@@ -116,6 +116,17 @@ public sealed class RDFormsLibrariesTests
             }
             foreach (var raised in modelled.Events)
                 Assert.IsTrue(described.Events.Any(candidate => string.Equals(candidate.Name, raised.Name, StringComparison.OrdinalIgnoreCase)), $"{name}.{raised.Name}");
+            // An added method or window property takes the arguments the window takes, and only a window property has accessors.
+            foreach (var method in modelled.Methods)
+            {
+                var accessors = described.Members.Where(candidate => candidate.IsAddition && string.Equals(candidate.Name, method.Name, StringComparison.OrdinalIgnoreCase));
+                foreach (var accessor in accessors)
+                {
+                    var arguments = accessor.Kind is MemberKind.PropertyLet or MemberKind.PropertySet ? accessor.Parameters.Length - 1 : accessor.Parameters.Length;
+                    Assert.AreEqual(method.Parameters.Count, arguments, $"{name}.{method.Name} {accessor.Kind}");
+                    Assert.AreEqual(method.Value is null, accessor.Kind == MemberKind.Method, $"{name}.{method.Name} {accessor.Kind}");
+                }
+            }
         }
     }
 
@@ -132,6 +143,27 @@ public sealed class RDFormsLibrariesTests
         Assert.AreEqual("Double", opacity[0].Type);
         Assert.AreEqual("Double", opacity[1].Parameters.Single().Type);
         Assert.IsTrue(opacity[1].Parameters.Single().IsByVal);
+    }
+
+    // ItemIcon(Index), the window's, is a picture as VB6's Picture is: a stdole.StdPicture read, let and set, after the item's index, as ItemData's.
+    [TestMethod]
+    [DataRow("ListBox")]
+    [DataRow("ComboBox")]
+    public void ItemIcon_IsAnItemsPicture_ByItsIndex_WithTheAccessorsOfVB6sPicture(string type)
+    {
+        var described = VB().Classes.Single(declared => declared.Name == type);
+        var picture = VB().Classes.Single(declared => declared.Name == "PictureBox").Members.Where(member => member.Name == "Picture").ToArray();
+
+        var itemIcon = described.Members.Where(member => member.Name == "ItemIcon").ToArray();
+
+        CollectionAssert.AreEqual(picture.Select(member => (member.Kind, member.Type)).ToArray(), itemIcon.Select(member => (member.Kind, member.Type)).ToArray());
+        Assert.IsTrue(itemIcon.All(member => member.IsAddition));
+        foreach (var accessor in itemIcon)
+        {
+            Assert.AreEqual("Index Integer", $"{accessor.Parameters[0].Name} {accessor.Parameters[0].Type}", $"{accessor.Kind}");
+            var value = picture.Single(member => member.Kind == accessor.Kind).Parameters;
+            CollectionAssert.AreEqual(value.Select(parameter => parameter.Type).ToArray(), accessor.Parameters.Skip(1).Select(parameter => parameter.Type).ToArray(), $"{accessor.Kind}");
+        }
     }
 
     [TestMethod]

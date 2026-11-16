@@ -86,7 +86,7 @@ public sealed class RDFormsLibraries : ILibrarySource
         foreach (var modelledClass in modelled)
         {
             foreach (var method in modelledClass.Methods.Where(method => !Declared(method.Name)))
-                members.AddRange(Added(MethodMembers(method)));
+                members.AddRange(Added(MethodMembers(method, exported)));
             var settings = DesignerSettings.GetValueOrDefault(declared.Name) ?? [];
             foreach (var property in modelledClass.Properties.Where(property => !modelledClass.IsNotAvailableAtRunTime(property) && !Declared(property.Name)
                 && !settings.Contains(property.Name, StringComparer.OrdinalIgnoreCase)))
@@ -125,10 +125,7 @@ public sealed class RDFormsLibraries : ILibrarySource
     // model's type.
     private static IEnumerable<MemberDescription> PropertyAccessors(PropertyDefinition property, bool readOnly, LibraryDescription exported)
     {
-        var shared = exported.Classes.Select(declared => declared.Members.Where(member => member.Kind != MemberKind.Method
-                && string.Equals(member.Name, property.Name, StringComparison.OrdinalIgnoreCase)).ToList())
-            .FirstOrDefault(accessors => accessors.Count > 0);
-        if (shared is not null)
+        if (SharedAccessors(property.Name, exported) is { } shared)
             return shared.Where(accessor => !readOnly || accessor.Kind == MemberKind.PropertyGet).Select(accessor => accessor with { Name = property.Name, DispId = null });
 
         var type = TypeOf(property.ValueType);
@@ -136,12 +133,29 @@ public sealed class RDFormsLibraries : ILibrarySource
         return readOnly ? [get] : [get, new MemberDescription { Name = property.Name, Kind = MemberKind.PropertyLet, Parameters = [Parameter("Value", type, byVal: true)] }];
     }
 
-    // A method, or a property the window answers for, as code calls it.
-    private static IEnumerable<MemberDescription> MethodMembers(MethodDefinition method)
+    // The accessors of a property of the name on the first of VB6.OLB's classes that declares one, or null where none does.
+    private static List<MemberDescription>? SharedAccessors(string name, LibraryDescription exported) =>
+        exported.Classes.Select(declared => declared.Members.Where(member => member.Kind != MemberKind.Method
+                && string.Equals(member.Name, name, StringComparison.OrdinalIgnoreCase)).ToList())
+            .FirstOrDefault(accessors => accessors.Count > 0);
+
+    // A method, or a property the window answers for, as code calls it. A property whose value the window types as a property of VB6.OLB
+    // (ItemIcon's Picture) has that property's accessors and type, after its own parameters: VB6's Picture is a stdole.StdPicture that is
+    // read, let and set.
+    private static IEnumerable<MemberDescription> MethodMembers(MethodDefinition method, LibraryDescription exported)
     {
         var parameters = method.Parameters.Select(parameter => Parameter(parameter.Name, parameter.TypeName, optional: parameter.IsOptional)).ToImmutableArray();
         if (method.Value is not { } value)
             return [new MemberDescription { Name = method.Name, Kind = MemberKind.Method, Parameters = parameters }];
+
+        if (SharedAccessors(value.TypeName, exported) is { } shared)
+            return shared.Where(accessor => !method.IsReadOnly || accessor.Kind == MemberKind.PropertyGet).Select(accessor => accessor with
+            {
+                Name = method.Name,
+                DispId = null,
+                Description = null,
+                Parameters = [.. parameters, .. accessor.Parameters],
+            });
 
         var get = new MemberDescription { Name = method.Name, Kind = MemberKind.PropertyGet, Type = value.TypeName, Parameters = parameters };
         return method.IsReadOnly
