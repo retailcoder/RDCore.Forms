@@ -85,7 +85,8 @@ public sealed class FormControlArray : IEnumerable<ComponentInstance>
     /// <returns>The element loaded.</returns>
     /// <exception cref="FormErrorException">
     /// <paramref name="index"/> is negative: 341, Invalid control array index. It is above 32767: 6, Overflow. An element of that index
-    /// is loaded: 360, Object already loaded. Nothing changes.
+    /// is loaded: 360, Object already loaded. No element is loaded to copy (the form has none of the array's name left): 340. Nothing
+    /// changes.
     /// </exception>
     public ComponentInstance Load(int index)
     {
@@ -96,6 +97,8 @@ public sealed class FormControlArray : IEnumerable<ComponentInstance>
         var elements = Elements;
         if (elements.Any(element => element.Index == index))
             throw new FormErrorException(FormError.ObjectAlreadyLoaded);
+        if (elements.Count == 0)
+            throw new FormErrorException(FormError.ControlArrayElementDoesntExist(index));
         return Form.LoadElement(elements[0], index);
     }
 

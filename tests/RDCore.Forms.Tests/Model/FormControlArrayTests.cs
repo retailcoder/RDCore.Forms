@@ -191,6 +191,29 @@ public sealed class FormControlArrayTests
         Assert.AreEqual((short)7, again.Get(P.TabIndex));
     }
 
+    [TestMethod]
+    public void Load_OfAnArrayThatHasNoElementLeftToCopy_Is340_AndChangesNothing()
+    {
+        var form = Read();
+        var picCell = form.ArrayOf("picCell")!;
+        picCell[0].SetContainer(null);
+
+        Assert.AreEqual(340, Error(() => picCell.Load(1)));
+        Assert.AreEqual(0, picCell.Count);
+        Assert.IsFalse(form.Controls.Any(control => control.Name == "picCell"));
+    }
+
+    [TestMethod]
+    [Ignore("not measured: what VB6 does with a Controls.Remove of an element a program loaded, which RDForms lets through as it does for a control Controls.Add added")]
+    public void ControlsRemove_OfAnElementLoaded_IsRefused()
+    {
+        var form = Read();
+        var loaded = form.ArrayOf("picCell")!.Load(1);
+
+        Assert.ThrowsExactly<FormErrorException>(() => form.RemoveControl(loaded));
+        Assert.IsTrue(form.ArrayOf("picCell")!.IsLoaded(1));
+    }
+
     private static void Expect(string[] expected, IEnumerable<string> actual) =>
         CollectionAssert.AreEqual(expected, actual.ToArray(), $"expected [{string.Join(", ", expected)}], got [{string.Join(", ", actual)}]");
 }
