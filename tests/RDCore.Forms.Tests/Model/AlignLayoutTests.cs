@@ -169,6 +169,29 @@ public sealed class AlignLayoutTests
         Assert.AreSame(layout, AlignLayout.Of(layout.Form));
     }
 
+    // A Data control and an Alignable UserControl dock as a box does. One that is also InvisibleAtRuntime has no place to dock.
+    [TestMethod]
+    public void ADataControlAndAnAlignableUserControl_DockAsABoxDoes_AndAnInvisibleOneDoesNot()
+    {
+        static ComponentClass Placed(string name, bool invisible) => UserControlClasses.Of(new FormDefinition(
+            new ComponentInstance(VBClasses.UserControl, name).Set(P.Alignable, true).Set(P.InvisibleAtRuntime, invisible)), "Project1");
+        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d);
+        var data = new ComponentInstance(VBClasses.Data, "Data1").Set(P.Left, 50d).Set(P.Top, 50d).Set(P.Width, 100d).Set(P.Height, 20d)
+            .Set(P.Align, Align.Top);
+        var gauge = new ComponentInstance(Placed("Gauge", false), "Gauge1").Set(P.Left, 50d).Set(P.Top, 90d).Set(P.Width, 60d)
+            .Set(P.Height, 40d).Set(P.Align, Align.Left);
+        var hidden = new ComponentInstance(Placed("Hidden", true), "Hidden1").Set(P.Align, Align.Bottom);
+        foreach (var control in new[] { data, gauge, hidden })
+            control.SetContainer(root);
+
+        var layout = AlignLayout.Of(new FormDefinition(root));
+
+        CollectionAssert.AreEqual(new[] { "Gauge1", "Data1" }, layout.Docked.Select(box => box.Name).ToArray());
+        Assert.AreEqual("0,0 400x20", $"{data.Get(P.Left)},{data.Get(P.Top)} {data.Get(P.Width)}x{data.Get(P.Height)}");
+        Assert.AreEqual("0,20 60x280", $"{gauge.Get(P.Left)},{gauge.Get(P.Top)} {gauge.Get(P.Width)}x{gauge.Get(P.Height)}");
+        Assert.AreEqual(FormError.PropertyCantBeSetOnThisControl("Height").Number, AlignLayout.Refusal(gauge, P.Height)?.Number);
+    }
+
     [TestMethod]
     public void TheBoxes_FollowTheFormsSize()
     {

@@ -13,11 +13,13 @@ public static class VBControls
     private static readonly IFileSystem MachineFileSystem = new FileSystem();
 
     /// <summary>
-    /// Makes the control that shows a component of one of VB's intrinsic control classes.
+    /// Makes the control that shows a component of one of VB's intrinsic control classes, or a placed UserControl: a
+    /// <see cref="VBUserControl"/>.
     /// </summary>
     /// <param name="instance">The component.</param>
     /// <returns>
-    /// The control, or <see langword="null"/> where its class has none: a menu and a form's root.
+    /// The control, or <see langword="null"/> where its class has none: a menu, a form's root, a UserControl that is invisible at run
+    /// time, and a class that is neither VB's nor one <see cref="UserControlClasses.Of"/> made.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> is <see langword="null"/>.</exception>
     /// <remarks>
@@ -26,13 +28,17 @@ public static class VBControls
     public static Control? Create(ComponentInstance instance) => Create(instance, MachineFileSystem);
 
     /// <summary>
-    /// Makes the control that shows a component of one of VB's intrinsic control classes, with the file system its file system lists
-    /// show.
+    /// Makes the control that shows a component of one of VB's intrinsic control classes, or a placed UserControl, with the file
+    /// system its file system lists show.
     /// </summary>
     /// <param name="instance">The component.</param>
-    /// <param name="fileSystem">The file system a DriveListBox, a DirListBox and a FileListBox show, from its current directory.</param>
+    /// <param name="fileSystem">
+    /// The file system a DriveListBox, a DirListBox and a FileListBox show, from its current directory, those of a placed UserControl
+    /// included.
+    /// </param>
     /// <returns>
-    /// The control, or <see langword="null"/> where its class has none: a menu and a form's root.
+    /// The control, or <see langword="null"/> where its class has none: a menu, a form's root, a UserControl that is invisible at run
+    /// time, and a class that is neither VB's nor one <see cref="UserControlClasses.Of"/> made.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> or <paramref name="fileSystem"/> is <see langword="null"/>.</exception>
     public static Control? Create(ComponentInstance instance, IFileSystem fileSystem)
@@ -76,6 +82,8 @@ public static class VBControls
             return new VBLine(instance);
         if (ReferenceEquals(type, VBClasses.Data))
             return new VBData(instance);
+        if (UserControlClasses.DefinitionOf(type) is not null)
+            return type.HasExtent ? new VBUserControl(instance, fileSystem) : null;
         return null;
     }
 }

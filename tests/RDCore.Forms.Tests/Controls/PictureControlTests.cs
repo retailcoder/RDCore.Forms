@@ -128,6 +128,23 @@ public sealed class PictureControlTests
         CollectionAssert.AreEqual(new[] { Blue, White, Red, Green }, stretched);
     }
 
+    // a blue and a red pixel stretched over 40 pixels: each repeated 20 times, up to the pixels either side of where they meet, as
+    // VB6's StretchBlt repeats them. A filter that blends neighbours mixes those two.
+    [TestMethod]
+    public void AStretchedPicture_RepeatsItsPixels_WithoutBlendingThem()
+    {
+        var pixels = UI.Run(() =>
+        {
+            var image = new VBImage(new ComponentInstance(VBClasses.Image, "Image1").Set(P.Picture, Png(2, 1, 0xFF0000FF, 0xFFFF0000)).Set(P.Stretch, true));
+            var (window, _) = ControlHost.Show((image, new Rect(10, 5, 40, 40)));
+            var pixels = PixelsAt(window, new(10, 25), new(29, 25), new(30, 25), new(49, 25));
+            window.Close();
+            return pixels;
+        });
+
+        CollectionAssert.AreEqual(new[] { Blue, Blue, Red, Red }, pixels);
+    }
+
     [TestMethod]
     public void APictureBoxsPicture_IsDrawnFromItsClientOrigin_UnderTheControlsItHolds()
     {
@@ -164,6 +181,32 @@ public sealed class PictureControlTests
         Assert.AreEqual(Blue, pixels[1]);
         // Half red over the blue back colour.
         Assert.IsTrue(pixels[2] is { R: >= 120 and <= 136, G: 0, B: >= 119 and <= 135 }, pixels[2].ToString());
+    }
+
+    [TestMethod]
+    public void AnImagesPng_ShowsWhatIsBehindItsTransparentPixels_AndBlendsItsHalfTransparentOnes_StretchedOrNot()
+    {
+        var (atItsSize, stretched) = UI.Run(() =>
+        {
+            // Opaque red, then transparent, then red at half its alpha, over a blue PictureBox.
+            var png = Png(3, 1, 0xFFFF0000, 0x00000000, 0x80800000);
+            var under = new VBPictureBox(new ComponentInstance(VBClasses.PictureBox, "Picture1")
+                .Set(P.BorderStyle, BorderStyle.None).Set(P.BackColor, FormColor.FromRgb(0, 0, 255)));
+            var image = new VBImage(new ComponentInstance(VBClasses.Image, "Image1").Set(P.Picture, png));
+            var (window, _) = ControlHost.Show((under, new Rect(10, 5, 60, 30)), (image, new Rect(10, 5, 60, 30)));
+            var atItsSize = PixelsAt(window, new(10, 5), new(11, 5), new(12, 5));
+            VBControl.GetInstance(image)!.Set(P.Stretch, true);
+            var stretched = PixelsAt(window, new(20, 20), new(40, 20), new(60, 20));
+            window.Close();
+            return (atItsSize, stretched);
+        });
+
+        foreach (var pixels in new[] { atItsSize, stretched })
+        {
+            Assert.AreEqual(Red, pixels[0]);
+            Assert.AreEqual(Blue, pixels[1]);
+            Assert.IsTrue(pixels[2] is { R: >= 120 and <= 136, G: 0, B: >= 119 and <= 135 }, pixels[2].ToString());
+        }
     }
 
     [TestMethod]

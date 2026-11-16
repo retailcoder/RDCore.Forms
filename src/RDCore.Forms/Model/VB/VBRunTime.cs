@@ -18,7 +18,7 @@ public static class VBRunTime
     /// <exception cref="ArgumentException">The component's class does not have <paramref name="property"/>.</exception>
     /// <exception cref="FormErrorException">
     /// 382 for a property a program cannot set (<see cref="ComponentClass.IsReadOnlyAtRunTime"/>); 380 for a value the property cannot
-    /// hold; 387 for an extent of an aligned PictureBox that its alignment fixes (<see cref="AlignLayout.Refusal"/>); a menu item's
+    /// hold; 387 for an extent of an aligned control that its alignment fixes (<see cref="AlignLayout.Refusal"/>); a menu item's
     /// errors for its <c>Caption</c>, <c>Checked</c>, <c>Enabled</c> and <c>Visible</c> (<see cref="FormMenuItem"/>).
     /// </exception>
     public static void Assign(ComponentInstance component, PropertyDefinition property, object? value)

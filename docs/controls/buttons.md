@@ -88,7 +88,7 @@ Where `UseMaskColor` is True, a picture's pixels of the `MaskColor` show the but
 
 These are RDForms' own, not measured with VB6:
 
-- A PNG, which VB6 does not load, is masked as a bitmap.
+- A PNG, which VB6 does not load, is masked as a bitmap: only its opaque pixels of the `MaskColor` are left out, and a pixel of that colour that is half transparent is blended over the face.
 - A `Picture` greyed while the button is disabled keeps its masked pixels out: they show the face.
 
 ---

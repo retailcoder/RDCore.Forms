@@ -274,7 +274,7 @@ public sealed class ComponentInstance
         return true;
     }
 
-    // A value a layout gives the component, past the property's coercion: an aligned PictureBox's place on its form.
+    // A value a layout gives the component, past the property's coercion: an aligned control's place on its form.
     internal void Place<T>(PropertyDefinition<T> property, T value)
     {
         RequireProperty(property);

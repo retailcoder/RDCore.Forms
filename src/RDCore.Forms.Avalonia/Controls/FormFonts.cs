@@ -27,10 +27,12 @@ public static class FormFonts
     /// <returns>The font family.</returns>
     /// <remarks>
     /// An installed family is named alone. Named first in a list of families, a symbol font such as Marlett is passed over for the
-    /// platform's default face, though it resolves by itself.
+    /// platform's default face, though it resolves by itself. A font that is not <see cref="FormFont.IsNamed"/> is drawn in the sans
+    /// serif, whatever name it reads.
     /// </remarks>
     public static FontFamily ToFontFamily(FormFont font) =>
-        IsInstalled(font.Name) ? new FontFamily(font.Name) : new FontFamily($"{font.Name}, {Fallback}");
+        !font.IsNamed ? new FontFamily(Fallback)
+        : IsInstalled(font.Name) ? new FontFamily(font.Name) : new FontFamily($"{font.Name}, {Fallback}");
 
     /// <summary>
     /// The size a font is drawn at, in device-independent pixels.
@@ -69,11 +71,11 @@ public static class FormFonts
     }
 
     // MS Sans Serif's line and Print column in whole pixels, as VB6 measures them at the size a component holds it at, the size it
-    // is drawn at; or null for another font, or for a size past those measured. An italic face's column is RDForms' own: the
-    // regular one's.
+    // is drawn at; or null for another font, for a font never named, which only reads that name, or for a size past those measured.
+    // An italic face's column is RDForms' own: the regular one's.
     internal static (int Line, int Column)? MSSansSerif(FormFont font)
     {
-        if (!string.Equals(font.Name, "MS Sans Serif", StringComparison.OrdinalIgnoreCase))
+        if (!font.IsNamed || !string.Equals(font.Name, "MS Sans Serif", StringComparison.OrdinalIgnoreCase))
             return null;
         var pixels = Math.Round(ToFontSize(font), MidpointRounding.AwayFromZero);
         foreach (var size in MSSansSerifSizes)

@@ -231,6 +231,39 @@ public sealed class PictureBoxResizeTests
         ], log);
     }
 
+    // An aligned Data control raises Resize after the form's as an aligned PictureBox does. A placed UserControl's own Resize, which its
+    // code declares, is not raised.
+    [TestMethod]
+    public void AnAlignedDataControl_RaisesResize_AfterTheFormsAtTheFirstShow_AndAnAlignedUserControl_RaisesNone()
+    {
+        var log = UI.Run(() =>
+        {
+            var gauge = UserControlClasses.Of(new FormDefinition(new ComponentInstance(VBClasses.UserControl, "Gauge").Set(P.Alignable, true)),
+                "Project1", [new EventDefinition("Resize")]);
+            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d).Set(P.ScaleMode, ScaleMode.Twip);
+            new ComponentInstance(VBClasses.Data, "Data1").Set(P.Height, 20d).Set(P.Width, 100d).Set(P.Align, Align.Top).SetContainer(root);
+            new ComponentInstance(gauge, "Gauge1").Set(P.Height, 40d).Set(P.Width, 60d).Set(P.Align, Align.Left).SetContainer(root);
+
+            var log = new List<string>();
+            var sink = new RecordingSink
+            {
+                Handler = (source, raised, _) =>
+                {
+                    if (raised.Name == "Resize")
+                        log.Add($"{source.Name}.Resize {Twips(source.Get(P.Width))}x{Twips(source.Get(P.Height))}");
+                },
+            };
+            var window = new VBFormWindow(new FormDefinition(root));
+            VBControl.SetEventSink(window, sink);
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.Close();
+            return log;
+        });
+
+        Expect.Lines(["Form1.Resize 6000x4500", "Data1.Resize 6000x300"], log);
+    }
+
     [TestMethod]
     public void APictureBox_DeclaresResize() =>
         Assert.IsNotNull(VBClasses.PictureBox.Event("Resize"));

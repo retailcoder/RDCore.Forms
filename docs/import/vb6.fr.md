@@ -12,6 +12,8 @@
 
 Le texte est décodé en Windows-1252, sauf si [`VB6ImportOptions.Encoding`](../api/RDCore.Forms.Import.VB6.VB6ImportOptions.yml) en indique un autre.
 
+Les UserControls du projet qu'un formulaire place, comme `Begin Project1.Gauge Gauge1`, sont lus comme des composants lorsque `VB6ImportOptions.Classes` contient leurs classes : voir [UserControls](../controls/usercontrols.md). Sans elles, chacun est conservé sous forme de texte.
+
 `ReadFile` ne lit un fichier associé que dans le dossier du fichier de conception. Un nom cité qui est un chemin absolu, comme un chemin réseau, n'est pas lu, ni un nom qui contient un NUL : chacun est signalé comme un fichier associé introuvable.
 
 ## Le résultat

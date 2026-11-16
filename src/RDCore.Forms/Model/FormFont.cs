@@ -1,6 +1,8 @@
 ﻿// Derived from HexIDE (https://github.com/hexide-io/HexIDE), commit ae17f1db.
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
+using RDCore.SDK.Runtime.Stdole;
+
 namespace RDCore.Forms.Model;
 
 /// <summary>
@@ -13,9 +15,14 @@ namespace RDCore.Forms.Model;
 /// <param name="Underline">Whether the font is underlined.</param>
 /// <param name="Strikethrough">Whether the font is struck through.</param>
 /// <param name="Charset">The font's character set, as Windows numbers them: 0 is ANSI, 2 is Symbol.</param>
+/// <param name="IsNamed">
+/// Whether the font's name was ever set; True by default. A <c>stdole.StdFont</c> no program has named reads its default name, <c>MS Sans Serif</c>, and is
+/// drawn in the scalable face Windows maps no name to, at that face's sizes (<see cref="StdFontObject.IsNamed"/>). A font a form's file
+/// declares is named.
+/// </param>
 public readonly record struct FormFont(
     string Name, double Size, int Weight = FormFont.NormalWeight, bool Italic = false, bool Underline = false,
-    bool Strikethrough = false, int Charset = 0)
+    bool Strikethrough = false, int Charset = 0, bool IsNamed = true)
 {
     /// <summary>
     /// The weight of a normal font.
@@ -42,63 +49,67 @@ public readonly record struct FormFont(
     /// </summary>
     /// <returns>The font, with the size it is drawn at as its <see cref="Size"/>.</returns>
     /// <remarks>
-    /// A font is drawn at a whole number of pixels, 96 to an inch, so at a multiple of 0.75 points: the size asked, in pixels and
-    /// rounded half up, and at least 2 pixels. MS Sans Serif, MS Serif, Courier, System and Small Fonts are bitmap fonts, each drawn at
-    /// sizes of its own up to 160 pixels: MS Sans Serif asked for 8 points, about 10.7 pixels, is drawn at 11 pixels, 8.25 points. Past
-    /// 160 pixels, and past 153 for Small Fonts, they are drawn at whole pixels too.
+    /// The size is the one <see cref="StdFontObject.DrawnSize"/> gives for the font's name, or for no name where the font is not
+    /// <see cref="IsNamed"/>: a whole number of pixels, or one of a bitmap font's own sizes, so MS Sans Serif asked for 8 points is drawn
+    /// at 8.25. A size of 0 or less is drawn as the smallest size, and one too large to draw as the largest.
     /// </remarks>
-    public FormFont AtDrawnSize() => this with { Size = DrawnPixels(Name, Size) * 0.75 };
+    public FormFont AtDrawnSize() => this with { Size = (double)StdFontObject.DrawnSize(IsNamed ? Name ?? "" : null, Drawable(Size)) };
 
-    private static double DrawnPixels(string? name, double size)
+    /// <summary>
+    /// Makes the <c>stdole.StdFont</c> that holds this font, as a VB6 control gives one for its <c>Font</c>.
+    /// </summary>
+    /// <param name="font">The new font, holding each of this font's values; <see langword="null"/> where a value is refused.</param>
+    /// <returns>
+    /// <see cref="StdFontFailure.None"/> where every value is taken; otherwise the failure of the first value a <see cref="StdFontObject"/>
+    /// refuses, in the order name, size, weight, character set: a name longer than 31 characters, a size of 0 or less or of 24576 points
+    /// or more, a weight outside 0 to 1000, a character set outside 0 to 255.
+    /// </returns>
+    /// <remarks>
+    /// The new font's weight is 400 or 700, as a <see cref="StdFontObject"/> stores one. A font that is not <see cref="IsNamed"/> is
+    /// given no name, so the new font is not named either.
+    /// </remarks>
+    public StdFontFailure TryToStdFont(out StdFontObject? font)
     {
-        var pixels = Math.Round(size * 4 / 3, MidpointRounding.AwayFromZero);
-        if (name is not null && BitmapSizes.TryGetValue(name, out var sizes) && pixels <= sizes.Last)
-        {
-            var drawn = sizes.Runs[0].Drawn;
-            foreach (var (from, at) in sizes.Runs)
-            {
-                if (from > pixels)
-                    break;
-                drawn = at;
-            }
-
-            return drawn;
-        }
-
-        return Math.Max(2, pixels);
+        font = null;
+        var made = new StdFontObject();
+        var failure = IsNamed ? made.TrySetName(Name ?? "") : StdFontFailure.None;
+        if (failure == StdFontFailure.None)
+            failure = Size > 0 ? made.TrySetSize(Drawable(Size)) : StdFontFailure.InvalidPropertyValue;
+        if (failure == StdFontFailure.None)
+            failure = made.TrySetWeight(ToShort(Weight));
+        if (failure == StdFontFailure.None)
+            failure = made.TrySetCharset(ToShort(Charset));
+        if (failure != StdFontFailure.None)
+            return failure;
+        made.Italic = Italic;
+        made.Underline = Underline;
+        made.Strikethrough = Strikethrough;
+        font = made;
+        return StdFontFailure.None;
     }
 
-    // Each bitmap font's sizes in pixels as VB6 measures them, native and p-code agreeing: from each size asked in a run, up to the
-    // next run's, the font is drawn at the run's size. The sizes do not grow with the size asked everywhere: GDI scales a size of
-    // the font's file to draw another, and MS Sans Serif asked for 143 pixels is drawn at 150, and asked for 144 at 144.
-    private static readonly Dictionary<string, (int Last, (int From, int Drawn)[] Runs)> BitmapSizes = new(StringComparer.OrdinalIgnoreCase)
+    /// <summary>
+    /// Makes the font a <c>stdole.StdFont</c> holds, as a VB6 control takes one for its <c>Font</c>.
+    /// </summary>
+    /// <param name="font">The <c>stdole.StdFont</c>.</param>
+    /// <returns>The font, at the size the <see cref="StdFontObject"/> reads back, and named where it is.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="font"/> is <see langword="null"/>.</exception>
+    public static FormFont FromStdFont(StdFontObject font)
     {
-        ["MS Sans Serif"] = (160,
-        [
-            (1, 11), (13, 13), (16, 16), (18, 18), (20, 20), (22, 22), (23, 23), (24, 24), (26, 26), (30, 30), (32, 32), (36, 36),
-            (39, 39), (40, 40), (44, 44), (46, 46), (48, 48), (52, 52), (54, 54), (55, 55), (60, 60), (64, 64), (65, 65), (69, 69),
-            (72, 72), (78, 80), (88, 90), (92, 92), (96, 96), (100, 100), (108, 108), (111, 115), (120, 120), (127, 128), (138, 138),
-            (143, 150), (144, 144), (146, 150), (157, 160),
-        ]),
-        ["MS Serif"] = (160,
-        [
-            (1, 8), (9, 9), (11, 11), (13, 13), (16, 16), (18, 18), (20, 20), (22, 22), (23, 23), (24, 24), (26, 26), (27, 27),
-            (30, 30), (32, 32), (36, 36), (39, 39), (40, 40), (44, 44), (45, 45), (46, 46), (48, 48), (52, 52), (54, 54), (55, 55),
-            (60, 60), (64, 64), (65, 65), (69, 69), (72, 72), (78, 80), (88, 90), (92, 92), (96, 96), (100, 100), (108, 108),
-            (111, 115), (120, 120), (127, 128), (138, 138), (143, 150), (144, 144), (146, 150), (157, 160),
-        ]),
-        ["Courier"] = (160,
-        [
-            (1, 13), (16, 16), (20, 20), (25, 25), (26, 26), (32, 32), (38, 39), (40, 40), (47, 48), (50, 50), (52, 52), (58, 60),
-            (64, 64), (65, 65), (72, 75), (80, 80), (91, 91), (94, 100), (96, 96), (97, 100), (112, 112), (117, 120), (119, 125),
-            (120, 120), (122, 125), (140, 140), (146, 150), (160, 160),
-        ]),
-        ["System"] = (160, [(1, 13), (23, 26), (36, 39), (49, 52), (62, 65), (75, 78), (88, 91), (101, 104)]),
-        ["Small Fonts"] = (153,
-        [
-            (1, 3), (4, 4), (5, 5), (7, 7), (8, 8), (9, 9), (10, 10), (11, 11), (14, 14), (16, 16), (18, 18), (20, 20), (21, 21),
-            (22, 22), (24, 24), (27, 27), (28, 28), (30, 30), (32, 32), (33, 33), (36, 36), (40, 40), (44, 44), (45, 45), (50, 50),
-            (55, 55), (64, 60), (66, 66), (70, 70), (76, 77), (86, 88),
-        ]),
+        ArgumentNullException.ThrowIfNull(font);
+        return new FormFont(font.Name, (double)font.Size, font.Weight, font.Italic, font.Underline, font.Strikethrough, font.Charset,
+            font.IsNamed);
+    }
+
+    // A size as the SDK takes one: more than 0, and within what a decimal holds; past it, or not a number, the font is drawn at its
+    // largest size anyway.
+    private static decimal Drawable(double size) => size switch
+    {
+        <= 0 => 0.0001m,
+        < 1e28 => (decimal)size,
+        _ => 1e28m,
     };
+
+    // A value outside what a short holds is outside the StdFont's range too, and kept outside it so that it is refused.
+    private static short ToShort(int value) => (short)Math.Clamp(value, -1, short.MaxValue);
 }
