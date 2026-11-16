@@ -156,22 +156,27 @@ public static class VBClasses
         [Click, DblClick, MouseDown, MouseMove, MouseUp], isContainer: true);
 
     /// <summary>
-    /// <c>VB.ListBox</c>. Its colours default to the window's.
+    /// <c>VB.ListBox</c>. Its colors default to the window's. A program reaches its items through its list members, which its window
+    /// answers: <c>AddItem</c>, <c>RemoveItem</c>, <c>Clear</c>, <c>List</c>, <c>ItemData</c>, <c>Selected</c>, <c>ListIndex</c>,
+    /// <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c> and <c>Text</c>.
     /// </summary>
     public static readonly ComponentClass ListBox = Control("VB.ListBox", "List",
         [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.IntegralHeight, P.DragIcon, P.MousePointer,
          P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText],
         [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp],
-        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
+        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
+        methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.Selected, M.ListIndex, M.ListCount, M.NewIndex, M.SelCount, M.ListText]);
 
     /// <summary>
-    /// <c>VB.ComboBox</c>. Its colours default to the window's.
+    /// <c>VB.ComboBox</c>. Its colors default to the window's. A program reaches its items through the list members of a ListBox
+    /// (<see cref="ListBox"/>), except <c>Selected</c> and <c>SelCount</c>.
     /// </summary>
     public static readonly ComponentClass ComboBox = Control("VB.ComboBox", "Combo",
         [P.Text, P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.Locked, P.ComboBoxStyle, P.IntegralHeight,
          P.MousePointer, P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.SelStart, P.SelLength, P.SelText],
         [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp],
-        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)));
+        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
+        methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ListIndex, M.ListCount, M.NewIndex, M.ListText]);
 
     /// <summary>
     /// <c>VB.DriveListBox</c>: the drives, one of which is its <c>Drive</c>. It raises no Click and no mouse events. Its colours
@@ -220,11 +225,11 @@ public static class VBClasses
 
     /// <summary>
     /// <c>VB.Timer</c>. It has a place in the designer and no size, and a running program does not show it and can neither read
-    /// nor set its <c>Left</c> and <c>Top</c>.
+    /// nor set its <c>Left</c> and <c>Top</c>. It has no <c>Container</c>.
     /// </summary>
     public static readonly ComponentClass Timer = new("VB.Timer", "Timer", ComponentKind.Control,
         [P.Enabled, P.Interval, P.Left, P.Top, P.Tag], [VBEvents.Timer], hasExtent: false, notAvailableAtRunTime: [P.Left, P.Top],
-        defaultMember: DefaultMembers["VB.Timer"]);
+        defaultMember: DefaultMembers["VB.Timer"], hasContainer: false);
 
     /// <summary>
     /// <c>VB.HScrollBar</c>.

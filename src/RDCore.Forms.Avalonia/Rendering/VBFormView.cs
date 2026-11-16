@@ -107,6 +107,7 @@ public sealed class VBFormView : Canvas
         Place(form.Root, this);
         form.ControlAdded += (_, e) => Added(e);
         form.ControlRemoved += (_, e) => Removed(e);
+        form.ContainerChanged += (_, e) => Moved(e);
         ComponentBinding.Bind(this, form.Root, form.Root.Class, Apply);
         AddHandler(KeyDownEvent, OnKeyDown);
     }
@@ -198,6 +199,27 @@ public sealed class VBFormView : Canvas
         }
         if (hadTheFocus)
             FirstToTakeTheFocus()?.Focus(NavigationMethod.Tab);
+    }
+
+    // A control a program placed in a container, the one it was in included: on top of its plane there, with what it holds. Where the
+    // focus was in it, it stays there, and VB raises no LostFocus and no GotFocus for the move.
+    private void Moved(FormContainerChangedEventArgs e)
+    {
+        if (!controls.TryGetValue(e.Control, out var control))
+            return;
+        var host = ReferenceEquals(e.Container, Form.Root) ? this : (controls.GetValueOrDefault(e.Container) as IVBContainer)?.ChildHost;
+        if (host is null)
+            return;
+        var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as InputElement;
+        var hadTheFocus = focused is not null && (ReferenceEquals(focused, control) || control.IsVisualAncestorOf(focused));
+        if (!ReferenceEquals(control.Parent, host))
+        {
+            (control.Parent as Panel)?.Children.Remove(control);
+            host.Children.Add(control);
+        }
+        ZOrder(control, toFront: true);
+        if (hadTheFocus)
+            focused!.Focus();
     }
 
     private void Apply(ComponentPropertyChangedEventArgs e)

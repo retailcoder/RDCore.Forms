@@ -80,6 +80,23 @@ The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`,
 |Tab order|One order across the whole form, by `TabIndex`, the form's order deciding a tie. A `TabIndex` past the last place takes the first free place, in the form's order.|
 |Focus|Tab skips a control that takes no focus (a Label, a Frame, an Image, a Timer, a Shape, a Line or a Data control), one whose `TabStop` is False, and one that is hidden or disabled or in a hidden or disabled container.|
 
+## A control's container at run time
+
+A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(control, container)`. It places the control, with the controls it holds, in the form or in a Frame or a PictureBox of the same form, and raises `FormDefinition.ContainerChanged`. A shown form's view moves the control at once. Every control has a `Container` except a Timer (`ComponentClass.HasContainer`); a menu item has none.
+
+|Rule|Behaviour|
+|---|---|
+|Place|The control keeps its place in pixels in its container's client area. A program reads its `Left` and `Top` in the new container's scale: 200, 300 twips in a form is 13.33333, 20 in a PictureBox whose `ScaleMode` is pixels. A Line's ends are given again in the new container's scale.|
+|Stacking|On top of the windowed controls of its new container, even where that is the container it was in.|
+|Unchanged|`Visible`, every `TabIndex`, and the removal of a control added at run time.|
+|Focus|A control that has the focus and is placed in a Frame or a PictureBox keeps it, and no LostFocus or GotFocus is raised.|
+|Order|The control is last in its new container's contents, so `FormDefinition.Controls` and a tie of `TabIndex` follow the new order (RDForms' own).|
+
+`SetContainer` refuses with error 425, Invalid object use, and changes nothing, where the container is `Nothing`, holds no controls (a TextBox, a menu item), is the control itself or a control it holds, or is another form or a control of another form.
+
+> [!NOTE]
+> **Not implemented.** A control that has the focus keeps it when it is placed back in the form, too. In VB6, a TextBox placed from a Frame back in the form, outside the Frame's area, raised LostFocus and gave the focus to the Frame (observed once).
+
 ## Common properties
 
 |Property|Behaviour|
@@ -103,7 +120,7 @@ The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`,
 |Stacking|Under the controls already in its container, windowed or windowless.|
 |Order|`FormDefinition.Controls` holds the controls of the form's file depth first, then those added, in the order added, whatever their container.|
 |Events|An added control raises its events to the window's sink as the form's other controls do. Adding one raises no event of the form.|
-|Removal|Only a control added at run time, with the controls it holds. The other `TabIndex` values close up. A control that had the focus gives it to the first control of the tab order that takes it (RDForms' own).|
+|Removal|Only a control added at run time, with the controls it holds, and not an element of a control array. The other `TabIndex` values close up. A control that had the focus gives it to the first control of the tab order that takes it (RDForms' own).|
 
 |Error|When|
 |---|---|
@@ -112,12 +129,38 @@ The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`,
 |721|The container holds no controls, such as a CommandButton.|
 |727|The name is taken.|
 |728|The name is empty, or white space only.|
-|729|The control to remove was not added at run time.|
+|729|The control to remove was not added at run time, or is an element of a [control array](#control-arrays), even one a program's `Load` added.|
 |730|No control has the name to remove, or it was removed already.|
 |740|The control to remove holds a control that was not added at run time. Nothing is removed.|
+|-2147467262 (&H80004002)|The name to remove is a control array's: *No such interface supported*.|
 
 > [!NOTE]
 > **Not implemented.** A ListBox added at run time to a form that is not shown keeps a height of 32 pixels until the form is shown, where its height is snapped to whole rows (450 twips, 30 pixels); VB6 snaps it as it is added. The `Controls` collection itself, error 735 for a control used after its removal, and the controls of a form's file coming back after Unload and Load belong to the runtime that runs the program.
+
+## Control arrays
+
+Controls that share a name and each have an `Index` are a control array, a [`FormControlArray`](../api/RDCore.Forms.Model.FormControlArray.yml): `FormDefinition.ArrayOf` gives it by name, compared without regard to case, and the same object each time. Menu items are in [menu arrays](menus.md#menu-arrays). A program's `Load` and `Unload` of an element are its `Load` and `Unload`.
+
+```csharp
+var buttons = form.ArrayOf("cmdAction")!;
+var copy = buttons.Load(3);  // Load cmdAction(3)
+buttons.Unload(3);           // Unload cmdAction(3)
+```
+
+- `Elements` are in the order of their indexes, whatever the order of the form's file. `Count` is the number of elements loaded, `LBound` the lowest index and `UBound` the highest. A program's `For Each` goes through them in index order.
+- `Load` copies the element with the lowest index loaded at the time, with every property set on it but two: the copy is hidden, and its `TabIndex` is the next after the form's others. It goes in the same container, under the controls already in it, and holds none of the controls the element holds. `FormDefinition.Controls` has it after the controls of the form's file, in the order loaded.
+- `Unload` takes out an element a program loaded, which `Controls.Remove` does not (729). The other `TabIndex` values close up.
+
+|Statement|Error|
+|---|---|
+|`Load` of an element that is loaded|360, Object already loaded|
+|`Load` with a negative index|341, Invalid control array index|
+|`Load` with an index above 32767|6, Overflow|
+|`Load` when no element is left to copy|340, Control array element doesn't exist|
+|`Unload` of an element of the form's file|362, Can't unload controls created at design time|
+|`Unload` of an element that is not loaded|340, Control array element doesn't exist|
+
+A refused `Load` or `Unload` changes nothing.
 
 ## Properties set only at design time
 

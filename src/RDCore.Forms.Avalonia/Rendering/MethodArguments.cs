@@ -47,6 +47,33 @@ internal static class MethodArguments
         return (short)number;
     }
 
+    // A Long, rounded half to even: a value with no number 13, Null 94, and one past a Long's range 6.
+    internal static int Long(FormValue value)
+    {
+        var number = Math.Round(Number(value, FormError.InvalidUseOfNull));
+        if (number is < int.MinValue or > int.MaxValue)
+            throw new FormErrorException(FormError.Overflow);
+        return (int)number;
+    }
+
+    // A Boolean: True for a number other than 0, and for the string "True" without regard to case, False for "False" (MS-VBAL §5.5.1.2.2).
+    // Null is 94, and another value with no number 13.
+    internal static bool Boolean(FormValue value) => value switch
+    {
+        { Kind: FormValueKind.Boolean } => value.AsBoolean(),
+        { Kind: FormValueKind.String } when bool.TryParse(value.AsString().Trim(), out var truth) => truth,
+        _ => Number(value, FormError.InvalidUseOfNull) != 0,
+    };
+
+    // A String: Empty is "", Null 94. The caller gives a String parameter a String (see VBFormWindow.Invoke); another value is 13.
+    internal static string String(FormValue value) => value.Kind switch
+    {
+        FormValueKind.String => value.AsString(),
+        FormValueKind.Empty => "",
+        FormValueKind.Null => throw new FormErrorException(FormError.InvalidUseOfNull),
+        _ => throw new FormErrorException(FormError.TypeMismatch),
+    };
+
     private static double Number(FormValue value, FormError ofNull) => value.Kind switch
     {
         FormValueKind.Empty => 0,

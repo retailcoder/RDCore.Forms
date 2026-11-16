@@ -42,6 +42,9 @@
   <data name="Error341" xml:space="preserve">
     <value>Invalid object array index</value>
   </data>
+  <data name="Error341Control" xml:space="preserve">
+    <value>Invalid control array index</value>
+  </data>
   <data name="Error343" xml:space="preserve">
     <value>Object not an array</value>
   </data>
@@ -123,5 +126,11 @@ Looking for object with ProgID: {0}</value>
   </data>
   <data name="Error740" xml:space="preserve">
     <value>Controls.Remove can only remove container controls that contain controls added with Controls.Add.  '{0}' was not added with Controls.Add.</value>
+  </data>
+  <data name="Error383Named" xml:space="preserve">
+    <value>'{0}' property is read-only</value>
+  </data>
+  <data name="Error-2147467262" xml:space="preserve">
+    <value>System Error &amp;H80004002 (-2147467262). No such interface supported</value>
   </data>
 </root>

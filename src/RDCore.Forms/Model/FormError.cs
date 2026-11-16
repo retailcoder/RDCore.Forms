@@ -76,6 +76,13 @@ public readonly record struct FormError(int Number, string Description)
     public static FormError InvalidObjectArrayIndex => Standard(341);
 
     /// <summary>
+    /// Error 341, "Invalid control array index": a negative index given to <c>Load</c> for an element of a control array of controls
+    /// other than menus, as VB6 words it for them.
+    /// </summary>
+    public static FormError InvalidControlArrayIndex =>
+        new(341, Descriptions.GetString("Error341Control", CultureInfo.CurrentUICulture) ?? "Error 341");
+
+    /// <summary>
     /// Error 343, "Object not an array".
     /// </summary>
     public static FormError ObjectNotAnArray => Standard(343);
@@ -114,6 +121,15 @@ public readonly record struct FormError(int Number, string Description)
     /// Error 383, "Set not supported (read-only property)".
     /// </summary>
     public static FormError SetNotSupportedReadOnly => Standard(383);
+
+    /// <summary>
+    /// Error 383, "'<paramref name="name"/>' property is read-only": the description VB6 gives an assignment to a control's read-only
+    /// property, such as a ListBox's <c>ListCount</c>.
+    /// </summary>
+    /// <param name="name">The property's name.</param>
+    /// <returns>The error.</returns>
+    public static FormError PropertyIsReadOnly(string name) =>
+        new(383, string.Format(CultureInfo.CurrentUICulture, Descriptions.GetString("Error383Named", CultureInfo.CurrentUICulture) ?? "'{0}' property is read-only", name));
 
     /// <summary>
     /// Error 387, "'<paramref name="property"/>' property can't be set on this control": a value the property takes, refused on
@@ -234,6 +250,12 @@ public readonly record struct FormError(int Number, string Description)
     /// <param name="name">The name of the control placed at design time.</param>
     /// <returns>The error.</returns>
     public static FormError ContainerHoldsADesignTimeControl(string name) => Formatted(740, name);
+
+    /// <summary>
+    /// Error -2147467262 (&amp;H80004002), "System Error &amp;H80004002 (-2147467262). No such interface supported": the object is not of
+    /// the kind asked for, such as the name of a control array given to <c>Controls.Remove</c>.
+    /// </summary>
+    public static FormError NoSuchInterface => Standard(unchecked((int)0x80004002));
 
     /// <summary>
     /// The error's number and description, such as <c>380: Invalid property value</c>.

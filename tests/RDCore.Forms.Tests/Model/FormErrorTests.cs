@@ -57,6 +57,14 @@ public sealed class FormErrorTests
     }
 
     [TestMethod]
+    public void Error383Named_NamesTheProperty_InEitherLanguage()
+    {
+        Assert.AreEqual("'ListCount' property is read-only", InCulture("en-CA", () => FormError.PropertyIsReadOnly("ListCount").Description));
+        Assert.AreEqual("La propriété « ListCount » est en lecture seule", InCulture("fr-CA", () => FormError.PropertyIsReadOnly("ListCount").Description));
+        Assert.AreEqual(383, FormError.PropertyIsReadOnly("Text").Number);
+    }
+
+    [TestMethod]
     public void Error387_NamesTheProperty_InEitherLanguage()
     {
         Assert.AreEqual("'Checked' property can't be set on this control",

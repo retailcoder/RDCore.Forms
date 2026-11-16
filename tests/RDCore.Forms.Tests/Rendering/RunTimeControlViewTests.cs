@@ -64,6 +64,46 @@ public sealed class RunTimeControlViewTests
         CollectionAssert.AreEqual(new[] { "Command1", "Frame1", "cmdNew", "cmdIn" }, tabOrder);
     }
 
+    // Load of an element of cmd, a CommandButton array of index 0 (TabIndex 2) in Frame1 of the form above.
+    [TestMethod]
+    public void AnElementLoaded_IsHidden_ThenShown_InItsContainer_UnderItsOthers_LastInTheTabOrder()
+    {
+        var (hidden, shown, inFrame, under, tabOrder) = UI.Run(() =>
+        {
+            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+            var frame = new ComponentInstance(VBClasses.Frame, "Frame1").Set(P.TabIndex, (short)1).Set(P.Left, 140d).Set(P.Top, 8d)
+                .Set(P.Width, 160d).Set(P.Height, 120d);
+            frame.SetContainer(root);
+            new ComponentInstance(VBClasses.CommandButton, "Command1").Set(P.TabIndex, (short)0).Set(P.Left, 8d).Set(P.Top, 8d)
+                .Set(P.Width, 100d).Set(P.Height, 32d).SetContainer(root);
+            var first = new ComponentInstance(VBClasses.CommandButton, "cmd", 0).Set(P.TabIndex, (short)2).Set(P.Left, 8d).Set(P.Top, 24d)
+                .Set(P.Width, 100d).Set(P.Height, 32d);
+            first.SetContainer(frame);
+            var form = new FormDefinition(root);
+            var window = new VBFormWindow(form);
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var loaded = form.ArrayOf("cmd")!.Load(1);
+            Dispatcher.UIThread.RunJobs();
+            var view = window.View;
+            var control = view.ControlOf(loaded)!;
+            var hidden = !control.IsVisible;
+            loaded.Set(P.Visible, true);
+            Dispatcher.UIThread.RunJobs();
+            var frameHost = ((IVBContainer)view.ControlOf(frame)!).ChildHost;
+            var result = (hidden, control.IsVisible, ReferenceEquals(control.Parent, frameHost), control.ZIndex < view.ControlOf(first)!.ZIndex,
+                view.TabOrder.Select(c => VBControl.GetInstance(c)!.ToString()).ToArray());
+            window.Close();
+            return result;
+        });
+
+        Assert.IsTrue(hidden);
+        Assert.IsTrue(shown);
+        Assert.IsTrue(inFrame);
+        Assert.IsTrue(under);
+        CollectionAssert.AreEqual(new[] { "Command1", "Frame1", "cmd(0)", "cmd(1)" }, tabOrder, string.Join(", ", tabOrder));
+    }
+
     [TestMethod]
     public void AControlAdded_RaisesItsEvents_AsAControlOfTheFormsFileDoes()
     {
