@@ -103,7 +103,7 @@ The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`,
 |Stacking|Under the controls already in its container, windowed or windowless.|
 |Order|`FormDefinition.Controls` holds the controls of the form's file depth first, then those added, in the order added, whatever their container.|
 |Events|An added control raises its events to the window's sink as the form's other controls do. Adding one raises no event of the form.|
-|Removal|Only a control added at run time, with the controls it holds. The other `TabIndex` values close up. A control that had the focus gives it to the first control of the tab order that takes it (RDForms' own).|
+|Removal|Only a control added at run time, with the controls it holds, and not an element of a control array. The other `TabIndex` values close up. A control that had the focus gives it to the first control of the tab order that takes it (RDForms' own).|
 
 |Error|When|
 |---|---|
@@ -112,9 +112,10 @@ The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`,
 |721|The container holds no controls, such as a CommandButton.|
 |727|The name is taken.|
 |728|The name is empty, or white space only.|
-|729|The control to remove was not added at run time.|
+|729|The control to remove was not added at run time, or is an element of a [control array](#control-arrays), even one a program's `Load` added.|
 |730|No control has the name to remove, or it was removed already.|
 |740|The control to remove holds a control that was not added at run time. Nothing is removed.|
+|-2147467262 (&H80004002)|The name to remove is a control array's: *No such interface supported*.|
 
 > [!NOTE]
 > **Not implemented.** A ListBox added at run time to a form that is not shown keeps a height of 32 pixels until the form is shown, where its height is snapped to whole rows (450 twips, 30 pixels); VB6 snaps it as it is added. The `Controls` collection itself, error 735 for a control used after its removal, and the controls of a form's file coming back after Unload and Load belong to the runtime that runs the program.
@@ -131,7 +132,7 @@ buttons.Unload(3);           // Unload cmdAction(3)
 
 - `Elements` are in the order of their indexes, whatever the order of the form's file. `Count` is the number of elements loaded, `LBound` the lowest index and `UBound` the highest. A program's `For Each` goes through them in index order.
 - `Load` copies the element with the lowest index loaded at the time, with every property set on it but two: the copy is hidden, and its `TabIndex` is the next after the form's others. It goes in the same container, under the controls already in it, and holds none of the controls the element holds. `FormDefinition.Controls` has it after the controls of the form's file, in the order loaded.
-- `Unload` takes out an element a program loaded. The other `TabIndex` values close up.
+- `Unload` takes out an element a program loaded, which `Controls.Remove` does not (729). The other `TabIndex` values close up.
 
 |Statement|Error|
 |---|---|
