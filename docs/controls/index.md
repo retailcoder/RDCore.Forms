@@ -119,6 +119,31 @@ The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`,
 > [!NOTE]
 > **Not implemented.** A ListBox added at run time to a form that is not shown keeps a height of 32 pixels until the form is shown, where its height is snapped to whole rows (450 twips, 30 pixels); VB6 snaps it as it is added. The `Controls` collection itself, error 735 for a control used after its removal, and the controls of a form's file coming back after Unload and Load belong to the runtime that runs the program.
 
+## Control arrays
+
+Controls that share a name and each have an `Index` are a control array, a [`FormControlArray`](../api/RDCore.Forms.Model.FormControlArray.yml): `FormDefinition.ArrayOf` gives it by name, compared without regard to case, and the same object each time. Menu items are in [menu arrays](menus.md#menu-arrays). A program's `Load` and `Unload` of an element are its `Load` and `Unload`.
+
+```csharp
+var buttons = form.ArrayOf("cmdAction")!;
+var copy = buttons.Load(3);  // Load cmdAction(3)
+buttons.Unload(3);           // Unload cmdAction(3)
+```
+
+- `Elements` are in the order of their indexes, whatever the order of the form's file. `Count` is the number of elements loaded, `LBound` the lowest index and `UBound` the highest. A program's `For Each` goes through them in index order.
+- `Load` copies the element with the lowest index loaded at the time, with every property set on it but two: the copy is hidden, and its `TabIndex` is the next after the form's others. It goes in the same container, under the controls already in it, and holds none of the controls the element holds. `FormDefinition.Controls` has it after the controls of the form's file, in the order loaded.
+- `Unload` takes out an element a program loaded. The other `TabIndex` values close up.
+
+|Statement|Error|
+|---|---|
+|`Load` of an element that is loaded|360, Object already loaded|
+|`Load` with a negative index|341, Invalid control array index|
+|`Load` with an index above 32767|6, Overflow|
+|`Load` when no element is left to copy|340, Control array element doesn't exist|
+|`Unload` of an element of the form's file|362, Can't unload controls created at design time|
+|`Unload` of an element that is not loaded|340, Control array element doesn't exist|
+
+A refused `Load` or `Unload` changes nothing.
+
 ## Properties set only at design time
 
 Some properties are set only by a designer and a form's file. A running VB6 program can read them and cannot set them: its assignment is error 382. A few it can neither read (error 393) nor set (382). These are the ones RDForms models, as measured in VB6:

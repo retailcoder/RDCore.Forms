@@ -42,6 +42,9 @@
   <data name="Error341" xml:space="preserve">
     <value>Invalid object array index</value>
   </data>
+  <data name="Error341Control" xml:space="preserve">
+    <value>Invalid control array index</value>
+  </data>
   <data name="Error343" xml:space="preserve">
     <value>Object not an array</value>
   </data>

@@ -76,6 +76,13 @@ public readonly record struct FormError(int Number, string Description)
     public static FormError InvalidObjectArrayIndex => Standard(341);
 
     /// <summary>
+    /// Error 341, "Invalid control array index": a negative index given to <c>Load</c> for an element of a control array of controls
+    /// other than menus, as VB6 words it for them.
+    /// </summary>
+    public static FormError InvalidControlArrayIndex =>
+        new(341, Descriptions.GetString("Error341Control", CultureInfo.CurrentUICulture) ?? "Error 341");
+
+    /// <summary>
     /// Error 343, "Object not an array".
     /// </summary>
     public static FormError ObjectNotAnArray => Standard(343);
