@@ -127,4 +127,7 @@ Looking for object with ProgID: {0}</value>
   <data name="Error740" xml:space="preserve">
     <value>Controls.Remove can only remove container controls that contain controls added with Controls.Add.  '{0}' was not added with Controls.Add.</value>
   </data>
+  <data name="Error-2147467262" xml:space="preserve">
+    <value>System Error &amp;H80004002 (-2147467262). No such interface supported</value>
+  </data>
 </root>

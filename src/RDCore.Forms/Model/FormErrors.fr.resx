@@ -127,4 +127,7 @@ Recherche de l'objet dont le ProgID est : {0}</value>
   <data name="Error740" xml:space="preserve">
     <value>Controls.Remove ne peut supprimer que les conteneurs dont les contrôles ont été ajoutés avec Controls.Add. « {0} » n'a pas été ajouté avec Controls.Add.</value>
   </data>
+  <data name="Error-2147467262" xml:space="preserve">
+    <value>Erreur système &amp;H80004002 (-2147467262). Interface non prise en charge</value>
+  </data>
 </root>

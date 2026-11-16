@@ -116,7 +116,7 @@ public sealed class FormControlArray : IEnumerable<ComponentInstance>
         var element = this[index];
         if (!Form.IsAddedAtRunTime(element))
             throw new FormErrorException(FormError.CantUnloadControlsCreatedAtDesignTime);
-        Form.RemoveControl(element);
+        Form.UnloadElement(element);
     }
 
     /// <summary>
