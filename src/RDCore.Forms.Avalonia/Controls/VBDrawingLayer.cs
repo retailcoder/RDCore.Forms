@@ -350,7 +350,12 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
         {
             if (opaque)
                 context.FillRectangle(FormPalette.ToBrush(Component.Get(P.BackColor)), new Rect(left, top, width, font.Line));
-            context.DrawGlyphRun(BrushOf(null), font.Run(line, left, top));
+            var ink = BrushOf(null);
+            context.DrawGlyphRun(ink, font.Run(line, left, top));
+            // The underline and the strikethrough are as long as the line, its spaces included.
+            foreach (var band in new[] { font.Underline, font.Strikethrough })
+                if (band is { } stroke)
+                    context.FillRectangle(ink, new Rect(left, top + stroke.Top, width, stroke.Thickness));
         }
         drawn = null;
         InvalidateVisual();
