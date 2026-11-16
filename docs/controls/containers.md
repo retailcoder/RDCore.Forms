@@ -63,7 +63,7 @@ It raises Resize whether or not it or its form is shown.
 
 ## An aligned PictureBox
 
-A PictureBox on the form itself whose `Align` is set is docked to that edge of the form's client area, as measured with VB6. [`AlignLayout`](../api/RDCore.Forms.Model.VB.AlignLayout.yml) lays the boxes out.
+A PictureBox on the form itself whose `Align` is set is docked to that edge of the form's client area, as measured with VB6. [`AlignLayout`](../api/RDCore.Forms.Model.VB.AlignLayout.yml) lays the boxes out. A Data control and an `Alignable` [UserControl](usercontrols.md) are docked by the same rules.
 
 - The top and bottom boxes are laid out first, each across the form's whole width. The left and right boxes then take the height between them.
 - On each edge, the box nearest the edge is the last one in the form's file, whatever its `TabIndex`, and `ZOrder` does not change it. A box aligned at run time, or added by a program and aligned, goes inside the others.
@@ -98,7 +98,7 @@ A `Picture` holds the bytes of a picture file. A picture from a VB6 form is read
 
 |Format|Drawn|
 |---|---|
-|PNG|Yes, its transparent pixels showing what is behind them.|
+|PNG|Yes, its transparent pixels showing what is behind them, and its half-transparent pixels blended over it, stretched or not.|
 |BMP, JPEG|Yes.|
 |GIF|Yes. Its transparent colour shows what is under the control: the form's `Picture` under an Image or a transparent Label, the `BackColor` of a PictureBox or an opaque Label. An animated GIF is not animated.|
 |ICO, CUR|Yes. VB6 draws a cursor that is a form's `Picture` in black; RDForms draws it in its own colours.|
@@ -110,7 +110,9 @@ Before anything decodes a picture, [`FormPictures.Inspect`](../api/RDCore.Forms.
 - of a format it does not recognize, or whose header is cut short or holds an impossible value;
 - wider or taller than 16,384 pixels, or of more than 16,777,216 pixels in all. An icon or a cursor is refused when any of its images is.
 
-A refused picture is error 481, "Invalid picture", and so is one whose header passes but whose body the decoder cannot read. It is not drawn, the form still shows, and the control's `PictureError` holds the error. [`VBPicture.Decode`](../api/RDCore.Forms.Avalonia.Controls.VBPicture.yml) decodes a picture the same way for other uses.
+A picture whose header passes is drawn with the pixels the RDCore SDK's `PictureDecoder` decodes, alpha included, from the picture `LoadPicture` makes of the same bytes. A form draws the same pixels that `SavePicture` writes, and refuses no picture that `LoadPicture` loads and whose pixels the SDK decodes. An icon or a cursor draws the image `LoadPicture` loads when it is asked for no size: its 32 by 32 image of the most bits per pixel, or its first image where it has none of that size.
+
+A refused picture is error 481, "Invalid picture". So is one that `LoadPicture` refuses, and one whose pixels the SDK does not decode. It is not drawn, the form still shows, and the control's `PictureError` holds the error. [`VBPicture.Decode`](../api/RDCore.Forms.Avalonia.Controls.VBPicture.yml) decodes a picture the same way for other uses.
 
 The controls given the same bytes share one decode, as VB shares one picture object between the controls it is set on. The bytes are decoded once for any number of controls, and again only after none of them holds them.
 

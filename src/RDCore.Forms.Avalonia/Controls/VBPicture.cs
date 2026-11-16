@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using RDCore.Forms.Model;
+using RDCore.SDK.Runtime.Stdole;
 using RDCore.SDK.Workspace.Pictures;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -18,8 +19,10 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </summary>
 /// <remarks>
 /// A picture is decoded only when <see cref="FormPictures.Inspect"/> accepts its header, so a decode allocates at most
-/// <see cref="PictureHeader.MaxPixels"/> pixels. A picture the decoder then fails on is refused the same way. Metafiles are recognized
-/// and not drawn.
+/// <see cref="PictureHeader.MaxPixels"/> pixels. Its pixels are those the SDK decodes (<see cref="PictureDecoder"/>), alpha included, from
+/// the picture <c>LoadPicture</c> makes of the same bytes (<see cref="StdPictureObject.TryLoad"/>): an icon or a cursor draws the image
+/// <c>LoadPicture</c> loads when asked for no size. A picture <c>LoadPicture</c> refuses, or whose pixels the SDK does not decode, is refused
+/// the same way. Metafiles are recognized and not drawn.
 /// </remarks>
 public static class VBPicture
 {
@@ -61,27 +64,40 @@ public static class VBPicture
         format = info.Format;
         if (!info.HasPixelSize)
             return null;
-        // A cursor is an icon with a hot spot: decoded as one.
-        if (info.Format == PictureFormat.Cursor)
+        // The picture LoadPicture makes of the same bytes, and the pixels the SDK decodes from it: a picture LoadPicture refuses, or whose
+        // pixels are not decoded, is invalid, and the form still opens. Of an icon or a cursor, the image LoadPicture loads for no size.
+        if (StdPictureObject.TryLoad(bytes, 0, 0, () => 1, out var loaded) is not StdPictureLoadFailure.None
+            || (loaded!.Image is { } image ? PictureDecoder.TryDecodeIconImage(bytes, image, out var decoded) : PictureDecoder.TryDecode(bytes, out decoded))
+                is not PictureDecodeFailure.None
+            || decoded is not { Width: > 0 and <= PictureHeader.MaxSide, Height: > 0 and <= PictureHeader.MaxSide })
         {
-            bytes = (byte[])bytes.Clone();
-            bytes[2] = 1;
+            error = FormError.InvalidPicture;
+            return null;
         }
-        Bitmap? bitmap = null;
-        try
+        return Premultiplied(decoded);
+    }
+
+    // The decoded pixels as a bitmap of one pixel per pixel of the form (96 DPI), premultiplied, as the pictures drawn and masked here are.
+    private static WriteableBitmap Premultiplied(DecodedPicture picture)
+    {
+        var bitmap = new WriteableBitmap(new PixelSize(picture.Width, picture.Height), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Premul);
+        using var buffer = bitmap.Lock();
+        var bgra = picture.Bgra.Span;
+        var row = new byte[picture.Width * 4];
+        for (var y = 0; y < picture.Height; y++)
         {
-            using var stream = new MemoryStream(bytes, writable: false);
-            bitmap = new Bitmap(stream);
+            var pixels = bgra.Slice(y * row.Length, row.Length);
+            for (var x = 0; x < row.Length; x += 4)
+            {
+                var alpha = pixels[x + 3];
+                row[x] = (byte)((pixels[x] * alpha + 127) / 255);
+                row[x + 1] = (byte)((pixels[x + 1] * alpha + 127) / 255);
+                row[x + 2] = (byte)((pixels[x + 2] * alpha + 127) / 255);
+                row[x + 3] = alpha;
+            }
+            Marshal.Copy(row, 0, buffer.Address + y * buffer.RowBytes, row.Length);
         }
-        catch (Exception)
-        {
-            // A header that passed with a body the decoder cannot read: the picture is invalid, and the form still opens.
-        }
-        if (bitmap is not null && bitmap.PixelSize is { Width: > 0 and <= PictureHeader.MaxSide, Height: > 0 and <= PictureHeader.MaxSide })
-            return bitmap;
-        bitmap?.Dispose();
-        error = FormError.InvalidPicture;
-        return null;
+        return bitmap;
     }
 
     // The picture a component holds and the error it was refused with. The holders of the same bytes share one decode, as VB shares
@@ -243,8 +259,13 @@ public static class VBPicture
         var source = stretch
             ? new Rect(picture.Size)
             : new Rect(0, 0, destination.Width * picture.Size.Width / pixels.Width, destination.Height * picture.Size.Height / pixels.Height);
-        context.DrawImage(picture, source, destination);
+        // A stretched picture repeats its pixels, as VB6's StretchBlt does. The backend's default filter blends neighbours, and differs
+        // by platform.
+        using (context.PushRenderOptions(Unfiltered))
+            context.DrawImage(picture, source, destination);
     }
+
+    private static readonly RenderOptions Unfiltered = new() { BitmapInterpolationMode = BitmapInterpolationMode.None };
 }
 
 // A layer that draws a picture at its size in pixels from its top left corner, clipped to it: a PictureBox's, under its controls.

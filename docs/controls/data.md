@@ -17,7 +17,7 @@ A Data control shows four buttons that move through a database's records, with i
 The buttons keep their colours whatever `BackColor`, `ForeColor` and `Enabled` are.
 
 > [!NOTE]
-> **Not implemented.** VB6 draws a Data control less than 23 pixels tall as 23 pixels tall, though its `Height` reads back as set. `Align` does not dock the control to an edge of its form. The buttons are not drawn pressed, and the control raises no mouse event, Resize, drag event or OLE event.
+> **Not implemented.** VB6 draws a Data control less than 23 pixels tall as 23 pixels tall, though its `Height` reads back as set. The buttons are not drawn pressed, and the control raises no mouse event, drag event or OLE event. It raises no Resize as its size changes. An aligned one raises Resize once, when its form is first shown, after the form's and in the order of the [aligned PictureBoxes](containers.md#an-aligned-picturebox).
 
 ## Properties
 

@@ -231,6 +231,27 @@ public sealed class PrintTests
         Assert.AreEqual(expected, measured);
     }
 
+    // A font never named only reads MS Sans Serif: it is drawn and measured in the sans serif, with none of MS Sans Serif's lines and
+    // columns.
+    [TestMethod]
+    public void AFontNeverNamed_IsMeasuredInTheSansSerif_AndNamedMSSansSerif_KeepsVB6sLineAndColumn()
+    {
+        static string Measured(FormFont font)
+        {
+            var surface = new VBDrawingLayer(Box().Set(P.ScaleMode, ScaleMode.Pixel).Set(P.Font, font));
+            surface.CurrentX = 0;
+            surface.CurrentY = 0;
+            surface.Print([Tab(2)], false);
+            return $"{surface.TextHeight("Ag")}\t{surface.CurrentX}\t{surface.TextWidth("Wide text")}";
+        }
+
+        var (unnamed, sansSerif, named) = UI.Run(() => (Measured(new FormFont("MS Sans Serif", 8.25, IsNamed: false)),
+            Measured(new FormFont("Liberation Sans", 8.25)), Measured(new FormFont("MS Sans Serif", 8.25))));
+
+        Assert.AreEqual(sansSerif, unnamed);
+        StringAssert.StartsWith(named, "13\t5\t");
+    }
+
     // In pixels, over a red box: five spaces are a cell 15 pixels wide and 14 high.
     [TestMethod]
     [DataRow(false, (short)13, "FFFFFF\tFFFFFF\tFFFFFF\tFF\tFF")]

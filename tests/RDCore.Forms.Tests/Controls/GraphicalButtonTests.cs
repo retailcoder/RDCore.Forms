@@ -440,6 +440,29 @@ public sealed class GraphicalButtonTests
         Assert.AreEqual(PictureArea, silver);
     }
 
+    // A PNG, which VB6 does not load, is masked as a bitmap: only its opaque pixels of the mask colour are left out, and a pixel of that
+    // colour that is half transparent is drawn blended over the face.
+    [TestMethod]
+    public void UseMaskColor_OnAPng_LeavesOutItsOpaquePixelsOfTheMaskColor_AndBlendsItsHalfTransparentOnes()
+    {
+        var (silver, border, centre) = UI.Run(() =>
+        {
+            // An opaque silver border around a centre of silver at half its alpha, premultiplied.
+            var png = PictureControlTests.Png(16, 16, [.. Enumerable.Range(0, 256).Select(i => IsCentre(i) ? 0x80606060u : 0xFFC0C0C0u)]);
+            var button = new VBCommandButton(Masked(VBClasses.CommandButton, png));
+            var (window, _) = ControlHost.Show((button, Cell));
+            var corner = new PixelPoint((int)Cell.X + PictureArea.X, (int)Cell.Y + PictureArea.Y);
+            var pixels = PictureControlTests.PixelsAt(window, corner + new PixelVector(1, 1), corner + new PixelVector(8, 8));
+            var result = (Box(window, button, Silver), pixels[0], pixels[1]);
+            window.Close();
+            return result;
+        });
+
+        Assert.IsNull(silver);
+        Assert.AreEqual(Color.FromRgb(255, 255, 0), border, "the border shows the face, BackColor");
+        Assert.IsTrue(centre is { R: >= 216 and <= 232, G: >= 216 and <= 232, B: >= 88 and <= 104 }, centre.ToString());
+    }
+
     [TestMethod]
     public void StyleSetAfterTheButtonIsMade_IsIgnored()
     {

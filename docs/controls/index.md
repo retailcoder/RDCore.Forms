@@ -27,8 +27,9 @@
 |`VB.Line`|[`VBLine`](../api/RDCore.Forms.Avalonia.Controls.VBLine.yml)|None|[Timers, scroll bars and shapes](timers-scrollbars-shapes.md)|
 |`VB.Data`|[`VBData`](../api/RDCore.Forms.Avalonia.Controls.VBData.yml)|None|[Data control](data.md)|
 |`VB.Menu`|The window's [`VBMenuBar`](../api/RDCore.Forms.Avalonia.Rendering.VBMenuBar.yml)|Click|[Menus](menus.md)|
+|A placed UserControl, such as `Project1.Gauge`|[`VBUserControl`](../api/RDCore.Forms.Avalonia.Controls.VBUserControl.yml)|None of its own; its UserControl's root and controls raise theirs|[UserControls](usercontrols.md)|
 
-A `VB.Menu` has no control of its own, and `Create` returns `null` for it: a form's window shows its menus on its [menu bar](menus.md).
+A `VB.Menu` has no control of its own, and `Create` returns `null` for it: a form's window shows its menus on its [menu bar](menus.md). It returns `null` for a UserControl that is invisible at run time too.
 
 ## Showing a form
 
