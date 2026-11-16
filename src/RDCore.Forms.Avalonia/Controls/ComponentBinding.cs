@@ -49,6 +49,8 @@ internal static class ComponentBinding
     //  - Visible is the control's own. A control in a hidden container keeps its Visible, is not drawn and takes no focus, and its
     //    events still come from its component.
     //  - Enabled is the control's own too. A control in a disabled container keeps its Enabled and takes no input.
+    //  - Opacity is a mask over the control and what it holds: it leaves the control's own Opacity to the theme, which fades a disabled
+    //    control, and a control the mask hides still takes the mouse.
     public static bool ApplyCommon(Control control, PropertyDefinition property, object? value)
     {
         switch (property.Name)
@@ -70,6 +72,9 @@ internal static class ComponentBinding
                 return true;
             case nameof(P.Enabled):
                 control.IsEnabled = (bool)value!;
+                return true;
+            case nameof(P.Opacity):
+                control.OpacityMask = (double)value! is var opacity && opacity < 1 ? new SolidColorBrush(Colors.Black, opacity) : null;
                 return true;
             case nameof(P.ToolTipText):
                 ToolTip.SetTip(control, value is string { Length: > 0 } tip ? tip : null);

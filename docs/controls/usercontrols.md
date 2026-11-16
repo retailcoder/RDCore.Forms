@@ -40,7 +40,7 @@ A placed control's members are those of the extender VB6 wraps it in. The UserCo
 |Setting|Members of a placed control|
 |---|---|
 |Any|`Left` and `Top`.|
-|`InvisibleAtRuntime` False|`Width`, `Height`, `Visible`, `DragMode`, `ToolTipText`, `WhatsThisHelpID` and `Tag`.|
+|`InvisibleAtRuntime` False|`Width`, `Height`, `Visible`, `DragMode`, `ToolTipText`, `WhatsThisHelpID` and `Tag`, and RD-VBA's [`Opacity`](index.md#opacity).|
 |`InvisibleAtRuntime` True|Nothing else. The control has no size, and its `Left` and `Top` are not available at run time (393).|
 |`CanGetFocus` or `ForwardFocus` True, and visible|`TabIndex`.|
 |`CanGetFocus` True, `ForwardFocus` False, and visible|`TabStop`, `CausesValidation`, `HelpContextID`, `SetFocus`, and the GotFocus and LostFocus events.|
