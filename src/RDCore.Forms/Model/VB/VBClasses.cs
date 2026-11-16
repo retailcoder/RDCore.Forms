@@ -147,7 +147,7 @@ public static class VBClasses
         [Click, DblClick, MouseDown, MouseMove, MouseUp], isContainer: true);
 
     /// <summary>
-    /// <c>VB.ListBox</c>. Its colours default to the window's. A program reaches its items through its list members, which its window
+    /// <c>VB.ListBox</c>. Its colors default to the window's. A program reaches its items through its list members, which its window
     /// answers: <c>AddItem</c>, <c>RemoveItem</c>, <c>Clear</c>, <c>List</c>, <c>ItemData</c>, <c>Selected</c>, <c>ListIndex</c>,
     /// <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c> and <c>Text</c>.
     /// </summary>
@@ -159,8 +159,8 @@ public static class VBClasses
         methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.Selected, M.ListIndex, M.ListCount, M.NewIndex, M.SelCount, M.ListText]);
 
     /// <summary>
-    /// <c>VB.ComboBox</c>. Its colours default to the window's. A program reaches its items through the list members of a ListBox
-    /// (<see cref="ListBox"/>), but for <c>Selected</c> and <c>SelCount</c>.
+    /// <c>VB.ComboBox</c>. Its colors default to the window's. A program reaches its items through the list members of a ListBox
+    /// (<see cref="ListBox"/>), except <c>Selected</c> and <c>SelCount</c>.
     /// </summary>
     public static readonly ComponentClass ComboBox = Control("VB.ComboBox", "Combo",
         [P.Text, P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.Locked, P.ComboBoxStyle, P.IntegralHeight,
