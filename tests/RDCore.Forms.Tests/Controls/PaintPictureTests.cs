@@ -146,7 +146,7 @@ public sealed class PaintPictureTests
 
     // VB6 draws these two a pixel or two off: a mirrored source that reaches past the picture's edge.
     [TestMethod]
-    [Ignore("A mirrored source past the picture's edge: VB6 cuts the destination on another side than the one the source is cut on, by a rule not measured yet.")]
+    [Ignore("A mirrored source past the picture's edge: VB6 cuts the destination on another side than the one the source is cut on, by a rule that is not measured.")]
     public void AMirroredSourcePastThePicturesEdge_IsCutAsVB6CutsIt()
     {
         var rows = UI.Run(() => Rows(new VBDrawingLayer(Box()),
