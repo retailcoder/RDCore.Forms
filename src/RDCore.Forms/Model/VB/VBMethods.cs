@@ -36,4 +36,70 @@ public static class VBMethods
     /// <c>UpdateControls</c>: gives a Data control's bound controls the values of its current record again.
     /// </summary>
     public static readonly MethodDefinition UpdateControls = new("UpdateControls");
+
+    /// <summary>
+    /// <c>AddItem Item, [Index]</c>: adds an item to a ListBox or ComboBox, at the end where no index is given.
+    /// </summary>
+    public static readonly MethodDefinition AddItem = new("AddItem",
+        new MethodParameter("Item", "String"), new MethodParameter("Index", "Variant", IsOptional: true));
+
+    /// <summary>
+    /// <c>RemoveItem Index</c>: removes an item from a ListBox or ComboBox.
+    /// </summary>
+    public static readonly MethodDefinition RemoveItem = new("RemoveItem", new MethodParameter("Index", "Integer"));
+
+    /// <summary>
+    /// <c>Clear</c>: removes every item of a ListBox or ComboBox.
+    /// </summary>
+    public static readonly MethodDefinition Clear = new("Clear");
+
+    /// <summary>
+    /// <c>List(Index)</c>, a property: the text of an item of a ListBox or ComboBox.
+    /// </summary>
+    public static readonly MethodDefinition List = new("List", new MethodParameter("Index", "Integer"))
+    {
+        Value = new MethodParameter("List", "String"),
+    };
+
+    /// <summary>
+    /// <c>ItemData(Index)</c>, a property: the Long value attached to an item of a ListBox or ComboBox.
+    /// </summary>
+    public static readonly MethodDefinition ItemData = new("ItemData", new MethodParameter("Index", "Integer"))
+    {
+        Value = new MethodParameter("ItemData", "Long"),
+    };
+
+    /// <summary>
+    /// <c>Selected(Index)</c>, a property: whether an item of a ListBox is selected.
+    /// </summary>
+    public static readonly MethodDefinition Selected = new("Selected", new MethodParameter("Index", "Integer"))
+    {
+        Value = new MethodParameter("Selected", "Boolean"),
+    };
+
+    /// <summary>
+    /// <c>ListIndex</c>, a property: the selected item of a ListBox or ComboBox, -1 for none.
+    /// </summary>
+    public static readonly MethodDefinition ListIndex = new("ListIndex") { Value = new MethodParameter("ListIndex", "Integer") };
+
+    /// <summary>
+    /// <c>ListCount</c>, a read-only property: the number of items of a ListBox or ComboBox.
+    /// </summary>
+    public static readonly MethodDefinition ListCount = new("ListCount") { Value = new MethodParameter("ListCount", "Integer"), IsReadOnly = true };
+
+    /// <summary>
+    /// <c>NewIndex</c>, a read-only property: the index of the item a ListBox's or ComboBox's last <c>AddItem</c> added.
+    /// </summary>
+    public static readonly MethodDefinition NewIndex = new("NewIndex") { Value = new MethodParameter("NewIndex", "Integer"), IsReadOnly = true };
+
+    /// <summary>
+    /// <c>SelCount</c>, a read-only property: the number of items of a ListBox that are selected.
+    /// </summary>
+    public static readonly MethodDefinition SelCount = new("SelCount") { Value = new MethodParameter("SelCount", "Integer"), IsReadOnly = true };
+
+    /// <summary>
+    /// <c>Text</c>, a property: the text of a ListBox's selected item, or a ComboBox's text. A ComboBox whose style is not Dropdown List
+    /// keeps its text in the model as well (<see cref="VBProperties.Text"/>).
+    /// </summary>
+    public static readonly MethodDefinition ListText = new("Text") { Value = new MethodParameter("Text", "String") };
 }

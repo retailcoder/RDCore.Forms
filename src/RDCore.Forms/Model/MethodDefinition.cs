@@ -1,11 +1,20 @@
 ﻿namespace RDCore.Forms.Model;
 
 /// <summary>
-/// A method a component class has: its name and its parameters, as a program's code calls it.
+/// A method a component class has, or a property that a form's window answers for it: its name and its parameters, as a program's code
+/// calls it.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The definition describes the call. What the method does is the form's: a shown form's window runs it (see
 /// <c>VBFormWindow.Invoke</c> in RDCore.Forms.Avalonia).
+/// </para>
+/// <para>
+/// A property here is one whose value the window's control holds, such as a ListBox's <c>ListIndex</c>, or one that
+/// takes arguments, such as its <c>List(Index)</c>. <see cref="Value"/> gives its type. The window reads it with <c>Invoke</c>, and
+/// assigns it with <c>Assign</c> unless it <see cref="IsReadOnly"/>. Where the class has a model property of the same name, such as a
+/// ListBox's <c>List</c>, a running program reaches this one, and a designer the model's.
+/// </para>
 /// </remarks>
 public sealed class MethodDefinition
 {
@@ -43,6 +52,22 @@ public sealed class MethodDefinition
     /// The number of arguments a call must give: the parameters before the first optional one.
     /// </summary>
     public int RequiredCount => Parameters.TakeWhile(parameter => !parameter.IsOptional).Count();
+
+    /// <summary>
+    /// For a property, its value: the type a read returns, and the type an assignment's value is coerced to. <see langword="null"/>
+    /// for a method.
+    /// </summary>
+    public MethodParameter? Value { get; init; }
+
+    /// <summary>
+    /// Whether the definition is a property's: whether it has a <see cref="Value"/>.
+    /// </summary>
+    public bool IsProperty => Value is not null;
+
+    /// <summary>
+    /// Whether a program can only read the property. An assignment is error 383, after its value is coerced to the property's type.
+    /// </summary>
+    public bool IsReadOnly { get; init; }
 
     /// <summary>
     /// The method's name.

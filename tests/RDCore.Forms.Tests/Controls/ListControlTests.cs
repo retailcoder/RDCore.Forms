@@ -112,7 +112,7 @@ public sealed class ListControlTests
 
         Assert.AreEqual(1, index);
         Expect.Lines(new[] { "Combo1.Click", "Combo1.Click" }, raised);
-        Assert.AreEqual(new FormError(383, "'Text' property is read-only"), error);
+        Assert.AreEqual(FormError.PropertyIsReadOnly("Text"), error);
     }
 
     [TestMethod]

@@ -270,17 +270,21 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     public ComponentInstance? ActiveControl => activeControl is { } control ? VBControl.GetInstance(control) : null;
 
     /// <summary>
-    /// Runs one of the methods of the root or of a control of the form, as a program's code calls it. Call it on the UI thread.
+    /// Runs one of the methods of the root or of a control of the form, or reads one of the properties the window answers, as a
+    /// program's code calls it. Call it on the UI thread.
     /// </summary>
     /// <param name="component">The root, or a component the form shows.</param>
-    /// <param name="method">The method: one of <paramref name="component"/>'s class's <see cref="ComponentClass.Methods"/>.</param>
+    /// <param name="method">
+    /// The method, or the property (<see cref="MethodDefinition.IsProperty"/>): one of <paramref name="component"/>'s class's
+    /// <see cref="ComponentClass.Methods"/>.
+    /// </param>
     /// <param name="arguments">
     /// The call's arguments, in the order of the method's parameters: <see langword="null"/> for an argument left out, and none past the
     /// last one given. A <c>Variant</c> parameter takes any value and the method coerces it; a parameter of another type takes a value of
     /// that type.
     /// </param>
     /// <param name="unit">The unit the code reads and writes positions and sizes in, which <c>Move</c> takes.</param>
-    /// <returns>The method's result: <see cref="FormValue.Empty"/> for a method that returns none.</returns>
+    /// <returns>The method's result, <see cref="FormValue.Empty"/> for a method that returns none; or the property's value.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="component"/>, <paramref name="method"/> or <paramref name="arguments"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">
     /// <paramref name="component"/> is neither the root nor shown on the form, or <paramref name="method"/> is not a method of its class.
@@ -323,6 +327,15 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// A Data control's <c>UpdateRecord</c> and <c>UpdateControls</c> are as <see cref="VBData.UpdateRecord"/> and
     /// <see cref="VBData.UpdateControls"/>: error 91, as the control opens no recordset.
     /// </para>
+    /// <para>
+    /// A ListBox's and a ComboBox's list members are as <see cref="VBListBox"/> and <see cref="VBComboBox"/> run them: <c>AddItem</c>,
+    /// <c>RemoveItem</c> and <c>Clear</c> return none, and a property that <see cref="MethodDefinition.IsProperty"/> returns its value
+    /// (<see cref="Assign"/> assigns it). An index is an Integer, rounded half to even, and Null is error 94. <c>AddItem</c> is error 5
+    /// for an index outside 0 to <c>ListCount</c>, and <c>RemoveItem</c> for one outside the items; <c>ItemData</c> and <c>Selected</c>
+    /// are error 381 for an index outside the items, and <c>List</c> is "" there; <c>ListIndex</c> is error 380 for a value outside -1
+    /// to <c>ListCount</c> - 1. <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c> and <c>SelCount</c> are Integers. Past 32767, a
+    /// count or an index is a Long: RDForms sets this rule.
+    /// </para>
     /// </remarks>
     public FormValue Invoke(ComponentInstance component, MethodDefinition method, IReadOnlyList<FormValue?> arguments, CodeUnit unit = CodeUnit.Pixel)
     {
@@ -347,10 +360,106 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
             updated.UpdateRecord();
         else if (ReferenceEquals(method, VBMethods.UpdateControls) && control is VBData updating)
             updating.UpdateControls();
+        else if (control is IVBList list && ListMember(list, method, given) is { } result)
+            return result;
         else
             throw new FormErrorException(FormError.ObjectDoesntSupportPropertyOrMethod);
         return FormValue.Empty;
     }
+
+    /// <summary>
+    /// Assigns one of the properties that the window answers for a control of the form, as a program's code assigns it. Call it on the
+    /// UI thread.
+    /// </summary>
+    /// <param name="component">A component the form shows.</param>
+    /// <param name="property">
+    /// The property: one of <paramref name="component"/>'s class's <see cref="ComponentClass.Methods"/> that
+    /// <see cref="MethodDefinition.IsProperty"/>.
+    /// </param>
+    /// <param name="arguments">The property's arguments, as <see cref="Invoke"/> takes a method's, such as the index of <c>List(Index)</c>.</param>
+    /// <param name="value">
+    /// The value assigned, of the property's type (<see cref="MethodDefinition.Value"/>): a number for a number, which the window rounds
+    /// and checks as it does an argument.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="component"/>, <paramref name="property"/> or <paramref name="arguments"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="component"/> is not shown on the form, or <paramref name="property"/> is not a property of its class.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">The call is not on the UI thread.</exception>
+    /// <exception cref="FormErrorException">
+    /// The assignment is refused with VB's error, and changes nothing: the errors of <see cref="Invoke"/> for the arguments and for the
+    /// value, then 383 for a read-only property, and those of the list members (see <see cref="Invoke"/>).
+    /// </exception>
+    public void Assign(ComponentInstance component, MethodDefinition property, IReadOnlyList<FormValue?> arguments, FormValue value)
+    {
+        ArgumentNullException.ThrowIfNull(component);
+        ArgumentNullException.ThrowIfNull(property);
+        ArgumentNullException.ThrowIfNull(arguments);
+        Dispatcher.UIThread.VerifyAccess();
+        var control = View.ControlOf(component) ?? throw new ArgumentException($"'{component.Name}' is not shown on the form.", nameof(component));
+        if (!property.IsProperty || !ReferenceEquals(component.Class.Method(property.Name), property))
+            throw new ArgumentException($"{component.Class.TypeName} has no property {property.Name} that its window answers.", nameof(property));
+        var given = MethodArguments.Of(property, arguments);
+        if (control is not IVBList list)
+            throw new FormErrorException(FormError.ObjectDoesntSupportPropertyOrMethod);
+        if (property.IsReadOnly)
+        {
+            // The value is coerced first: a value of the wrong type is 13, as measured with VB6.
+            _ = MethodArguments.Integer(value, ofNull: FormError.InvalidUseOfNull);
+            throw new FormErrorException(FormError.PropertyIsReadOnly(property.Name));
+        }
+        if (ReferenceEquals(property, VBMethods.List))
+            list.SetList(Index(given[0]!.Value), MethodArguments.String(value));
+        else if (ReferenceEquals(property, VBMethods.ItemData))
+            list.SetItemData(Index(given[0]!.Value), MethodArguments.Long(value));
+        else if (ReferenceEquals(property, VBMethods.Selected) && list is VBListBox selecting)
+            selecting.SetSelected(Index(given[0]!.Value), MethodArguments.Boolean(value));
+        else if (ReferenceEquals(property, VBMethods.ListIndex))
+            list.ListIndex = MethodArguments.Integer(value, ofNull: FormError.InvalidUseOfNull);
+        else if (ReferenceEquals(property, VBMethods.ListText))
+            list.SetText(MethodArguments.String(value));
+        else
+            throw new FormErrorException(FormError.ObjectDoesntSupportPropertyOrMethod);
+    }
+
+    // A list member's call or read, or null for a method that is not one.
+    private static FormValue? ListMember(IVBList list, MethodDefinition method, FormValue?[] given)
+    {
+        if (ReferenceEquals(method, VBMethods.AddItem))
+            list.AddItem(MethodArguments.String(given[0]!.Value), given[1] is { } index ? Index(index) : null);
+        else if (ReferenceEquals(method, VBMethods.RemoveItem))
+            list.RemoveItem(Index(given[0]!.Value));
+        else if (ReferenceEquals(method, VBMethods.Clear))
+            list.Clear();
+        else if (ReferenceEquals(method, VBMethods.List))
+            return FormValue.FromString(list.GetList(Index(given[0]!.Value)));
+        else if (ReferenceEquals(method, VBMethods.ItemData))
+            return FormValue.FromLong(list.GetItemData(Index(given[0]!.Value)));
+        else if (ReferenceEquals(method, VBMethods.Selected) && list is VBListBox selected)
+            return FormValue.FromBoolean(selected.GetSelected(Index(given[0]!.Value)));
+        else if (ReferenceEquals(method, VBMethods.ListIndex))
+            return Integer(list.ListIndex);
+        else if (ReferenceEquals(method, VBMethods.ListCount))
+            return Integer(list.ListCount);
+        else if (ReferenceEquals(method, VBMethods.NewIndex))
+            return Integer(list.NewIndex);
+        else if (ReferenceEquals(method, VBMethods.SelCount) && list is VBListBox counted)
+            return Integer(counted.SelCount);
+        else if (ReferenceEquals(method, VBMethods.ListText))
+            return FormValue.FromString(list.Text);
+        else
+            return null;
+        return FormValue.Empty;
+    }
+
+    // An item's index, an Integer: Null is 94.
+    private static short Index(FormValue index) => MethodArguments.Integer(index, ofNull: FormError.InvalidUseOfNull);
+
+    // A count or an index of a list, an Integer as VB6 types it, or a Long past an Integer's range.
+    private static FormValue Integer(int value) =>
+        value is >= short.MinValue and <= short.MaxValue ? FormValue.FromInteger((short)value) : FormValue.FromLong(value);
 
     private void Move(ComponentInstance component, Control control, FormValue?[] given, CodeUnit unit)
     {

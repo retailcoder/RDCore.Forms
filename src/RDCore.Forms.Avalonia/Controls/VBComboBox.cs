@@ -70,7 +70,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// the pointer pick an item. Its key events are raised. Code's <c>Text</c> and <see cref="ListIndex"/> still set it.
 /// </para>
 /// </remarks>
-public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
+public sealed class VBComboBox : ComboBox, IRaisesKeyEvents, IVBList
 {
     // Avalonia's editable combo selects the first item its Text matches, without regard to case, whether code or typing put the Text
     // there; VB's selects none. So every item reads as this, which no Text can be, and none matches; but not while Avalonia puts the
@@ -92,6 +92,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
     private int highlighted;
     private CompletionPanel? panel;
     private bool writingList;
+    private int newIndex = -1;
     private TextBox? editBox;
     private Border? listBorder;
     private bool locked;
@@ -297,7 +298,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
                 if (string.Equals(Items[i] as string, text, StringComparison.OrdinalIgnoreCase))
                     index = i;
             if (index < 0)
-                throw new FormErrorException(new FormError(383, "'Text' property is read-only"));
+                throw new FormErrorException(FormError.PropertyIsReadOnly("Text"));
             SelectedIndex = index;
             VBControl.Raise(this, VBEvents.Click);
             return;
@@ -427,6 +428,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         Items.Insert(at, item);
         WriteList();
         ListItems.Inserted(instance, ItemCount - 1, at);
+        newIndex = at;
     }
 
     /// <summary>
@@ -441,6 +443,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         Items.RemoveAt(index);
         WriteList();
         ListItems.Removed(instance, ItemCount + 1, index);
+        newIndex = -1;
     }
 
     /// <summary>
@@ -451,6 +454,50 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
         Items.Clear();
         WriteList();
         ListItems.Cleared(instance);
+        newIndex = -1;
+    }
+
+    /// <summary>
+    /// The index of the item the last <see cref="AddItem"/> added; -1 where none was added, and after a <see cref="RemoveItem"/>, a
+    /// <see cref="Clear"/> or a new <c>List</c> of the component.
+    /// </summary>
+    public int NewIndex => newIndex;
+
+    string IVBList.Text => Text;
+
+    /// <summary>
+    /// Gets an item's text, as code's <c>List(Index)</c> does.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <returns>The item's text, or "" for an index outside the items.</returns>
+    public string GetList(int index) => ListMembers.ItemAt(Items, index);
+
+    /// <summary>
+    /// Sets an item's text, as code's <c>List(Index) = text</c> does. The item keeps its data, its icon and its selection, and the combo
+    /// raises nothing. Where the item is the selected one, the combo's <c>Text</c> is the new text: a Dropdown List's, and the edit box's,
+    /// as choosing the item puts its text there. Another item's leaves the edit box as it is.
+    /// </summary>
+    /// <param name="index">The item's index, from 0.</param>
+    /// <param name="text">The text.</param>
+    /// <exception cref="FormErrorException"><paramref name="index"/> is outside the items: 381, Invalid property array index.</exception>
+    public void SetList(int index, string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        ListMembers.Require(ItemCount, index);
+        var selected = SelectedIndex;
+        // Selecting the item again is a choice of it: the edit box and the component take its new text quietly (see OnPropertyChanged).
+        textFromComponent = true;
+        try
+        {
+            Items[index] = text;
+            if (SelectedIndex != selected)
+                SelectedIndex = selected;
+        }
+        finally
+        {
+            textFromComponent = false;
+        }
+        WriteList();
     }
 
     /// <summary>
@@ -851,6 +898,7 @@ public sealed class VBComboBox : ComboBox, IRaisesKeyEvents
             Items.Clear();
             foreach (var item in (IReadOnlyList<string>)e.After!)
                 Items.Add(item);
+            newIndex = -1;
         }
         else if (ReferenceEquals(e.Property, P.Locked))
         {
