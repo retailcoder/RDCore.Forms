@@ -65,6 +65,10 @@ public sealed class ComponentClass
     /// The name of the member the class's default member stands for, as <see cref="DefaultMember"/>; none where it is
     /// <see langword="null"/>.
     /// </param>
+    /// <param name="hasContainer">
+    /// Whether a running program reads and sets an instance's <c>Container</c>, as <see cref="HasContainer"/>: ignored for a class that
+    /// is not a control's. A Timer has none.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// <paramref name="typeName"/> or <paramref name="defaultName"/> is empty or white space; two properties, two events or two methods share a
     /// name; a default is given for a property the class does not have, or is not a value the property can hold;
@@ -75,7 +79,7 @@ public sealed class ComponentClass
         IReadOnlyList<PropertyDefinition> properties, IReadOnlyList<EventDefinition> events,
         IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null,
         bool isContainer = false, bool isWindowless = false, bool hasExtent = true, IReadOnlyList<MethodDefinition>? methods = null,
-        IReadOnlyList<PropertyDefinition>? notAvailableAtRunTime = null, string? defaultMember = null)
+        IReadOnlyList<PropertyDefinition>? notAvailableAtRunTime = null, string? defaultMember = null, bool hasContainer = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(typeName);
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultName);
@@ -88,6 +92,7 @@ public sealed class ComponentClass
         IsContainer = isContainer;
         IsWindowless = isWindowless;
         HasExtent = hasExtent;
+        HasContainer = hasContainer && kind == ComponentKind.Control;
 
         Properties = [.. properties];
         propertiesByName = new(StringComparer.OrdinalIgnoreCase);
@@ -179,6 +184,12 @@ public sealed class ComponentClass
     /// Whether an instance has a width and a height.
     /// </summary>
     public bool HasExtent { get; }
+
+    /// <summary>
+    /// Whether a running program reads and sets an instance's <c>Container</c> (<see cref="FormDefinition.SetContainer"/>): a
+    /// control's class, except a Timer's. A root and a menu item have none.
+    /// </summary>
+    public bool HasContainer { get; }
 
     /// <summary>
     /// The class's properties, in the order a designer lists them.

@@ -1,6 +1,7 @@
 ﻿// Derived from HexIDE (https://github.com/hexide-io/HexIDE), commit ae17f1db.
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
+using RDCore.Forms.Drawing;
 using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Model;
@@ -295,6 +296,85 @@ public sealed class FormDefinition
         }
         ControlRemoved?.Invoke(this, new FormControlEventArgs(control, container));
     }
+
+    /// <summary>
+    /// Raised after <see cref="SetContainer"/> places a control, with what it holds, in a container.
+    /// </summary>
+    public event EventHandler<FormContainerChangedEventArgs>? ContainerChanged;
+
+    /// <summary>
+    /// Places a control in another container of the form, with the controls it holds, as a program's <c>Set Control.Container</c>
+    /// does, and raises <see cref="ContainerChanged"/>.
+    /// </summary>
+    /// <param name="control">The control: one of the form's, whose class <see cref="ComponentClass.HasContainer"/>.</param>
+    /// <param name="container">The container: the root, or a control of the form that holds controls.</param>
+    /// <exception cref="FormErrorException">
+    /// 425, Invalid object use, and nothing changes: <paramref name="container"/> is <see langword="null"/>, is not the root or a
+    /// control of this form, holds no controls, or is <paramref name="control"/> or a control it holds.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="control"/> is not a control of this form, or its class has no <c>Container</c>.
+    /// </exception>
+    /// <remarks>
+    /// The control keeps its place in pixels in its container's client area, so a program reads its <c>Left</c> and <c>Top</c> in the
+    /// new container's scale, and the ends of a Line are given again in that scale. It is placed last in the new container's
+    /// <see cref="ComponentInstance.Contents"/>, even where that is the container it was in. Its <c>Visible</c> and every
+    /// <c>TabIndex</c> are as they were, and a control added at run time can still be removed.
+    /// </remarks>
+    public void SetContainer(ComponentInstance control, ComponentInstance? container)
+    {
+        ArgumentNullException.ThrowIfNull(control);
+        if (!Root.Descendants().Contains(control))
+            throw new ArgumentException($"{control.Name} is not a control of {Name}.", nameof(control));
+        if (!control.Class.HasContainer)
+            throw new ArgumentException($"{control.Class.ClassName} has no Container.", nameof(control));
+        if (container is null || !container.Class.IsContainer
+            || (!ReferenceEquals(container, Root) && !Root.Descendants().Contains(container))
+            || ReferenceEquals(container, control) || control.Descendants().Contains(container))
+            throw new FormErrorException(FormError.InvalidObjectUse);
+        var previous = control.Container!;
+        (double X1, double Y1, double X2, double Y2)? line = ReferenceEquals(control.Class, VBClasses.Line) && !ReferenceEquals(previous, container)
+            ? LineEnds(control, DrawingScale.Of(previous), DrawingScale.Of(container))
+            : null;
+        control.SetContainer(container);
+        if (line is { } ends)
+            control.Set(VBProperties.X1, ends.X1).Set(VBProperties.Y1, ends.Y1).Set(VBProperties.X2, ends.X2).Set(VBProperties.Y2, ends.Y2);
+        ContainerChanged?.Invoke(this, new FormContainerChangedEventArgs(control, previous, container));
+    }
+
+    // A Line's ends at the same place, given in the new container's scale.
+    private static (double X1, double Y1, double X2, double Y2) LineEnds(ComponentInstance line, DrawingScale from, DrawingScale to)
+    {
+        var (x1, y1) = from.ToTwips(line.Get(VBProperties.X1), line.Get(VBProperties.Y1));
+        var (x2, y2) = from.ToTwips(line.Get(VBProperties.X2), line.Get(VBProperties.Y2));
+        (x1, y1) = to.FromTwips(x1, y1);
+        (x2, y2) = to.FromTwips(x2, y2);
+        return (x1, y1, x2, y2);
+    }
+}
+
+/// <summary>
+/// The data of <see cref="FormDefinition.ContainerChanged"/>.
+/// </summary>
+/// <param name="control">The control placed.</param>
+/// <param name="previous">The container it was in.</param>
+/// <param name="container">The container it is placed in, which may be <paramref name="previous"/>.</param>
+public sealed class FormContainerChangedEventArgs(ComponentInstance control, ComponentInstance previous, ComponentInstance container) : EventArgs
+{
+    /// <summary>
+    /// The control placed, which keeps the controls it holds.
+    /// </summary>
+    public ComponentInstance Control { get; } = control;
+
+    /// <summary>
+    /// The container the control was in.
+    /// </summary>
+    public ComponentInstance Previous { get; } = previous;
+
+    /// <summary>
+    /// The container the control is placed in.
+    /// </summary>
+    public ComponentInstance Container { get; } = container;
 }
 
 /// <summary>
