@@ -598,10 +598,13 @@ public sealed class VBDrawingLayer : Control, IDrawingSurface
         if (style == FillStyle.Solid)
             return context => context.DrawGeometry(brush, null, figure);
         var (width, height) = (Math.Max(inside.Width, bitmap?.PixelSize.Width ?? 0), Math.Max(inside.Height, bitmap?.PixelSize.Height ?? 0));
+        // GDI's hatch brush is aligned to the surface's corner, its lines on the rows and columns IsHatched says, so a line can start before the corner.
+        var phase = Matrix.CreateTranslation(GdiDrawing.SurfaceHatchColumn - GdiDrawing.HatchSpacing, GdiDrawing.SurfaceHatchRow - GdiDrawing.HatchSpacing);
         return context =>
         {
             using var clip = context.PushGeometryClip(figure);
-            GdiDrawing.Hatch(context, brush, style, width, height);
+            using var aligned = context.PushTransform(phase);
+            GdiDrawing.Hatch(context, brush, style, width + GdiDrawing.HatchSpacing, height + GdiDrawing.HatchSpacing);
         };
     }
 
