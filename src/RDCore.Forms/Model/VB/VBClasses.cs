@@ -315,7 +315,8 @@ public static class VBClasses
         IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null, bool isContainer = false, bool isWindowless = false,
         MethodDefinition[]? methods = null) =>
         new(typeName, defaultName, ComponentKind.Control,
-            [.. properties, P.Left, P.Top, P.Width, P.Height, P.Visible, P.Opacity, P.Tag, .. events.Contains(MouseUp) ? [P.ContextMenu] : Array.Empty<PropertyDefinition>()],
+            [.. properties, P.Left, P.Top, P.Width, P.Height, P.Visible, P.Opacity, P.Tag,
+             .. events.Contains(MouseUp) ? [P.ContextMenu] : Array.Empty<PropertyDefinition>()],
             events, defaults, isContainer, isWindowless,
             methods: [M.Move, M.Refresh, .. events.Contains(GotFocus) ? [M.SetFocus] : Array.Empty<MethodDefinition>(), M.ZOrder, .. methods ?? []],
             defaultMember: DefaultMembers.GetValueOrDefault(typeName));
