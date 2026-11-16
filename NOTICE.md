@@ -20,6 +20,10 @@ Des parties de RDCore.Forms sont dérivées de [HexIDE](https://github.com/hexid
 
 Les paquets NuGet dont dépend RDCore.Forms, dont Avalonia, demeurent sous leurs propres licences.
 
+## Description de VB6.OLB
+
+Le fichier `src/RDCore.Forms/Libraries/VB.json` est la sortie de `rdc export-library` pour VB6.OLB : il décrit les classes, les membres et les événements que déclare cette bibliothèque de types. Il est distribué sous la licence MIT, comme le reste de RDCore.Forms. VB6.OLB lui-même n'est pas inclus.
+
 ## Marques de commerce
 
 Seul, "Rubberduck" est utilisé pour fins de référence au projet open-source legacy **utilisé publiquement ainsi depuis 2015** et sans lien ni affiliation avec tout tiers détenteur d'une marque semblable dans quelque juridiction que ce soit.  
@@ -50,6 +54,10 @@ Parts of RDCore.Forms are derived from [HexIDE](https://github.com/hexide-io/Hex
 - HexIDE's licence is reproduced below, as it requires.
 
 The NuGet packages RDCore.Forms depends on, Avalonia among them, remain under their own licences.
+
+## Description of VB6.OLB
+
+The file `src/RDCore.Forms/Libraries/VB.json` is `rdc export-library` output from VB6.OLB: it describes the classes, members and events that type library declares. It is licensed under the MIT licence, like the rest of RDCore.Forms. VB6.OLB itself is not included.
 
 ## Trademarks
 

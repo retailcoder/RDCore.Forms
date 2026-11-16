@@ -9,7 +9,12 @@
   <ItemGroup>
     <!-- a picture is read and decoded as the SDK reads and decodes it, and a font is drawn at the size the SDK's StdFont reads back; a
          ComboBox, in RDCore.Forms.Avalonia, matches a word typed as the language server's completion matches a name. -->
-    <PackageReference Include="RDCore.SDK" Version="0.1.5-alpha" />
+    <PackageReference Include="RDCore.SDK" Version="$(RDCoreSdkVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- rdc export-library's description of VB6.OLB, as RDCore's Symbols folder has it; RDFormsLibraries adds RDForms' members to it. -->
+    <EmbeddedResource Include="Libraries/VB.json" LogicalName="RDCore.Forms.Libraries.VB.json" />
   </ItemGroup>
 
 </Project>

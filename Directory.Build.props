@@ -3,6 +3,8 @@
   <PropertyGroup>
     <!-- the single version source for both packages; a release tag must equal v<VersionPrefix>[-suffix], the suffix passed as -p:VersionSuffix. -->
     <VersionPrefix>0.1.0</VersionPrefix>
+    <!-- the RDCore.SDK every project builds against; a build against a local pack passes its version as -p:RDCoreSdkVersion. -->
+    <RDCoreSdkVersion>0.1.5-alpha</RDCoreSdkVersion>
   </PropertyGroup>
 
   <!-- what every assembly and package of the repository says about itself. A project states its own title and description. -->
