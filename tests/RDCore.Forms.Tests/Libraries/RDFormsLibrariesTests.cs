@@ -13,7 +13,7 @@ namespace RDCore.Forms.Tests.Libraries;
 [TestClass]
 public sealed class RDFormsLibrariesTests
 {
-    // what RDForms adds to VB6.OLB. A member the model gains that VB6.OLB does not declare fails the step test until it is listed here.
+    // What RDForms adds to VB6.OLB. A member the model gains that VB6.OLB does not declare fails the step test until it is listed here.
     private static readonly string[] Additions =
     [
         "PictureBox.Opacity", "PictureBox.ContextMenu",
@@ -39,7 +39,7 @@ public sealed class RDFormsLibrariesTests
         "VBControlExtender.Opacity",
     ];
 
-    // the settings of VB6's designer the model holds on a root and VB6.OLB declares no member for: no member of the description.
+    // The settings of VB6's designer the model holds on a root and VB6.OLB declares no member for: no member of the description.
     private static readonly string[] DesignerSettings =
     [
         "UserControl.Alignable", "UserControl.CanGetFocus", "UserControl.ControlContainer", "UserControl.DataBindingBehavior", "UserControl.DataSourceBehavior",
@@ -60,7 +60,7 @@ public sealed class RDFormsLibrariesTests
         return LibraryJson.Read(reader.ReadToEnd());
     }
 
-    // a class's members and events as the file states them: a description's arrays compare by reference.
+    // A class's members and events as the file states them: a description's arrays compare by reference.
     private static string Json(IEnumerable<MemberDescription> members, IEnumerable<EventDescription> events) =>
         LibraryJson.Write(new LibraryDescription { Name = "L", Classes = [new ClassDescription { Name = "C", Members = [.. members], Events = [.. events] }] });
 
@@ -93,7 +93,7 @@ public sealed class RDFormsLibrariesTests
     public void TheAdditions_AreRDFormsList()
         => CollectionAssert.AreEqual(Additions, RDFormsLibraries.Instance.Additions.ToArray());
 
-    // the step test: a member a running program reaches on a modelled class is in the description, an addition where VB6.OLB lacks it.
+    // The step test: a member a running program reaches on a modelled class is in the description, an addition where VB6.OLB lacks it.
     [TestMethod]
     public void EveryMemberAProgramReaches_IsDescribed()
     {
