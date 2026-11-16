@@ -70,6 +70,16 @@ public static class VBMethods
     };
 
     /// <summary>
+    /// <c>ItemIcon(Index)</c>, a property, an RD-VBA addition: the picture drawn before an item of a ListBox or ComboBox, or <c>Nothing</c>.
+    /// The window gives and takes it as an object (<see cref="FormValue.FromObject"/>): the bytes of the picture's file, or
+    /// <see langword="null"/> for none.
+    /// </summary>
+    public static readonly MethodDefinition ItemIcon = new("ItemIcon", new MethodParameter("Index", "Integer"))
+    {
+        Value = new MethodParameter("ItemIcon", "Picture"),
+    };
+
+    /// <summary>
     /// <c>Selected(Index)</c>, a property: whether an item of a ListBox is selected.
     /// </summary>
     public static readonly MethodDefinition Selected = new("Selected", new MethodParameter("Index", "Integer"))
