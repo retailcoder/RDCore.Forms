@@ -45,7 +45,7 @@ public sealed class MethodDefinitionTests
     }
 
     [TestMethod]
-    public void EveryControl_HasMoveRefreshAndZOrder_ALineNoMove_AndAFormNoZOrder()
+    public void EveryControl_HasMoveRefreshAndZOrder_ALineNoMove_AFormNoZOrder_AndAnMDIFormNoRefresh()
     {
         var methods = (ComponentClass type) => string.Join(", ", type.Methods.Select(m => m.Name));
 
@@ -53,6 +53,7 @@ public sealed class MethodDefinitionTests
         Assert.AreEqual("Move, Refresh, SetFocus, ZOrder", methods(VBClasses.TextBox));
         Assert.AreEqual("Refresh, ZOrder", methods(VBClasses.Line));
         Assert.AreEqual("Move, Refresh, SetFocus", methods(VBClasses.Form));
+        Assert.AreEqual("Move, SetFocus", methods(VBClasses.MDIForm));
         Assert.AreEqual("", methods(VBClasses.Menu));
     }
 }

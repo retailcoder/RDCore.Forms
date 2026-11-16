@@ -72,7 +72,7 @@ public sealed class RDFormsLibraries : ILibrarySource
         };
     }
 
-    // a class with what its modelled classes have and VB6.OLB does not declare; a class the model does not implement is as exported.
+    // A class with what its modelled classes have and VB6.OLB does not declare; a class the model does not implement is as exported.
     private static ClassDescription WithAdditions(ClassDescription declared, LibraryDescription exported)
     {
         var modelled = ModelledAs(declared.Name);
@@ -82,11 +82,11 @@ public sealed class RDFormsLibraries : ILibrarySource
         var members = declared.Members.ToList();
         var events = declared.Events.ToList();
         bool Declared(string name) => members.Any(member => string.Equals(member.Name, name, StringComparison.OrdinalIgnoreCase));
-        // a method the window answers for comes first: a running program reaches it where a model property has its name.
+        // A method the window answers for comes first: a running program reaches it where a model property has its name.
         foreach (var modelledClass in modelled)
         {
             foreach (var method in modelledClass.Methods.Where(method => !Declared(method.Name)))
-                members.AddRange(Added(MethodMembers(method)));
+                members.AddRange(Added(MethodMembers(method, exported)));
             var settings = DesignerSettings.GetValueOrDefault(declared.Name) ?? [];
             foreach (var property in modelledClass.Properties.Where(property => !modelledClass.IsNotAvailableAtRunTime(property) && !Declared(property.Name)
                 && !settings.Contains(property.Name, StringComparer.OrdinalIgnoreCase)))
@@ -97,7 +97,7 @@ public sealed class RDFormsLibraries : ILibrarySource
         return declared with { Members = [.. members], Events = [.. events] };
     }
 
-    // what VB6's designer sets on a root that VB6.OLB declares no member for, and that RD-VBA adds none for: VB6's documentation has each of a
+    // What VB6's designer sets on a root that VB6.OLB declares no member for, and that RD-VBA adds none for: VB6's documentation has each of a
     // UserControl's "not available at run time", and a UserControl's or a PropertyPage's place is its extender's Left and Top.
     private static readonly Dictionary<string, string[]> DesignerSettings = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -106,28 +106,26 @@ public sealed class RDFormsLibraries : ILibrarySource
         ["PropertyPage"] = ["Left", "Top"],
     };
 
-    // the mark, in the one place every added member takes it.
+    // The mark, in the one place every added member takes it.
     private static IEnumerable<MemberDescription> Added(IEnumerable<MemberDescription> members) => members.Select(member => member with { IsAddition = true });
 
-    // the model's classes a class of VB6.OLB describes: VBControlExtender is the extender of every placed UserControl.
+    // The model's classes a class of VB6.OLB describes: VBControlExtender is the extender of every placed UserControl.
     private static IReadOnlyList<ComponentClass> ModelledAs(string name) =>
         string.Equals(name, "VBControlExtender", StringComparison.OrdinalIgnoreCase)
             ? [FullestExtender.Value]
             : VBClasses.ByTypeName($"{VB}.{name}") is { } modelled ? [modelled] : [];
 
-    // the extender of a UserControl whose settings give a placed control every extender member there is.
+    // The extender of a UserControl whose settings give a placed control every extender member there is.
     private static readonly Lazy<ComponentClass> FullestExtender = new(() => UserControlClasses.Of(
         new FormDefinition(new ComponentInstance(VBClasses.UserControl, "UserControl1")
             .Set(P.InvisibleAtRuntime, false).Set(P.CanGetFocus, true).Set(P.ForwardFocus, false).Set(P.DefaultCancel, true).Set(P.Alignable, true)),
         "Project1"));
 
-    // a property's accessors: those of a member of its name on another of VB6.OLB's classes, or a Property Get with a Property Let (or Set) of the model's type.
+    // A property's accessors: those of a member of its name on another of VB6.OLB's classes, or a Property Get with a Property Let (or Set) of the
+    // model's type.
     private static IEnumerable<MemberDescription> PropertyAccessors(PropertyDefinition property, bool readOnly, LibraryDescription exported)
     {
-        var shared = exported.Classes.Select(declared => declared.Members.Where(member => member.Kind != MemberKind.Method
-                && string.Equals(member.Name, property.Name, StringComparison.OrdinalIgnoreCase)).ToList())
-            .FirstOrDefault(accessors => accessors.Count > 0);
-        if (shared is not null)
+        if (SharedAccessors(property.Name, exported) is { } shared)
             return shared.Where(accessor => !readOnly || accessor.Kind == MemberKind.PropertyGet).Select(accessor => accessor with { Name = property.Name, DispId = null });
 
         var type = TypeOf(property.ValueType);
@@ -135,12 +133,29 @@ public sealed class RDFormsLibraries : ILibrarySource
         return readOnly ? [get] : [get, new MemberDescription { Name = property.Name, Kind = MemberKind.PropertyLet, Parameters = [Parameter("Value", type, byVal: true)] }];
     }
 
-    // a method, or a property the window answers for, as code calls it.
-    private static IEnumerable<MemberDescription> MethodMembers(MethodDefinition method)
+    // The accessors of a property of the name on the first of VB6.OLB's classes that declares one, or null where none does.
+    private static List<MemberDescription>? SharedAccessors(string name, LibraryDescription exported) =>
+        exported.Classes.Select(declared => declared.Members.Where(member => member.Kind != MemberKind.Method
+                && string.Equals(member.Name, name, StringComparison.OrdinalIgnoreCase)).ToList())
+            .FirstOrDefault(accessors => accessors.Count > 0);
+
+    // A method, or a property the window answers for, as code calls it. A property whose value the window types as a property of VB6.OLB
+    // (ItemIcon's Picture) has that property's accessors and type, after its own parameters: VB6's Picture is a stdole.StdPicture that is
+    // read, let and set.
+    private static IEnumerable<MemberDescription> MethodMembers(MethodDefinition method, LibraryDescription exported)
     {
         var parameters = method.Parameters.Select(parameter => Parameter(parameter.Name, parameter.TypeName, optional: parameter.IsOptional)).ToImmutableArray();
         if (method.Value is not { } value)
             return [new MemberDescription { Name = method.Name, Kind = MemberKind.Method, Parameters = parameters }];
+
+        if (SharedAccessors(value.TypeName, exported) is { } shared)
+            return shared.Where(accessor => !method.IsReadOnly || accessor.Kind == MemberKind.PropertyGet).Select(accessor => accessor with
+            {
+                Name = method.Name,
+                DispId = null,
+                Description = null,
+                Parameters = [.. parameters, .. accessor.Parameters],
+            });
 
         var get = new MemberDescription { Name = method.Name, Kind = MemberKind.PropertyGet, Type = value.TypeName, Parameters = parameters };
         return method.IsReadOnly
@@ -151,7 +166,7 @@ public sealed class RDFormsLibraries : ILibrarySource
     private static ParameterDescription Parameter(string name, string type, bool byVal = false, bool optional = false) =>
         new() { Name = name, Type = type, IsByVal = byVal, IsOptional = optional };
 
-    // the VB type of a model property's values, for an addition VB6.OLB has no member of the name of.
+    // The VB type of a model property's values, for an addition VB6.OLB has no member of the name of.
     private static string TypeOf(Type valueType) => (Nullable.GetUnderlyingType(valueType) ?? valueType) switch
     {
         var type when type == typeof(bool) => "Boolean",
