@@ -42,12 +42,14 @@ public static class FormFonts
     public static double ToFontSize(FormFont font) => font.Size * 96.0 / 72.0;
 
     /// <summary>
-    /// Sets a control's font family, size, weight and style to a form font's. The control's text inherits them.
+    /// Sets a control's font family, size, weight, style, underline and strikethrough to a form font's. The control's text inherits
+    /// them.
     /// </summary>
     /// <param name="control">The control.</param>
     /// <param name="font">The font.</param>
     /// <remarks>
-    /// A font's underline and strikethrough are not drawn.
+    /// The underline and the strikethrough are drawn under and through the text of each of the control's text blocks, along the
+    /// whole text. A text box's text is drawn without them.
     /// </remarks>
     public static void Apply(Control control, FormFont font)
     {
@@ -55,7 +57,23 @@ public static class FormFonts
         control.SetValue(TextElement.FontSizeProperty, ToFontSize(font));
         control.SetValue(TextElement.FontWeightProperty, font.Bold ? FontWeight.Bold : FontWeight.Normal);
         control.SetValue(TextElement.FontStyleProperty, font.Italic ? FontStyle.Italic : FontStyle.Normal);
+        control.SetValue(Inline.TextDecorationsProperty, ToTextDecorations(font));
     }
+
+    private static readonly TextDecorationCollection UnderlineAndStrikethrough =
+    [
+        new TextDecoration { Location = TextDecorationLocation.Underline },
+        new TextDecoration { Location = TextDecorationLocation.Strikethrough },
+    ];
+
+    // The lines a font draws under and through its text, or null where it draws neither.
+    internal static TextDecorationCollection? ToTextDecorations(FormFont font) => (font.Underline, font.Strikethrough) switch
+    {
+        (true, true) => UnderlineAndStrikethrough,
+        (true, false) => TextDecorations.Underline,
+        (false, true) => TextDecorations.Strikethrough,
+        _ => null,
+    };
 
     // The height of a line of a font's text, in whole pixels, as VB6 makes a combo's or a list's rows. MS Sans Serif's are VB6's,
     // measured at each size it is drawn at up to 160 pixels. Another font's, and MS Sans Serif's past those, are RDForms' own: VB6
