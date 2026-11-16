@@ -13,8 +13,8 @@ namespace RDCore.Forms.Model.VB;
 /// <remarks>
 /// Each class lists the properties of it that the model holds, then the ones every class of its kind has: <c>Left</c> and
 /// <c>Top</c> for a component with a place, <c>Width</c> and <c>Height</c> for one with a size, <c>Visible</c> and RD-VBA's
-/// <see cref="VBProperties.Opacity"/> for a control a running program shows, and <c>Tag</c>. A property a designer file sets that a class does not list is kept as an
-/// <see cref="UnmodelledProperty"/>. Its methods are among <see cref="VBMethods"/>: a control's are <c>Move</c>, <c>Refresh</c> and
+/// <see cref="VBProperties.Opacity"/> for a control a running program shows, and <c>Tag</c>. A property a designer file sets that a class does
+/// not list is kept as an <see cref="UnmodelledProperty"/>. Its methods are among <see cref="VBMethods"/>: a control's are <c>Move</c>, <c>Refresh</c> and
 /// <c>ZOrder</c>, and <c>SetFocus</c> where it can take the focus.
 /// </remarks>
 public static class VBClasses
