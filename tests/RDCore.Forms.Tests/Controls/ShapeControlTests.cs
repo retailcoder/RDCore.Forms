@@ -163,9 +163,9 @@ public sealed class ShapeControlTests
     }
 
     [TestMethod]
-    public void ALinesEnds_AreInItsContainersScale_AndFollowIt()
+    public void ALinesEnds_AreInItsContainersScale_AndAScaleChange_KeepsItsPlace()
     {
-        var (pixel, user, frame, changed) = UI.Run(() =>
+        var (pixel, user, frame, changed, points) = UI.Run(() =>
         {
             var pixelRoot = Root(ScaleMode.Pixel);
             var inPixels = Line(pixelRoot, 10, 20, 30, 40);
@@ -188,15 +188,18 @@ public sealed class ShapeControlTests
             var frame = (frameControl.Start, frameControl.End);
             pixelRoot.Set(P.ScaleMode, ScaleMode.Point);
             var changed = (control.Start, control.End);
+            var points = (inPixels.Get(P.X1), inPixels.Get(P.Y1), inPixels.Get(P.X2), inPixels.Get(P.Y2));
             window.Close();
             userWindow.Close();
-            return (before, user, frame, changed);
+            return (before, user, frame, changed, points);
         });
 
         Assert.AreEqual((new Point(150, 300), new Point(450, 600)), pixel);
         Assert.AreEqual((new Point(450, 0), new Point(900, 3000)), user);
         Assert.AreEqual((new Point(10, 20), new Point(30, 40)), frame);
-        Assert.AreEqual((new Point(200, 400), new Point(600, 800)), changed);
+        // VB6 gives a Line's ends again in the new scale, and the Line stays where it is.
+        Assert.AreEqual(pixel, changed);
+        Assert.AreEqual((7.5, 15d, 22.5, 30d), points);
     }
 
     [TestMethod]
