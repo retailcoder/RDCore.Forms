@@ -4,7 +4,7 @@
 
 ## Catalogue
 
-[`RDFormsControls.Create`](../api/RDCore.Forms.Avalonia.Controls.RDFormsControls.yml) makes the control for a component of an RDForms class: the classes Visual Basic 6.0's intrinsic controls and MSForms' controls port to.
+[`RDFormsControls.Create`](../api/RDCore.Forms.Avalonia.Controls.RDFormsControls.yml) makes the control for a component of an RDForms class: the classes Visual Basic 6.0's intrinsic controls and MSForms' controls port to. It makes none for an `RDForms.ImageList`, MSComctlLib's, which holds pictures for other controls and shows nothing.
 
 |Class|Control|Events raised|Page|
 |---|---|---|---|
@@ -209,9 +209,9 @@ Some properties are set only by a designer and a form's file. A running VB6 prog
 |Access from code|Properties|
 |---|---|
 |Read only|Form and MDIForm: `StartUpPosition`. Form: `ShowInTaskbar`, `MaxButton`, `MinButton`. CommandButton, CheckBox, OptionButton and ComboBox: `Style`. TextBox: `MultiLine`, `ScrollBars`. ListBox and FileListBox: `MultiSelect`. ListBox and ComboBox: `IntegralHeight`. Menu: `WindowList`.|
-|Neither read nor set|Menu: `Shortcut`. Timer: `Left`, `Top`. Data: `Negotiate`.|
+|Neither read nor set|Menu: `Shortcut`. Timer and ImageList: `Left`, `Top`. Data: `Negotiate`.|
 
-The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../api/RDCore.Forms.Model.ComponentClass.yml) and `IsNotAvailableAtRunTime`. A Timer's `Left` and `Top` are the same definitions as other controls', and only the Timer makes them unavailable.
+The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../api/RDCore.Forms.Model.ComponentClass.yml) and `IsNotAvailableAtRunTime`. A Timer's `Left` and `Top` are the same definitions as other controls', and only the Timer and the ImageList make them unavailable.
 
 > [!NOTE]
 > **Not implemented.** The runtime does not refuse a program's read or assignment of these properties with 393 or 382.

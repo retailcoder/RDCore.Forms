@@ -11,7 +11,7 @@ Le contenu de ce référentiel est distribué sous la licence **MIT** : voir [LI
 
 ## Code tiers
 
-Des parties de RDCore.Forms sont dérivées de [HexIDE](https://github.com/hexide-io/HexIDE), à partir du _commit_ `ae17f1db` : le modèle des composants, les contrôles Avalonia et la lecture des fichiers `.frm` et `.frx`.
+Des parties de RDCore.Forms sont dérivées de [HexIDE](https://github.com/hexide-io/HexIDE), à partir du _commit_ `ae17f1db` : le modèle des composants, les contrôles Avalonia et la lecture des fichiers `.frm` et `.frx`, celle de l'ImageList de MSComctlLib comprise.
 
 - HexIDE est distribué sous la licence MIT.
 - Chaque fichier dérivé de HexIDE conserve, dans son en-tête, l'avis de droit d'auteur de HexIDE.
@@ -46,7 +46,7 @@ The content of this repository is licensed under the **MIT** licence: see [LICEN
 
 ## Third-party code
 
-Parts of RDCore.Forms are derived from [HexIDE](https://github.com/hexide-io/HexIDE), from commit `ae17f1db`: the component model, the Avalonia controls, and the reading of `.frm` and `.frx` files.
+Parts of RDCore.Forms are derived from [HexIDE](https://github.com/hexide-io/HexIDE), from commit `ae17f1db`: the component model, the Avalonia controls, and the reading of `.frm` and `.frx` files, MSComctlLib's ImageList included.
 
 - HexIDE is licensed under the MIT licence.
 - Every file derived from HexIDE keeps HexIDE's copyright notice in its header.

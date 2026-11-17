@@ -14,6 +14,8 @@ Le texte est décodé en Windows-1252, sauf si [`VB6ImportOptions.Encoding`](../
 
 Une classe de la bibliothèque `VB` de VB6 est lue comme la classe RDForms du même nom : `Begin VB.TextBox Text1` est un `RDForms.TextBox`.
 
+L'ImageList de MSComctlLib (MSCOMCTL.OCX) est lue comme un `RDForms.ImageList` : `Begin MSComctlLib.ImageList ImageList1`. Son sac `Images` devient ses `ListImages` : l'image de chaque sac `ListImage`, lue dans le fichier compagnon, avec sa `Key` et son `Object.Tag`. Un sac `Images` dont une partie ne peut pas être lue est signalé, et conservé en entier sous forme d'`UnmodelledProperty`; l'ImageList n'a alors aucune image. Les autres classes de MSComctlLib sont conservées sous forme de texte.
+
 Les UserControls du projet qu'un formulaire place, comme `Begin Project1.Gauge Gauge1`, sont lus comme des composants lorsque `VB6ImportOptions.Classes` contient leurs classes : voir [UserControls](../controls/usercontrols.md). Sans elles, chacun est conservé sous forme de texte.
 
 `ReadFile` ne lit un fichier associé que dans le dossier du fichier de conception. Un nom cité qui est un chemin absolu, comme un chemin réseau, n'est pas lu, ni un nom qui contient un NUL : chacun est signalé comme un fichier associé introuvable.
