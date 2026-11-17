@@ -16,7 +16,8 @@ An argument left out is `null`, and the list ends at the last one given. A `Vari
 
 |Class|Methods|
 |---|---|
-|Form, MDIForm|`Move`, `Refresh`, `SetFocus`|
+|Form|`Move`, `Refresh`, `SetFocus`|
+|MDIForm|`Move`, `SetFocus`|
 |UserControl, PropertyPage|`Refresh`|
 |A control that can take the focus|`Move`, `Refresh`, `SetFocus`, `ZOrder`|
 |Label, Frame, Image, Shape|`Move`, `Refresh`, `ZOrder`|
