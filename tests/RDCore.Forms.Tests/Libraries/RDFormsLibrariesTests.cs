@@ -80,13 +80,61 @@ public sealed class RDFormsLibrariesTests
         LibraryJson.Write(new LibraryDescription { Name = "L", Classes = [new ClassDescription { Name = "C", Members = [.. members], Events = [.. events] }] });
 
     [TestMethod]
-    public void TheOnlyLibrary_IsVB_AndAProjectsReferenceToVB6Olb_FindsIt()
+    public void TheLibraries_AreVBAndMSComctlLib_AndAProjectsReferenceToVB6Olb_FindsVB()
     {
-        CollectionAssert.AreEqual(new[] { "VB" }, RDFormsLibraries.Instance.Names.ToArray());
+        CollectionAssert.AreEqual(new[] { "VB", "MSComctlLib" }, RDFormsLibraries.Instance.Names.ToArray());
         Assert.IsFalse(RDFormsLibraries.Instance.TryGet("VBRUN", out _));
         Assert.IsTrue(((ILibrarySource)RDFormsLibraries.Instance).TryGetByGuid(Guid.Parse("FCFB3D2E-A0FA-1068-A738-08002B3371B5"), out var vb));
         Assert.AreSame(VB(), vb);
         Assert.AreEqual("6.0", vb.Origin!.Version);
+    }
+
+    // MSComctlLib
+
+    private static LibraryDescription CommonControls()
+    {
+        Assert.IsTrue(RDFormsLibraries.Instance.TryGet("mscomctllib", out var library));
+        return library;
+    }
+
+    private static string EmbeddedText(string name)
+    {
+        using var stream = typeof(RDFormsLibraries).Assembly.GetManifestResourceStream($"RDCore.Forms.Libraries.{name}.json")!;
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    [TestMethod]
+    public void AProjectsReferenceToMSComctlOcx_FindsMSComctlLib_TheSameDescriptionEachTime()
+    {
+        Assert.IsTrue(((ILibrarySource)RDFormsLibraries.Instance).TryGetByGuid(Guid.Parse("831FDD16-0C5C-11D2-A9FC-0000F8754DA1"), out var library));
+
+        Assert.AreSame(CommonControls(), library);
+        Assert.AreEqual(("MSComctlLib", "2.0", "MSCOMCTL.OCX"), (library.Name, library.Origin!.Version, library.Origin.File));
+        Assert.AreEqual("Microsoft Windows Common Controls 6.0", library.Description);
+    }
+
+    [TestMethod]
+    public void MSComctlLib_IsTheOcxsExportAsWritten_WithNoAddition()
+    {
+        var library = CommonControls();
+
+        Assert.AreEqual(LibraryJson.Write(LibraryJson.Read(EmbeddedText("MSComctlLib"))), LibraryJson.Write(library));
+        Assert.IsFalse(library.Classes.Any(declared => declared.IsAddition || declared.Members.Any(m => m.IsAddition) || declared.Events.Any(e => e.IsAddition)));
+        Assert.AreEqual((32, 42), (library.Classes.Length, library.Enums.Length));
+        Assert.AreEqual(new LibraryIdentity("stdole", Guid.Parse("00020430-0000-0000-C000-000000000046"), 2, 0), library.DependsOn.Single());
+    }
+
+    // The members the ImageList's run time implements, as MSCOMCTL.OCX declares them.
+    [TestMethod]
+    [DataRow("ImageList", "ImageHeight ImageWidth MaskColor UseMaskColor ListImages hImageList BackColor Overlay AboutBox")]
+    [DataRow("ListImages", "Count ControlDefault Add Clear Item Remove _NewEnum")]
+    [DataRow("ListImage", "Index Key Tag Picture Draw ExtractIcon")]
+    public void TheImageListsClasses_HaveTheOcxsMembers(string className, string members)
+    {
+        var declared = CommonControls().Classes.Single(c => c.Name == className);
+
+        Assert.AreEqual(members, string.Join(" ", declared.Members.Select(m => m.Name).Distinct()));
     }
 
     [TestMethod]
