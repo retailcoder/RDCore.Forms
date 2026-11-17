@@ -22,7 +22,7 @@ These are RDForms' own, not measured with VB6:
 - The button with the look has the `:default` pseudo-class, which a host's style can select.
 - A default button that is hidden or disabled takes no Enter, so it has no look.
 
-A Standard CommandButton does not paint its `BackColor`: its face is the system's `ButtonFace` colour, pressed or not, whatever the theme's variant. See [Style Graphical](#style-graphical) for its `Picture`.
+A Standard CommandButton does not paint its `BackColor`: its face is the system's `ButtonFace` colour, pressed or not, in the palette of the form's theme variant (see [Theme](index.md#theme)). See [Style Graphical](#style-graphical) for its `Picture`.
 
 A CommandButton has no `ForeColor`, as in VB6, where a program's read or assignment of it is 438. Its caption is drawn in the system's `ButtonText` colour. A VB6 form file or a form document that gives it a `ForeColor` keeps that value as an `UnmodelledProperty` (see [Format](../format/index.md)).
 
