@@ -1,11 +1,13 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
 using P = RDCore.Forms.Model.Properties;
@@ -57,6 +59,34 @@ public sealed class ButtonControlTests
 
         Assert.AreEqual(((ISolidColorBrush)FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonText))).Color, colour);
         Assert.IsFalse(taken);
+    }
+
+    // A Standard button's face and caption are both the form's system colours, ButtonFace and ButtonText, at rest and pressed: the
+    // theme's dark variant would otherwise draw the black caption on its dark face.
+    [TestMethod]
+    public void AStandardCommandButtonsFace_IsTheButtonFaceColour_UnderTheDarkVariant_AtRestAndPressed()
+    {
+        var (atRest, pressed) = UI.Run(() =>
+        {
+            var button = new RDFormsCommandButton(new ComponentInstance(ComponentClasses.CommandButton, "Command1"));
+            var (window, _) = ControlHost.Show(button);
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            Dispatcher.UIThread.RunJobs();
+            var presenter = button.GetVisualDescendants().OfType<ContentPresenter>().First(p => p.Name == "PART_ContentPresenter");
+            (Color Face, Color Text) Look() => (((ISolidColorBrush)presenter.Background!).Color, ((ISolidColorBrush)presenter.Foreground!).Color);
+            var atRest = Look();
+            window.MouseDown(new Point(20, 10), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            var pressed = (button.IsPressed, Look());
+            window.MouseUp(new Point(20, 10), MouseButton.Left);
+            window.Close();
+            return (atRest, pressed);
+        });
+
+        var system = (((ISolidColorBrush)FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonFace))).Color,
+            ((ISolidColorBrush)FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonText))).Color);
+        Assert.AreEqual(system, atRest);
+        Assert.AreEqual((true, system), pressed);
     }
 
     [TestMethod]
