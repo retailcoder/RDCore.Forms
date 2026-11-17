@@ -26,8 +26,6 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </remarks>
 public sealed class RDFormsMultiPage : Control, IRDFormsContainer, IRaisesKeyEvents
 {
-    private static readonly IBrush Edge = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonShadow));
-
     private readonly RDFormsTabHeaders headers = new();
     private readonly Border body;
     private readonly DockPanel dock = new() { LastChildFill = true };
@@ -52,7 +50,8 @@ public sealed class RDFormsMultiPage : Control, IRDFormsContainer, IRaisesKeyEve
     {
         this.instance = instance;
         Focusable = true;
-        body = new Border { BorderBrush = Edge, BorderThickness = new Thickness(1), Child = ChildHost };
+        body = new Border { BorderThickness = new Thickness(1), Child = ChildHost };
+        ComponentBinding.FollowVariant(this, () => body.BorderBrush = ComponentBinding.Brush(this, SystemColor.ButtonShadow));
         dock.Children.Add(headers);
         dock.Children.Add(body);
         VisualChildren.Add(dock);
@@ -124,12 +123,12 @@ public sealed class RDFormsMultiPage : Control, IRDFormsContainer, IRaisesKeyEve
                 Refresh();
                 break;
             case nameof(P.BackColor):
-                background = ComponentBinding.Brush(e.After);
+                background = ComponentBinding.Brush(this, e.After);
                 Refresh();
                 InvalidateVisual();
                 break;
             case nameof(P.ForeColor):
-                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(e.After));
+                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(this, e.After));
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);
@@ -159,7 +158,8 @@ public sealed class RDFormsMultiPage : Control, IRDFormsContainer, IRaisesKeyEve
             _ => Dock.Top,
         });
         headers.Show([.. pages.Select(p => new TabHeader(p.Get(P.Caption), p.Get(P.ToolTipText), p.Get(P.Enabled), p.Get(P.Visible)))], selected,
-            instance.Get(P.TabStyle), orientation, instance.Get(P.MultiRow), instance.Get(P.TabFixedWidth), instance.Get(P.TabFixedHeight), background);
+            instance.Get(P.TabStyle), orientation, instance.Get(P.MultiRow), instance.Get(P.TabFixedWidth), instance.Get(P.TabFixedHeight), background,
+            ActualThemeVariant);
         foreach (var view in ChildHost.Children)
         {
             if (RDFormsControl.GetInstance(view) is { } page)

@@ -63,7 +63,8 @@ public sealed class RDFormsUserControl : Control, IRDFormsContainer
         {
             try
             {
-                View = new RDFormsFormView(UserControl, fileSystem);
+                // In its container's theme variant.
+                View = new RDFormsFormView(UserControl, fileSystem) { KeepSystemTheme = true };
                 panel.Children.Add(View);
             }
             finally
@@ -108,20 +109,23 @@ public sealed class RDFormsUserControl : Control, IRDFormsContainer
         ComponentBinding.ApplyCommon(this, e.Property, e.After);
     }
 
-    // RDForms' own: a box that names the class, in the button face's colour.
-    private static Border Placeholder(string typeName) => new()
+    // RDForms' own: a box that names the class, in the button face's colour, in its theme variant.
+    private static Border Placeholder(string typeName)
     {
-        Background = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonFace)),
-        BorderBrush = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonShadow)),
-        BorderThickness = new Thickness(1),
-        ClipToBounds = true,
-        Child = new TextBlock
+        var name = new TextBlock
         {
             Text = typeName,
-            Foreground = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonText)),
             Margin = new Thickness(2),
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Top,
-        },
-    };
+        };
+        var box = new Border { BorderThickness = new Thickness(1), ClipToBounds = true, Child = name };
+        ComponentBinding.FollowVariant(box, () =>
+        {
+            box.Background = ComponentBinding.Brush(box, SystemColor.ButtonFace);
+            box.BorderBrush = ComponentBinding.Brush(box, SystemColor.ButtonShadow);
+            name.Foreground = ComponentBinding.Brush(box, SystemColor.ButtonText);
+        });
+        return box;
+    }
 }

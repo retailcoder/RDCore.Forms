@@ -24,10 +24,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </remarks>
 public sealed class RDFormsTabStrip : Control, IRaisesKeyEvents
 {
-    private static readonly IBrush Edge = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonShadow));
-
     private readonly RDFormsTabHeaders headers = new();
-    private readonly Border client = new() { BorderBrush = Edge, BorderThickness = new Thickness(1) };
+    private readonly Border client = new() { BorderThickness = new Thickness(1) };
     private readonly DockPanel dock = new() { LastChildFill = true };
     private readonly ComponentInstance instance;
     private readonly TabbedInput input;
@@ -50,6 +48,7 @@ public sealed class RDFormsTabStrip : Control, IRaisesKeyEvents
         Focusable = true;
         dock.Children.Add(headers);
         dock.Children.Add(client);
+        ComponentBinding.FollowVariant(this, () => client.BorderBrush = ComponentBinding.Brush(this, SystemColor.ButtonShadow));
         VisualChildren.Add(dock);
         LogicalChildren.Add(dock);
         input = new TabbedInput(this, headers, source => ReferenceEquals(ControlKeys.Owner(source), this));
@@ -127,11 +126,11 @@ public sealed class RDFormsTabStrip : Control, IRaisesKeyEvents
                 Refresh();
                 break;
             case nameof(P.BackColor):
-                client.Background = ComponentBinding.Brush(e.After);
+                client.Background = ComponentBinding.Brush(this, e.After);
                 Refresh();
                 break;
             case nameof(P.ForeColor):
-                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(e.After));
+                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(this, e.After));
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);
@@ -151,6 +150,6 @@ public sealed class RDFormsTabStrip : Control, IRaisesKeyEvents
         });
         headers.Show([.. instance.Get(P.Tabs).Select(t => new TabHeader(t.Caption, t.ToolTipText, t.Enabled, t.Visible))], instance.Get(P.SelectedIndex),
             instance.Get(P.TabStyle), orientation, instance.Get(P.MultiRow), instance.Get(P.TabFixedWidth), instance.Get(P.TabFixedHeight),
-            client.Background ?? Brushes.Transparent);
+            client.Background ?? Brushes.Transparent, ActualThemeVariant);
     }
 }

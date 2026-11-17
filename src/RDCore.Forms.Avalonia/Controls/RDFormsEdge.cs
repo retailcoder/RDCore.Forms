@@ -45,7 +45,8 @@ public sealed class RDFormsEdge : Decorator
     static RDFormsEdge()
     {
         AffectsMeasure<RDFormsEdge>(EdgeProperty);
-        AffectsRender<RDFormsEdge>(EdgeProperty);
+        // Its colours are system colours, drawn in its theme variant.
+        AffectsRender<RDFormsEdge>(EdgeProperty, ThemeVariantScope.ActualThemeVariantProperty);
         EdgeProperty.Changed.AddClassHandler<RDFormsEdge>((edge, _) => edge.Padding = new Thickness(WidthOf(edge.Edge)));
     }
 
@@ -94,10 +95,10 @@ public sealed class RDFormsEdge : Decorator
     }
 
     // One pixel ring, inset by `at`: its top and left in one colour, its bottom and right in another.
-    private static void Ring(DrawingContext context, double at, double w, double h, SystemColor topLeft, SystemColor bottomRight)
+    private void Ring(DrawingContext context, double at, double w, double h, SystemColor topLeft, SystemColor bottomRight)
     {
-        var light = FormPalette.ToBrush(FormColor.FromSystem(topLeft));
-        var dark = FormPalette.ToBrush(FormColor.FromSystem(bottomRight));
+        var light = ComponentBinding.Brush(this, topLeft);
+        var dark = ComponentBinding.Brush(this, bottomRight);
         context.FillRectangle(light, new Rect(at, at, Math.Max(0, w - 2 * at), 1));
         context.FillRectangle(light, new Rect(at, at, 1, Math.Max(0, h - 2 * at)));
         context.FillRectangle(dark, new Rect(at, h - at - 1, Math.Max(0, w - 2 * at), 1));

@@ -48,6 +48,7 @@ internal sealed class GraphicalFace : Control
             var (holder, greyed) = !IsEffectivelyEnabled
                 ? disabledPicture.Picture is not null ? (disabledPicture, false) : (picture, true)
                 : (isDown && downPicture.Picture is not null ? downPicture : picture, false);
+            // A system mask colour names a colour of the picture: the one Windows gives it, the light palette's, under every variant.
             return (holder.MaskedBy(useMaskColor ? FormPalette.ToColor(maskColor) : null), greyed);
         }
     }

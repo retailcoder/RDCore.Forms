@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
@@ -140,6 +141,8 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
         Scroller = new RDFormsScroller(form.Root, View, View, followsSize: true);
         // A window of no pixels has no surface to draw: closing it fails as it renders a last frame. The window takes its content's size.
         Content = new DockPanel { MinWidth = 1, MinHeight = 1, Children = { MenuBar, Scroller } };
+        // Light, whatever the application's theme, until the host keeps the system's.
+        RequestedThemeVariant = ThemeVariant.Light;
         SizeToContent = SizeToContent.WidthAndHeight;
         WindowStartupLocation = form.Root.Get(P.StartUpPosition) switch
         {
@@ -175,6 +178,30 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
     /// The form's menu bar, above its client area: hidden while none of the bar's items is visible.
     /// </summary>
     public RDFormsMenuBar MenuBar { get; }
+
+    /// <summary>
+    /// Whether the window keeps the system's theme: RD-VBA's <c>App.KeepSystemTheme</c>, which the host gives each window it makes.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see langword="false"/>, the default, shows the form in the light theme variant whatever the application's theme, as VB6 shows a
+    /// form in Windows' light colours. <see langword="true"/> shows it in the application's theme variant, and follows it as it changes.
+    /// </para>
+    /// <para>
+    /// The form's system colours, its menu bar's included, are drawn in the window's variant, with <see cref="FormPalette"/>'s palette
+    /// for it; a colour set as RGB is drawn as it is. The value can change while the window is shown: the form is drawn again in its new
+    /// variant. Each window has its own value.
+    /// </para>
+    /// </remarks>
+    public bool KeepSystemTheme
+    {
+        get => View.KeepSystemTheme;
+        set
+        {
+            RequestedThemeVariant = value ? null : ThemeVariant.Light;
+            View.KeepSystemTheme = value;
+        }
+    }
 
     /// <summary>
     /// The form's root.

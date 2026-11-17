@@ -199,12 +199,12 @@ public sealed class RDFormsSpinButton : Grid, IRaisesKeyEvents
         }
         if (ReferenceEquals(e.Property, P.BackColor))
         {
-            up.Background = down.Background = FormPalette.ToBrush((FormColor)e.After!);
+            up.Background = down.Background = ComponentBinding.Brush(this, e.After);
             return;
         }
         if (ReferenceEquals(e.Property, P.ForeColor))
         {
-            upArrow.Fill = downArrow.Fill = FormPalette.ToBrush((FormColor)e.After!);
+            upArrow.Fill = downArrow.Fill = ComponentBinding.Brush(this, e.After);
             return;
         }
         ComponentBinding.ApplyCommon(this, e.Property, e.After);

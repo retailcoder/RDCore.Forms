@@ -24,8 +24,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// </para>
 /// <para>
 /// Its <c>Style</c> is read as it is made, and a later change is ignored. A Standard button shows its caption only: its <c>Picture</c>
-/// is not drawn, and its <c>BackColor</c> is not painted: its face is the system's <c>ButtonFace</c> colour, pressed or not, whatever
-/// the theme's variant. A Graphical button paints its <c>BackColor</c>, and shows its caption at the
+/// is not drawn, and its <c>BackColor</c> is not painted: its face is the system's <c>ButtonFace</c> colour, pressed or not, in the
+/// button's theme variant. A Graphical button paints its <c>BackColor</c>, and shows its caption at the
 /// bottom and its picture centred above it, both one pixel right and down while it is pressed. While pressed it shows its
 /// <c>DownPicture</c>, and while disabled its <c>DisabledPicture</c>, where it has one; a disabled button with no
 /// <c>DisabledPicture</c> shows its <c>Picture</c> greyed. Its caption is in the system's <c>ButtonText</c> colour: a CommandButton has
@@ -36,6 +36,7 @@ public sealed class RDFormsCommandButton : Button, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
     private readonly GraphicalFace? face;
+    private Style? pressedFace;
 
     static RDFormsCommandButton()
     {
@@ -59,10 +60,16 @@ public sealed class RDFormsCommandButton : Button, IRaisesKeyEvents
         this.instance = instance;
         if (instance.Get(P.ButtonStyle) == ButtonStyle.Graphical)
             GraphicalFace.ShowIn(this, face = new GraphicalFace());
-        else
-            ShowSystemFace(this);
-        // A CommandButton has no ForeColor: Windows draws its caption in the button text colour.
-        Foreground = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonText));
+        // Its system colours follow its theme variant.
+        ComponentBinding.FollowVariant(this, () =>
+        {
+            if (face is null)
+                ShowSystemFace();
+            // A CommandButton has no ForeColor: Windows draws its caption in the button text colour.
+            Foreground = ComponentBinding.Brush(this, SystemColor.ButtonText);
+            if (PseudoClasses.Contains(":default"))
+                BorderBrush = ComponentBinding.Brush(this, SystemColor.Highlight);
+        });
         ComponentBinding.Bind(this, instance, ComponentClasses.CommandButton, Apply);
     }
 
@@ -70,16 +77,19 @@ public sealed class RDFormsCommandButton : Button, IRaisesKeyEvents
     protected override Type StyleKeyOverride => typeof(Button);
 
     // A Standard button's face is the system's button face colour, pressed or not, as its caption is the button text colour: both are
-    // the form's palette, never the theme's, whose dark variant would put the black caption on a dark face.
-    private static void ShowSystemFace(RDFormsCommandButton button)
+    // the form's palette, in the button's variant, never the theme's own button colours.
+    private void ShowSystemFace()
     {
-        var face = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonFace));
-        button.Background = face;
+        var brush = ComponentBinding.Brush(this, SystemColor.ButtonFace);
+        Background = brush;
+        if (pressedFace is not null)
+            Styles.Remove(pressedFace);
         // the button's style key is Button's, which a selector matches on.
-        button.Styles.Add(new Style(x => x.OfType<Button>().Class(":pressed").Template().OfType<ContentPresenter>().Name("PART_ContentPresenter"))
+        pressedFace = new Style(x => x.OfType<Button>().Class(":pressed").Template().OfType<ContentPresenter>().Name("PART_ContentPresenter"))
         {
-            Setters = { new Setter(ContentPresenter.BackgroundProperty, face) },
-        });
+            Setters = { new Setter(ContentPresenter.BackgroundProperty, brush) },
+        };
+        Styles.Add(pressedFace);
     }
 
     // The default look, which the form's window gives the button that Enter clicks.
@@ -90,7 +100,7 @@ public sealed class RDFormsCommandButton : Button, IRaisesKeyEvents
         PseudoClasses.Set(":default", isDefault);
         if (isDefault)
         {
-            BorderBrush = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.Highlight));
+            BorderBrush = ComponentBinding.Brush(this, SystemColor.Highlight);
             BorderThickness = new Thickness(2);
         }
         else
