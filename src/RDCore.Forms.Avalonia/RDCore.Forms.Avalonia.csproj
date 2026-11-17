@@ -4,6 +4,9 @@
     <OutputType>Library</OutputType>
     <AssemblyTitle>RDCore.Forms.Avalonia</AssemblyTitle>
     <Description>RDForms' controls and renderer for Avalonia: the controls of a VB6 or MSForms form, and a form's window built from the RDCore.Forms model.</Description>
+    <!-- this project packs the RDCore.Forms package: its own assembly, and the model's beside it. -->
+    <PackageId>RDCore.Forms</PackageId>
+    <PackageDescription>RDForms, the form toolkit of the RDCore platform. The RDCore.Forms assembly is the form model, with no UI dependency: component classes, their properties and events, the instances of a form, the reader and writer of the RDForms document, and the readers that import a VB6 or MSForms form. The RDCore.Forms.Avalonia assembly holds the controls of a form, and the window built from the model, rendered with Avalonia.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,10 +14,33 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.5" />
     <PackageReference Include="Avalonia.Skia" Version="12.0.5" />
     <PackageReference Include="Avalonia.Themes.Simple" Version="12.0.5" />
+    <!-- the model's own package dependency, which this package states in its place, since the model ships inside it. -->
+    <PackageReference Include="RDCore.SDK" Version="$(RDCoreSdkVersion)" />
   </ItemGroup>
 
+  <!-- the model ships inside this package as its own assembly, so it is not a package dependency: its assembly, xmldoc and fr resources
+       go in lib/, and its symbols in the .snupkg. -->
   <ItemGroup>
-    <ProjectReference Include="..\RDCore.Forms\RDCore.Forms.csproj" />
+    <ProjectReference Include="..\RDCore.Forms\RDCore.Forms.csproj" PrivateAssets="all" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeModelInPackage</TargetsForTfmSpecificBuildOutput>
+    <TargetsForTfmSpecificDebugSymbolsInPackage>$(TargetsForTfmSpecificDebugSymbolsInPackage);IncludeModelSymbolsInPackage</TargetsForTfmSpecificDebugSymbolsInPackage>
+  </PropertyGroup>
+
+  <!-- the files come from this project's own output, where the build copied them: pack runs with no build. -->
+  <Target Name="IncludeModelInPackage">
+    <ItemGroup>
+      <BuildOutputInPackage Include="$(OutDir)RDCore.Forms.dll;$(OutDir)RDCore.Forms.xml" />
+      <BuildOutputInPackage Include="$(OutDir)fr\RDCore.Forms.resources.dll" TargetPath="fr\RDCore.Forms.resources.dll" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="IncludeModelSymbolsInPackage">
+    <ItemGroup>
+      <TfmSpecificDebugSymbolsFile Include="$(OutDir)RDCore.Forms.pdb" TargetFramework="$(TargetFramework)" TargetPath="RDCore.Forms.pdb" />
+    </ItemGroup>
+  </Target>
 
 </Project>

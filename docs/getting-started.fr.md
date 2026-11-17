@@ -1,9 +1,17 @@
 # Démarrer
 <sup>_This document is available in [English](getting-started.md)_</sup>
 
-Aucun paquet n'est publié : un projet utilise donc RDCore.Forms à partir de ses sources.
+Un projet utilise RDCore.Forms à partir de son paquet, ou de ses sources.
 
-## Compiler
+## Installer
+
+Le paquet RDCore.Forms contient le modèle (l'assemblage `RDCore.Forms`) ainsi que les contrôles et la fenêtre (l'assemblage `RDCore.Forms.Avalonia`). Il dépend d'Avalonia et de RDCore.SDK. C'est une préversion :
+
+```
+dotnet add package RDCore.Forms --prerelease
+```
+
+## Compiler à partir des sources
 
 À partir de la racine du [référentiel](https://github.com/rubberduck-vba/RDCore.Forms), avec le SDK .NET 11 :
 
@@ -14,13 +22,13 @@ dotnet test RDCore.Forms.slnx
 
 Les tests s'exécutent dans une session _headless_ d'Avalonia, sans affichage.
 
-## Référencer le modèle
+## Référencer les sources
 
-Un projet qui lit des formulaires référence `src/RDCore.Forms/RDCore.Forms.csproj` :
+Un projet compilé à partir des sources référence `src/RDCore.Forms.Avalonia/RDCore.Forms.Avalonia.csproj`, qui apporte le modèle avec lui, comme le paquet :
 
 ```xml
 <ItemGroup>
-  <ProjectReference Include="..\RDCore.Forms\src\RDCore.Forms\RDCore.Forms.csproj" />
+  <ProjectReference Include="..\RDCore.Forms\src\RDCore.Forms.Avalonia\RDCore.Forms.Avalonia.csproj" />
 </ItemGroup>
 ```
 

@@ -7,16 +7,16 @@ RDCore.Forms est RDForms, la bibliothèque de formulaires de la plateforme [RDCo
 
 Le _runtime_ de RDCore exécute le code d'un formulaire. RDCore.Forms affiche le formulaire et transmet à ce code les événements de ses contrôles.
 
-Ce référentiel contient ces bibliothèques :
+Le paquet RDCore.Forms contient deux assemblages :
 
-| Paquet | Rôle |
+| Assemblage | Rôle |
 |---|---|
-| **RDCore.Forms** | Le modèle des formulaires, sans dépendance d'interface : les classes de composants, leurs propriétés et leurs événements, les instances d'un formulaire, et les lecteurs qui importent un formulaire dans le modèle. Le serveur de langage lit et analyse un formulaire avec elle, sans charger Avalonia. |
+| **RDCore.Forms** | Le modèle des formulaires, sans dépendance d'interface : les classes de composants, leurs propriétés et leurs événements, les instances d'un formulaire, et les lecteurs qui importent un formulaire dans le modèle. Le serveur de langage lit et analyse un formulaire avec lui, sans charger Avalonia. |
 | **RDCore.Forms.Avalonia** | Les contrôles et le rendu : les contrôles d'un formulaire, et la fenêtre construite à partir du modèle. |
 
 ## État du projet
 
-RDCore.Forms est en développement **pré-alpha**. Aucun paquet n'est publié.
+RDCore.Forms est en développement **pré-alpha**. Le paquet RDCore.Forms est sur [nuget.org](https://www.nuget.org/packages/RDCore.Forms) en préversion.
 
 [![Build and Test](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml/badge.svg)](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml)
 

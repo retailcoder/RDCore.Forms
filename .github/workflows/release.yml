@@ -1,9 +1,10 @@
 name: Release
 
-# Publishes RDCore.Forms and RDCore.Forms.Avalonia to nuget.org from a v<VersionPrefix>[-suffix] tag a maintainer pushes.
+# Publishes the RDCore.Forms package (the model's assembly and the Avalonia controls' assembly) to nuget.org from a
+# v<VersionPrefix>[-suffix] tag a maintainer pushes.
 # The build job runs the repo's code with read-only permissions; the publish job runs none of it, waits for a required
 # reviewer on the `release` environment, and pushes with a short-lived key from NuGet trusted publishing (no stored secret).
-# A dry run (Run workflow) builds, tests and packs, and keeps the packages as an artifact; it never publishes.
+# A dry run (Run workflow) builds, tests and packs, and keeps the package and its symbols as an artifact; it never publishes.
 
 on:
  push:
@@ -77,17 +78,29 @@ jobs:
    - name: Pack
      run: dotnet pack RDCore.Forms.slnx --configuration Release --no-build -p:VersionSuffix=${{ steps.version.outputs.suffix }} --output packages
 
-   # RDCore.Forms.Avalonia depends on RDCore.Forms of the same version, so both go out together.
-   - name: The packages are the version
+   # one package, RDCore.Forms, with both assemblies in it: a publish never pushes the model without the controls, or the controls without the model.
+   - name: The package is the version, and holds both assemblies
      run: |
        ls packages
        v="${{ steps.version.outputs.version }}"
-       for id in RDCore.Forms RDCore.Forms.Avalonia; do
-         for ext in nupkg snupkg; do
-           [ -f "packages/$id.$v.$ext" ] || { echo "::error::Missing packages/$id.$v.$ext"; exit 1; }
-         done
+       for ext in nupkg snupkg; do
+         [ -f "packages/RDCore.Forms.$v.$ext" ] || { echo "::error::Missing packages/RDCore.Forms.$v.$ext"; exit 1; }
        done
-       [ "$(ls packages | wc -l)" -eq 4 ] || { echo "::error::Expected exactly the two packages and their symbols."; exit 1; }
+       [ "$(ls packages | wc -l)" -eq 2 ] || { echo "::error::Expected exactly the RDCore.Forms package and its symbols."; exit 1; }
+       lib=$(unzip -Z1 "packages/RDCore.Forms.$v.nupkg" | grep '^lib/')
+       sym=$(unzip -Z1 "packages/RDCore.Forms.$v.snupkg" | grep '^lib/')
+       for asm in RDCore.Forms RDCore.Forms.Avalonia; do
+         for f in "$asm.dll" "$asm.xml"; do
+           grep -q "/$f\$" <<< "$lib" || { echo "::error::The package has no $f."; exit 1; }
+         done
+         grep -q "/$asm.pdb\$" <<< "$sym" || { echo "::error::The symbols package has no $asm.pdb."; exit 1; }
+       done
+       grep -q '/fr/RDCore.Forms.resources.dll$' <<< "$lib" || { echo "::error::The package has no French resources for RDCore.Forms."; exit 1; }
+       nuspec=$(unzip -p "packages/RDCore.Forms.$v.nupkg" RDCore.Forms.nuspec)
+       for dep in Avalonia RDCore.SDK; do
+         grep -q "id=\"$dep\"" <<< "$nuspec" || { echo "::error::The package does not depend on $dep."; exit 1; }
+       done
+       ! grep -q 'id="RDCore.Forms' <<< "$nuspec" || { echo "::error::The package depends on an RDCore.Forms package."; exit 1; }
 
    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
      with:

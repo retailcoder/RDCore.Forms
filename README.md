@@ -7,16 +7,16 @@ RDCore.Forms is RDForms, the form toolkit of the [RDCore](https://github.com/rub
 
 The RDCore runtime runs the code behind a form. RDCore.Forms shows the form and raises its controls' events to that code.
 
-This repository holds these libraries:
+The RDCore.Forms package holds two assemblies:
 
-| Package | Role |
+| Assembly | Role |
 |---|---|
 | **RDCore.Forms** | The form model, with no UI dependency: component classes, their properties and events, the instances of a form, and the readers that import a form into the model. The language server reads and analyses a form with it, without loading Avalonia. |
 | **RDCore.Forms.Avalonia** | The controls and the renderer: the controls of a form, and the window built from the model. |
 
 ## Project status
 
-RDCore.Forms is in **pre-alpha** development. No package is published.
+RDCore.Forms is in **pre-alpha** development. The RDCore.Forms package is on [nuget.org](https://www.nuget.org/packages/RDCore.Forms) as a prerelease.
 
 [![Build and Test](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml/badge.svg)](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml)
 

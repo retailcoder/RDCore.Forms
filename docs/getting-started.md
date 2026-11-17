@@ -1,9 +1,17 @@
 # Getting started
 <sup>_Ce document est disponible en [français](getting-started.fr.md)_</sup>
 
-No package is published, so a project uses RDCore.Forms from its source.
+A project uses RDCore.Forms from its package, or from its source.
 
-## Building
+## Installing
+
+The RDCore.Forms package holds the model (the `RDCore.Forms` assembly), and the controls and the window (the `RDCore.Forms.Avalonia` assembly). It depends on Avalonia and on RDCore.SDK. It is a prerelease:
+
+```
+dotnet add package RDCore.Forms --prerelease
+```
+
+## Building from source
 
 From the root of the [repository](https://github.com/rubberduck-vba/RDCore.Forms), with the .NET 11 SDK:
 
@@ -14,13 +22,13 @@ dotnet test RDCore.Forms.slnx
 
 The tests run in a headless Avalonia session, so they need no display.
 
-## Referencing the model
+## Referencing the source
 
-A project that reads forms references `src/RDCore.Forms/RDCore.Forms.csproj`:
+A project built against the source references `src/RDCore.Forms.Avalonia/RDCore.Forms.Avalonia.csproj`, which brings the model with it, as the package does:
 
 ```xml
 <ItemGroup>
-  <ProjectReference Include="..\RDCore.Forms\src\RDCore.Forms\RDCore.Forms.csproj" />
+  <ProjectReference Include="..\RDCore.Forms\src\RDCore.Forms.Avalonia\RDCore.Forms.Avalonia.csproj" />
 </ItemGroup>
 ```
 

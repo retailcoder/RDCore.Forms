@@ -4,6 +4,10 @@
     <OutputType>Library</OutputType>
     <AssemblyTitle>RDCore.Forms</AssemblyTitle>
     <Description>RDForms' form model, with no UI dependency: component classes, their properties and events, the instances of a form, the reader and writer of the RDForms document (a constrained XAML dialect), and the reader that imports a VB6 designer file (.frm, .ctl, .pag) into the model.</Description>
+    <!-- it ships inside the RDCore.Forms package, which RDCore.Forms.Avalonia packs. NuGet's restore names a project by its package ID, so
+         this one, never packed, has an ID of its own: two projects named RDCore.Forms are an ambiguous project name. -->
+    <IsPackable>false</IsPackable>
+    <PackageId>RDCore.Forms.Model</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
