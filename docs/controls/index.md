@@ -77,7 +77,7 @@ The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`,
 
 ## Theme
 
-A form is shown in the light theme variant, whatever the application's theme, as VB6 shows a form in Windows' light colours. RD-VBA's `App.KeepSystemTheme` set to True shows it in the application's theme variant instead, and follows that variant as it changes. The host gives each window it makes its value, as [`RDFormsFormWindow.KeepSystemTheme`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml). Each window has its own value, and a change of it shows the form again in its new variant.
+A form is shown in the light theme variant, whatever the application's theme, as VB6 shows a form in Windows' light colours. RD-VBA's `App.KeepSystemTheme` set to True shows it in the application's theme variant instead, and follows that variant as it changes. The host gives each window it makes its value, as [`RDFormsFormWindow.KeepSystemTheme`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml). Each window has its own value, and a change of it draws the form again in its new variant.
 
 |What is drawn|Light variant|Dark variant|
 |---|---|---|

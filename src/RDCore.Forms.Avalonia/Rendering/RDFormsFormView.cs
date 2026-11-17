@@ -129,7 +129,7 @@ public sealed class RDFormsFormView : Canvas
     /// </summary>
     /// <remarks>
     /// <see langword="false"/>, the default, shows the form in the light theme variant, whatever the variant around it.
-    /// <see langword="true"/> shows it in the variant of what it is in: its window's, the application's where nothing between sets one.
+    /// <see langword="true"/> shows it in the variant of what it is in: its window's, or the application's where nothing between them sets one.
     /// The form's system colours are drawn in the view's variant, with <see cref="FormPalette"/>'s palette for it, and drawn again as
     /// it changes. A form's window sets it from its own <see cref="RDFormsFormWindow.KeepSystemTheme"/>, and a UserControl's view is
     /// <see langword="true"/>, in its container's variant.
