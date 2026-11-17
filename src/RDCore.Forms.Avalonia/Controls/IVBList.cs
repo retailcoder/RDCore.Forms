@@ -29,6 +29,10 @@ internal interface IVBList
     int GetItemData(int index);
 
     void SetItemData(int index, int value);
+
+    byte[]? GetItemIcon(int index);
+
+    void SetItemIcon(int index, byte[]? picture);
 }
 
 // The item checks that a ListBox's and a ComboBox's List share.
