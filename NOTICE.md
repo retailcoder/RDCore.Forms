@@ -20,6 +20,13 @@ Des parties de RDCore.Forms sont dérivées de [HexIDE](https://github.com/hexid
 
 Les paquets NuGet dont dépend RDCore.Forms, dont Avalonia, demeurent sous leurs propres licences.
 
+## Palette sombre de WinUI 3
+
+La palette sombre de `FormPalette` (`src/RDCore.Forms.Avalonia/Controls/FormPalette.cs`) reprend les couleurs du thème sombre de WinUI 3, dans le fichier `controls/dev/CommonStyles/Common_themeresources_any.xaml` de [microsoft-ui-xaml](https://github.com/microsoft/microsoft-ui-xaml), au _commit_ `8463f451`.
+
+- microsoft-ui-xaml est distribué sous la licence MIT.
+- La licence de microsoft-ui-xaml est reproduite à la fin de ce fichier, dans sa version anglaise originale, comme elle l'exige : voir [Licence de microsoft-ui-xaml](#microsoft-ui-xaml-licence).
+
 ## Description de VB6.OLB
 
 Le fichier `src/RDCore.Forms/Libraries/VB.json` est la sortie de `rdc export-library` pour VB6.OLB : il décrit les classes, les membres et les événements que déclare cette bibliothèque de types. Il est distribué sous la licence MIT, comme le reste de RDCore.Forms. VB6.OLB lui-même n'est pas inclus.
@@ -54,6 +61,13 @@ Parts of RDCore.Forms are derived from [HexIDE](https://github.com/hexide-io/Hex
 - HexIDE's licence is reproduced below, as it requires.
 
 The NuGet packages RDCore.Forms depends on, Avalonia among them, remain under their own licences.
+
+## WinUI 3 dark palette
+
+The dark palette of `FormPalette` (`src/RDCore.Forms.Avalonia/Controls/FormPalette.cs`) takes the colours of WinUI 3's dark theme, from the file `controls/dev/CommonStyles/Common_themeresources_any.xaml` of [microsoft-ui-xaml](https://github.com/microsoft/microsoft-ui-xaml), at commit `8463f451`.
+
+- microsoft-ui-xaml is licensed under the MIT licence.
+- microsoft-ui-xaml's licence is reproduced below, as it requires.
 
 ## Description of VB6.OLB
 
@@ -92,4 +106,30 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+## microsoft-ui-xaml licence
+
+```
+MIT License
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
 ```
