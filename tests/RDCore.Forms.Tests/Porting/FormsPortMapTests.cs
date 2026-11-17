@@ -36,10 +36,13 @@ public sealed class FormsPortMapTests
     private static readonly ComponentClass[] MSFormsOnly =
         [ComponentClasses.ToggleButton, ComponentClasses.SpinButton, ComponentClasses.MultiPage, ComponentClasses.Page, ComponentClasses.TabStrip];
 
+    // The classes of MSComctlLib (MSCOMCTL.OCX): VB's library has none of them.
+    private static readonly ComponentClass[] CommonControls = [ComponentClasses.ImageList];
+
     [TestMethod]
-    public void EveryClassOfTheModel_IsTheRDFormsClassItsVBClassPortsTo_ButThoseOnlyMSFormsHas()
+    public void EveryClassOfTheModel_IsTheRDFormsClassItsVBClassPortsTo_ButThoseOnlyMSFormsOrMSComctlLibHas()
     {
-        foreach (var rdFormsClass in ComponentClasses.All.Except(MSFormsOnly))
+        foreach (var rdFormsClass in ComponentClasses.All.Except(MSFormsOnly).Except(CommonControls))
         {
             var name = rdFormsClass.TypeName["RDForms.".Length..];
             var port = VB6.TypeOf("VB." + name);
@@ -64,6 +67,17 @@ public sealed class FormsPortMapTests
             Assert.AreEqual(rdFormsClass.TypeName, port.RDFormsName);
             Assert.AreEqual(TypePortKind.Class, port.Kind);
             Assert.AreSame(port, MSForms.TypeOf(name));
+        }
+    }
+
+    [TestMethod]
+    public void TheClassesOfMSComctlLib_AreNeitherVBsNorMSFormss()
+    {
+        foreach (var rdFormsClass in CommonControls)
+        {
+            var name = rdFormsClass.TypeName["RDForms.".Length..];
+            Assert.IsNull(VB6.TypeOf("VB." + name), rdFormsClass.TypeName);
+            Assert.IsNull(MSForms.TypeOf("MSForms." + name), rdFormsClass.TypeName);
         }
     }
 

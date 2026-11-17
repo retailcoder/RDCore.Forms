@@ -118,6 +118,9 @@ internal static class FormXamlWriter
         if (component.Class.Has(P.Tabs) && component.IsSet(P.Tabs))
             WriteTabs(writer, component, owner);
 
+        if (component.Class.Has(P.ListImages) && component.IsSet(P.ListImages))
+            WriteListImages(writer, component, owner);
+
         if (component.UnmodelledProperties.Count > 0)
         {
             writer.WriteStartElement($"{owner}.UnmodelledProperties", Ns);
@@ -170,6 +173,24 @@ internal static class FormXamlWriter
                 writer.WriteAttributeString("Visible", "False");
             if (tab.Tag.Length > 0)
                 writer.WriteAttributeString("Tag", tab.Tag);
+            writer.WriteEndElement();
+        }
+
+        writer.WriteEndElement();
+    }
+
+    // One ListImage for each picture, with its Picture, and its Key and Tag where it has them.
+    private static void WriteListImages(XmlWriter writer, ComponentInstance component, string owner)
+    {
+        writer.WriteStartElement($"{owner}.ListImages", Ns);
+        foreach (var image in component.Get(P.ListImages))
+        {
+            writer.WriteStartElement("ListImage", Ns);
+            writer.WriteAttributeString("Picture", Convert.ToBase64String(image.Picture));
+            if (image.Key.Length > 0)
+                writer.WriteAttributeString("Key", image.Key);
+            if (image.Tag.Length > 0)
+                writer.WriteAttributeString("Tag", image.Tag);
             writer.WriteEndElement();
         }
 

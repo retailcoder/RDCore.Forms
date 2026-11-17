@@ -14,9 +14,11 @@ public sealed class RunTimeAccessTests
         "CommandButton.Style", "CheckBox.Style", "OptionButton.Style", "ComboBox.Style", "ComboBox.IntegralHeight", "ListBox.IntegralHeight",
         "TextBox.MultiLine", "TextBox.ScrollBars", "ListBox.MultiSelect", "FileListBox.MultiSelect",
         "Menu.WindowList", "Menu.Shortcut", "Menu.NegotiatePosition", "Timer.Left", "Timer.Top", "Data.Negotiate",
+        "ImageList.Left", "ImageList.Top",
     ];
 
-    private static readonly string[] NotAvailable = ["Menu.Shortcut", "Menu.NegotiatePosition", "Timer.Left", "Timer.Top", "Data.Negotiate"];
+    private static readonly string[] NotAvailable =
+        ["Menu.Shortcut", "Menu.NegotiatePosition", "Timer.Left", "Timer.Top", "Data.Negotiate", "ImageList.Left", "ImageList.Top"];
 
     private static IEnumerable<string> Where(Func<ComponentClass, PropertyDefinition, bool> flagged) =>
         ComponentClasses.All.SelectMany(c => c.Properties.Where(p => flagged(c, p)).Select(p => $"{c.ClassName}.{p.Name}")).Order();

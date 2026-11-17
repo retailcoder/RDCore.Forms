@@ -264,14 +264,14 @@ public static class Properties
     public static readonly PropertyDefinition<byte[]?> DisabledPicture = new("DisabledPicture", PropertyCategory.Appearance, null);
 
     /// <summary>
-    /// The colour a graphical button leaves out of its pictures where <see cref="UseMaskColor"/> is set: its pixels of exactly this
-    /// colour show the button's face. Silver (<c>&amp;H00C0C0C0&amp;</c>) by default.
+    /// The colour a graphical button or an ImageList leaves out of its pictures where <see cref="UseMaskColor"/> is set: a button's
+    /// pixels of exactly this colour show its face. Silver (<c>&amp;H00C0C0C0&amp;</c>) by default.
     /// </summary>
     public static readonly PropertyDefinition<FormColor> MaskColor = new("MaskColor", PropertyCategory.Appearance, FormColor.FromRgb(0xC0, 0xC0, 0xC0));
 
     /// <summary>
-    /// Whether a graphical button leaves its <see cref="MaskColor"/> out of its pictures; False by default. An icon or a cursor
-    /// is drawn whole either way.
+    /// Whether a graphical button or an ImageList leaves its <see cref="MaskColor"/> out of its pictures; False by default for a
+    /// button, True for an ImageList. A button draws an icon or a cursor whole either way.
     /// </summary>
     public static readonly PropertyDefinition<bool> UseMaskColor = new("UseMaskColor", PropertyCategory.Appearance);
 
@@ -974,6 +974,24 @@ public static class Properties
         Valid = tabs => tabs.All(t => t is not null)
                         && tabs.Select(t => t.Name).Distinct(StringComparer.OrdinalIgnoreCase).Count() == tabs.Count,
     };
+
+    /// <summary>
+    /// An ImageList's pictures, in their order: none by default.
+    /// </summary>
+    public static readonly PropertyDefinition<IReadOnlyList<ListImage>> ListImages = new("ListImages", PropertyCategory.List, [])
+    {
+        Valid = images => images.All(i => i is not null),
+    };
+
+    /// <summary>
+    /// The width of an ImageList's pictures, in pixels; 0 by default, which takes the first picture's.
+    /// </summary>
+    public static readonly PropertyDefinition<short> ImageWidth = new("ImageWidth", PropertyCategory.Appearance) { Valid = static w => w >= 0 };
+
+    /// <summary>
+    /// The height of an ImageList's pictures, in pixels; 0 by default, which takes the first picture's.
+    /// </summary>
+    public static readonly PropertyDefinition<short> ImageHeight = new("ImageHeight", PropertyCategory.Appearance) { Valid = static h => h >= 0 };
 
     private static IReadOnlyList<IReadOnlyList<(PropertyDefinition, object?)>> TextAssigned(ComponentInstance component, string text) =>
         component.Class.Has(SelStart) && text != component.Get(Text)

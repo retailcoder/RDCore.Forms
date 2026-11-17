@@ -190,6 +190,8 @@ public sealed class GoldenRoundTripTests
             return [(IReadOnlyList<int>)[7, -5]];
         if (type == typeof(IReadOnlyList<byte[]?>))
             return [(IReadOnlyList<byte[]?>)[null, TestPictures.Gif1x1]];
+        if (type == typeof(IReadOnlyList<ListImage>))
+            return [(IReadOnlyList<ListImage>)[new(TestPictures.Bitmap2x2) { Key = "k <&>", Tag = "t \"x\"" }, new(TestPictures.Gif1x1)]];
         if (type == typeof(IReadOnlyList<Tab>))
             return [(IReadOnlyList<Tab>)[new("First", "&One <é>") { ToolTipText = "tip \"x\"", Tag = "t" }, new("Second", "") { Enabled = false, Visible = false }]];
         return [];

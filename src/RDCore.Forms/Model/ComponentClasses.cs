@@ -255,6 +255,17 @@ public static class ComponentClasses
         defaultMember: DefaultMembers["RDForms.Timer"], hasContainer: false);
 
     /// <summary>
+    /// <c>RDForms.ImageList</c>, MSComctlLib's: the pictures other controls show, in <c>ListImages</c>. It has a place in the designer
+    /// and no size, and a running program does not show it and can neither read nor set its <c>Left</c> and <c>Top</c>. Its
+    /// <c>BackColor</c> is the window colour, and it leaves its silver <c>MaskColor</c> out of its pictures by default. It has no
+    /// default member.
+    /// </summary>
+    public static readonly ComponentClass ImageList = new("RDForms.ImageList", "ImageList", ComponentKind.Control,
+        [P.BackColor, P.ImageWidth, P.ImageHeight, P.MaskColor, P.UseMaskColor, P.ListImages, P.Left, P.Top, P.Tag], [],
+        Defaults((P.BackColor, WindowBackground), (P.UseMaskColor, true)), hasExtent: false,
+        notAvailableAtRunTime: [P.Left, P.Top]);
+
+    /// <summary>
     /// <c>RDForms.HScrollBar</c>.
     /// </summary>
     public static readonly ComponentClass HScrollBar = Control("RDForms.HScrollBar", "HScroll", ScrollBarProperties, ScrollBarEvents);
@@ -361,7 +372,8 @@ public static class ComponentClasses
     /// </summary>
     public static IReadOnlyList<ComponentClass> All { get; } =
         [Form, MDIForm, UserControl, PropertyPage, CommandButton, TextBox, Label, CheckBox, OptionButton, Frame, ListBox, ComboBox, PictureBox, Image,
-         Timer, HScrollBar, VScrollBar, Shape, Line, Menu, DriveListBox, DirListBox, FileListBox, Data, ToggleButton, SpinButton, MultiPage, Page, TabStrip];
+         Timer, HScrollBar, VScrollBar, Shape, Line, Menu, DriveListBox, DirListBox, FileListBox, Data, ToggleButton, SpinButton, MultiPage, Page, TabStrip,
+         ImageList];
 
     private static readonly Dictionary<string, ComponentClass> byTypeName =
         All.ToDictionary(c => c.TypeName, StringComparer.OrdinalIgnoreCase);
