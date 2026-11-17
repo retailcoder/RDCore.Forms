@@ -1,7 +1,6 @@
 ﻿using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -10,11 +9,11 @@ namespace RDCore.Forms.Tests.Model;
 [TestClass]
 public sealed class DataClassTests
 {
-    private static readonly ComponentClass Data = VBClasses.Data;
+    private static readonly ComponentClass Data = ComponentClasses.Data;
 
     [TestMethod]
     public void TheDataClass_IsInTheCatalog_ByItsTypeName() =>
-        Assert.AreSame(Data, VBClasses.ByTypeName("vb.data"));
+        Assert.AreSame(Data, ComponentClasses.ByTypeName("rdforms.data"));
 
     [TestMethod]
     public void ItsEvents_AreTheOnesOfItsTypeInformation() =>
@@ -34,7 +33,7 @@ public sealed class DataClassTests
     [TestMethod]
     public void ItsMethods_AreAControlsAndItsTwoOwn_WithNoSetFocus() =>
         CollectionAssert.AreEquivalent(
-            new[] { VBMethods.Move, VBMethods.Refresh, VBMethods.ZOrder, VBMethods.UpdateRecord, VBMethods.UpdateControls },
+            new[] { Methods.Move, Methods.Refresh, Methods.ZOrder, Methods.UpdateRecord, Methods.UpdateControls },
             Data.Methods.ToArray());
 
     [TestMethod]
@@ -69,7 +68,7 @@ public sealed class DataClassTests
     public void ItsReadOnly_DefaultsToFalse_WhereAFileListBoxsDefaultsToTrue()
     {
         Assert.IsFalse(Data.DefaultOf(P.ReadOnly));
-        Assert.IsTrue(VBClasses.FileListBox.DefaultOf(P.ReadOnly));
+        Assert.IsTrue(ComponentClasses.FileListBox.DefaultOf(P.ReadOnly));
     }
 
     [TestMethod]

@@ -2,8 +2,7 @@
 using Avalonia.LogicalTree;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -22,21 +21,21 @@ internal static class FormKeys
     // The code the control raises its own event with, or 0 for none.
     public static short Preview(Control control, EventDefinition definition, short code, short? shift = null)
     {
-        if (control.FindLogicalAncestorOfType<VBFormView>() is not { } view || !view.Form.Root.Get(P.KeyPreview))
+        if (control.FindLogicalAncestorOfType<RDFormsFormView>() is not { } view || !view.Form.Root.Get(P.KeyPreview))
             return code;
         var after = Raise(view, definition, code, shift);
-        if (ReferenceEquals(definition, VBEvents.KeyPress))
+        if (ReferenceEquals(definition, Events.KeyPress))
             return after;
-        return ReferenceEquals(definition, VBEvents.KeyDown) && after == 0 ? (short)0 : code;
+        return ReferenceEquals(definition, Events.KeyDown) && after == 0 ? (short)0 : code;
     }
 
     // Raises a key event of the form's root, and answers the code its handlers left: the code raised where there are none.
-    public static short Raise(VBFormView view, EventDefinition definition, short code, short? shift = null)
+    public static short Raise(RDFormsFormView view, EventDefinition definition, short code, short? shift = null)
     {
         FormValue[] arguments = shift is { } mask
             ? [FormValue.FromInteger(code), FormValue.FromInteger(mask)]
             : [FormValue.FromInteger(code)];
-        return VBControl.Raise(view, definition, arguments) is { } after && after[0].Kind == FormValueKind.Integer
+        return RDFormsControl.Raise(view, definition, arguments) is { } after && after[0].Kind == FormValueKind.Integer
             ? after[0].AsInteger()
             : code;
     }

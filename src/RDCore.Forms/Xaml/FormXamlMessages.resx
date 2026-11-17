@@ -48,4 +48,8 @@
     <value>{0}.{1} cannot take the value "{2}", so it is kept as text.</value>
     <comment>{0} is the component's name; {1} is the property's name; {2} is the value, as the document writes it.</comment>
   </data>
+  <data name="UnplaceableComponent" xml:space="preserve">
+    <value>{0} cannot be placed in any of the components it is written in, so it is kept as text.</value>
+    <comment>{0} is the component's name.</comment>
+  </data>
 </root>

@@ -1,12 +1,12 @@
 # Buttons
 
-CommandButton, CheckBox and OptionButton. Each draws its `Caption` with its access key: a single `&` marks the character after it, and `&&` shows one `&`.
+CommandButton, CheckBox, OptionButton and ToggleButton. Each draws its `Caption` with its access key: a single `&` marks the character after it, and `&&` shows one `&`.
 
-The behaviour below was measured with VB6.
+The behaviour of the CommandButton, the CheckBox and the OptionButton was measured with VB6. VB6 has no ToggleButton, which comes from MSForms: see [ToggleButton](#togglebutton).
 
 ## CommandButton
 
-[`VBCommandButton`](../api/RDCore.Forms.Avalonia.Controls.VBCommandButton.yml)
+[`RDFormsCommandButton`](../api/RDCore.Forms.Avalonia.Controls.RDFormsCommandButton.yml)
 
 - Click comes before MouseUp.
 - An arrow key moves the focus to the previous or next control in its container, and raises no key event.
@@ -28,7 +28,7 @@ A CommandButton has no `ForeColor`, as in VB6, where a program's read or assignm
 
 ## CheckBox
 
-[`VBCheckBox`](../api/RDCore.Forms.Avalonia.Controls.VBCheckBox.yml)
+[`RDFormsCheckBox`](../api/RDCore.Forms.Avalonia.Controls.RDFormsCheckBox.yml)
 
 |Case|Behaviour|
 |---|---|
@@ -40,7 +40,7 @@ A CommandButton has no `ForeColor`, as in VB6, where a program's read or assignm
 
 ## OptionButton
 
-[`VBOptionButton`](../api/RDCore.Forms.Avalonia.Controls.VBOptionButton.yml)
+[`RDFormsOptionButton`](../api/RDCore.Forms.Avalonia.Controls.RDFormsOptionButton.yml)
 
 The option buttons in one container are a group: selecting one clears the others.
 
@@ -53,6 +53,27 @@ The option buttons in one container are a group: selecting one clears the others
 |An arrow key|Moves the focus to the previous or next control in its container, and selects a button it lands on.|
 |A double click|The second press raises MouseDown, then DblClick.|
 |The pointer|The whole rectangle takes it, whatever part of it the theme draws.|
+
+## ToggleButton
+
+[`RDFormsToggleButton`](../api/RDCore.Forms.Avalonia.Controls.RDFormsToggleButton.yml)
+
+A push button that stays down once clicked. Its `Value` is True while it is down, False while it is up, and Null where it is neither; a Null button is drawn up.
+
+|Case|Behaviour|
+|---|---|
+|A click|Puts an up button down, and a down one up. With `TripleState` True, a click on a down button makes it Null, and a click on a Null one puts it up.|
+|`Value` from code|Shows in the button. Null comes only from code or the form's file where `TripleState` is False.|
+|Change, then Click|Raised when `Value` changes, by a click or by code, and only then. Both come before MouseUp.|
+|`Locked` True|A click leaves `Value` as it is, and raises no Change or Click.|
+|A double click|The second press raises MouseDown, then DblClick.|
+|An arrow key|Moves the focus to the previous or next control in its container.|
+|Space|Raises KeyDown, KeyPress and KeyUp, then clicks the button.|
+
+Its behaviour is RDForms' own, not measured with MSForms.
+
+> [!NOTE]
+> **Not implemented.** The button does not draw its `Picture`, and ignores `PicturePosition`, `AutoSize`, `WordWrap`, `BackStyle` and `MouseIcon`. The form's file keeps their values.
 
 ## Style Graphical
 
@@ -90,6 +111,19 @@ These are RDForms' own, not measured with VB6:
 
 - A PNG, which VB6 does not load, is masked as a bitmap: only its opaque pixels of the `MaskColor` are left out, and a pixel of that colour that is half transparent is blended over the face.
 - A `Picture` greyed while the button is disabled keeps its masked pixels out: they show the face.
+
+## Converting from MSForms
+
+The names an MSForms button takes in RDForms (see [Converting from MSForms](index.md#converting-from-msforms)):
+
+|MSForms|RDForms|
+|---|---|
+|`Accelerator` of a CommandButton, a CheckBox, an OptionButton or a ToggleButton|A `&` before the access key's letter in `Caption`. An assignment of `Accelerator` from code is RDC40001.|
+|`Alignment` of a CheckBox, an OptionButton or a ToggleButton|`Alignment`, with VB's values: `fmAlignmentLeft` (0) is 1, and `fmAlignmentRight` (1) is 0. MSForms names the caption's side, VB the box's.|
+|`Value`, `TripleState`, `Locked`, `Picture`, `PicturePosition` and the other members of the same name|The same.|
+
+> [!NOTE]
+> **Not implemented.** A button's BeforeDragOver, BeforeDropOrPaste and Error are declared and never raised.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

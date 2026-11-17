@@ -11,9 +11,8 @@ using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -23,7 +22,7 @@ public sealed class PopupMenuTests
 {
     private static ComponentInstance Menu(ComponentInstance container, string name, string caption)
     {
-        var menu = new ComponentInstance(VBClasses.Menu, name).Set(P.Caption, caption);
+        var menu = new ComponentInstance(ComponentClasses.Menu, name).Set(P.Caption, caption);
         menu.SetContainer(container);
         return menu;
     }
@@ -31,7 +30,7 @@ public sealed class PopupMenuTests
     // A form that keeps a hidden top-level menu to pop up: mnuEdit holds Cut, Copy and More, which holds Paste. mnuEmpty holds none.
     private static ComponentInstance Probe()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d);
         var edit = Menu(root, "mnuEdit", "&Edit").Set(P.Visible, false);
         Menu(edit, "mnuCut", "Cu&t");
         Menu(edit, "mnuCopy", "&Copy");
@@ -41,23 +40,23 @@ public sealed class PopupMenuTests
         return root;
     }
 
-    private static VBFormWindow Open(ComponentInstance root, RecordingSink sink)
+    private static RDFormsFormWindow Open(ComponentInstance root, RecordingSink sink)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         sink.Raised.Clear();
         return window;
     }
 
-    private static FormMenuItem Model(VBFormWindow window, string name) =>
+    private static FormMenuItem Model(RDFormsFormWindow window, string name) =>
         window.MenuBar.Menu.AllItems.Single(item => item.Component.Name == name);
 
-    private static ContextMenu? Popup(VBFormWindow window) => window.PoppedUpMenu is { IsOpen: true } menu ? menu : null;
+    private static ContextMenu? Popup(RDFormsFormWindow window) => window.PoppedUpMenu is { IsOpen: true } menu ? menu : null;
 
     private static MenuItem Shown(ContextMenu popup, string name) =>
-        popup.GetLogicalDescendants().OfType<MenuItem>().Single(m => VBControl.GetInstance(m)?.Name == name);
+        popup.GetLogicalDescendants().OfType<MenuItem>().Single(m => RDFormsControl.GetInstance(m)?.Name == name);
 
     private static List<string> Clicks(RecordingSink sink) => [.. sink.Raised.Where(e => e.EndsWith(".Click", StringComparison.Ordinal))];
 
@@ -87,7 +86,7 @@ public sealed class PopupMenuTests
             var task = window.PopupMenu(Model(window, "mnuEdit"));
             Dispatcher.UIThread.RunJobs();
             var popup = Popup(window)!;
-            var result = (Clicks(sink), popup.Items.OfType<MenuItem>().Select(m => VBControl.GetInstance(m)!.Name).ToList(), !task.IsCompleted);
+            var result = (Clicks(sink), popup.Items.OfType<MenuItem>().Select(m => RDFormsControl.GetInstance(m)!.Name).ToList(), !task.IsCompleted);
             popup.Close();
             window.Close();
             return result;
@@ -260,7 +259,7 @@ public sealed class PopupMenuTests
         var (right, left) = UI.Run(() =>
         {
             var root = Probe().Set(P.ContextMenu, "mnuEmpty");
-            var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Width, 100d).Set(P.Height, 100d)
+            var picture = new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Width, 100d).Set(P.Height, 100d)
                 .Set(P.ContextMenu, "mnuEdit");
             picture.SetContainer(root);
             var window = Open(root, new RecordingSink());
@@ -272,7 +271,7 @@ public sealed class PopupMenuTests
             window.MouseUp(new Point(50, 50), MouseButton.Right);
             Dispatcher.UIThread.RunJobs();
             var popup = Popup(window);
-            var result = (popup?.Items.OfType<MenuItem>().Select(m => VBControl.GetInstance(m)!.Name).FirstOrDefault(), afterLeft);
+            var result = (popup?.Items.OfType<MenuItem>().Select(m => RDFormsControl.GetInstance(m)!.Name).FirstOrDefault(), afterLeft);
             popup?.Close();
             window.Close();
             return result;
@@ -309,7 +308,7 @@ public sealed class PopupMenuTests
             var root = Probe();
             FormMenuItem.Of(root.Contents[0]).Visible = true;
             var window = Open(root, new RecordingSink());
-            var cut = window.MenuBar.GetLogicalDescendants().OfType<MenuItem>().Single(m => VBControl.GetInstance(m)?.Name == "mnuCut");
+            var cut = window.MenuBar.GetLogicalDescendants().OfType<MenuItem>().Single(m => RDFormsControl.GetInstance(m)?.Name == "mnuCut");
             Model(window, "mnuCut").Picture = PictureControlTests.Png(16, 16, [.. Enumerable.Repeat(0xFFFF0000u, 256)]);
             var picture = (cut.Icon as Image)?.Source?.Size;
             Model(window, "mnuCut").Picture = null;

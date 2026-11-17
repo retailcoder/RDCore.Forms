@@ -7,9 +7,8 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
-using ScrollBars = RDCore.Forms.Model.VB.ScrollBars;
+using P = RDCore.Forms.Model.Properties;
+using ScrollBars = RDCore.Forms.Model.ScrollBars;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -44,9 +43,9 @@ public sealed class TextBoxPropertyViewTests
     {
         var (made, changed) = UI.Run(() =>
         {
-            var made = new VBTextBox(new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.MultiLine, multiLine).Set(P.ScrollBars, bars));
-            var instance = new ComponentInstance(VBClasses.TextBox, "Text2");
-            var changed = new VBTextBox(instance);
+            var made = new RDFormsTextBox(new ComponentInstance(ComponentClasses.TextBox, "Text1").Set(P.MultiLine, multiLine).Set(P.ScrollBars, bars));
+            var instance = new ComponentInstance(ComponentClasses.TextBox, "Text2");
+            var changed = new RDFormsTextBox(instance);
             var (window, _) = ControlHost.Show(changed);
             instance.Set(P.MultiLine, multiLine).Set(P.ScrollBars, bars);
             var lines = (Lines(made), Lines(changed));
@@ -63,16 +62,16 @@ public sealed class TextBoxPropertyViewTests
     {
         var (single, singleRaised, multi, multiRaised) = UI.Run(() =>
         {
-            var singleInstance = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.Text, "ab");
-            var singleBox = new VBTextBox(singleInstance);
+            var singleInstance = new ComponentInstance(ComponentClasses.TextBox, "Text1").Set(P.Text, "ab");
+            var singleBox = new RDFormsTextBox(singleInstance);
             var (window, sink) = ControlHost.Show(singleBox);
             singleBox.Focus();
             singleBox.CaretIndex = 1;
             Enter(window);
             window.Close();
 
-            var multiInstance = new ComponentInstance(VBClasses.TextBox, "Text2").Set(P.MultiLine, true).Set(P.Text, "ab");
-            var multiBox = new VBTextBox(multiInstance);
+            var multiInstance = new ComponentInstance(ComponentClasses.TextBox, "Text2").Set(P.MultiLine, true).Set(P.Text, "ab");
+            var multiBox = new RDFormsTextBox(multiInstance);
             var (multiWindow, multiSink) = ControlHost.Show(multiBox);
             multiBox.Focus();
             multiBox.CaretIndex = 1;
@@ -93,13 +92,13 @@ public sealed class TextBoxPropertyViewTests
     {
         var text = UI.Run(() =>
         {
-            var instance = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.MultiLine, true);
-            var box = new VBTextBox(instance);
+            var instance = new ComponentInstance(ComponentClasses.TextBox, "Text1").Set(P.MultiLine, true);
+            var box = new RDFormsTextBox(instance);
             var (window, sink) = ControlHost.Show(box);
             var codes = new Queue<short>([0, 0, 65]);
             sink.Handler = (_, definition, arguments) =>
             {
-                if (ReferenceEquals(definition, VBEvents.KeyPress))
+                if (ReferenceEquals(definition, Events.KeyPress))
                     arguments[0] = FormValue.FromInteger(codes.Dequeue());
             };
             box.Focus();
@@ -118,8 +117,8 @@ public sealed class TextBoxPropertyViewTests
     {
         var (text, shown, raised) = UI.Run(() =>
         {
-            var instance = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.MaxLength, 3).Set(P.Text, "abc");
-            var box = new VBTextBox(instance);
+            var instance = new ComponentInstance(ComponentClasses.TextBox, "Text1").Set(P.MaxLength, 3).Set(P.Text, "abc");
+            var box = new RDFormsTextBox(instance);
             var (window, sink) = ControlHost.Show(box);
             box.Focus();
             box.CaretIndex = 3;
@@ -138,8 +137,8 @@ public sealed class TextBoxPropertyViewTests
     {
         var (shown, held, limit) = UI.Run(() =>
         {
-            var instance = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.Text, "abcdef").Set(P.MaxLength, 3);
-            var box = new VBTextBox(instance);
+            var instance = new ComponentInstance(ComponentClasses.TextBox, "Text1").Set(P.Text, "abcdef").Set(P.MaxLength, 3);
+            var box = new RDFormsTextBox(instance);
             var (window, _) = ControlHost.Show(box);
             var shown = box.Text;
             window.Close();
@@ -156,8 +155,8 @@ public sealed class TextBoxPropertyViewTests
     {
         var (masked, text, cleared) = UI.Run(() =>
         {
-            var instance = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.PasswordChar, "*");
-            var box = new VBTextBox(instance);
+            var instance = new ComponentInstance(ComponentClasses.TextBox, "Text1").Set(P.PasswordChar, "*");
+            var box = new RDFormsTextBox(instance);
             var (window, _) = ControlHost.Show(box);
             box.Focus();
             window.KeyTextInput("ab");
@@ -178,17 +177,17 @@ public sealed class TextBoxPropertyViewTests
     {
         var (text, focused, other) = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
             ComponentInstance Add(string name, double top)
             {
-                var box = new ComponentInstance(VBClasses.TextBox, name).Set(P.Left, 8d).Set(P.Top, top).Set(P.Width, 160d).Set(P.Height, 33d);
+                var box = new ComponentInstance(ComponentClasses.TextBox, name).Set(P.Left, 8d).Set(P.Top, top).Set(P.Width, 160d).Set(P.Height, 33d);
                 box.SetContainer(root);
                 return box;
             }
             var text1 = Add("Text1", 8).Set(P.MultiLine, true).Set(P.Height, 60d);
             Add("Text2", 96);
             var text3 = Add("Text3", 160);
-            var window = new VBFormWindow(new FormDefinition(root));
+            var window = new RDFormsFormWindow(new FormDefinition(root));
             window.Show();
             Dispatcher.UIThread.RunJobs();
             window.View.ControlOf(text1)!.Focus();
@@ -199,7 +198,7 @@ public sealed class TextBoxPropertyViewTests
                 window.KeyPress(Key.Tab, RawInputModifiers.None, PhysicalKey.Tab, null);
                 window.KeyRelease(Key.Tab, RawInputModifiers.None, PhysicalKey.Tab, null);
                 Dispatcher.UIThread.RunJobs();
-                names.Add(VBControl.GetInstance((Control)window.FocusManager!.GetFocusedElement()!)!.Name);
+                names.Add(RDFormsControl.GetInstance((Control)window.FocusManager!.GetFocusedElement()!)!.Name);
             }
             window.KeyTextInput("y");
             window.Close();

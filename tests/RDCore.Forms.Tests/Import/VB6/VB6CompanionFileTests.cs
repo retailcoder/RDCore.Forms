@@ -1,5 +1,5 @@
 ﻿using RDCore.Forms.Import.VB6;
-using RDCore.Forms.Model.VB;
+using RDCore.Forms.Model;
 
 namespace RDCore.Forms.Tests.Import.VB6;
 
@@ -44,7 +44,7 @@ public sealed class VB6CompanionFileTests
 
         var import = VB6FormReader.ReadFile(form);
 
-        Assert.AreEqual("ok", import.Form!.Find("Label1")!.Get(VBProperties.Caption));
+        Assert.AreEqual("ok", import.Form!.Find("Label1")!.Get(Properties.Caption));
         Assert.IsEmpty(import.Diagnostics);
     }
 
@@ -56,7 +56,7 @@ public sealed class VB6CompanionFileTests
 
         var import = VB6FormReader.ReadFile(form);
 
-        Assert.AreEqual("ok", import.Form!.Find("Label1")!.Get(VBProperties.Caption));
+        Assert.AreEqual("ok", import.Form!.Find("Label1")!.Get(Properties.Caption));
     }
 
     [TestMethod]
@@ -71,7 +71,7 @@ public sealed class VB6CompanionFileTests
         var diagnostic = import.Diagnostics.Single();
         Assert.AreEqual(VB6ImportDiagnosticKind.MissingCompanion, diagnostic.Kind);
         Assert.Contains(rooted, diagnostic.Message);
-        Assert.AreEqual("", import.Form!.Find("Label1")!.Get(VBProperties.Caption));
+        Assert.AreEqual("", import.Form!.Find("Label1")!.Get(Properties.Caption));
     }
 
     [TestMethod]

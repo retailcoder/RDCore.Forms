@@ -1,6 +1,6 @@
 # Data control
 
-A Data control shows four buttons that move through a database's records, with its `Caption` between them. [`VBData`](../api/RDCore.Forms.Avalonia.Controls.VBData.yml) draws it as VB6 does. The look, the defaults, the ranges and the errors below were measured with VB6.
+A Data control shows four buttons that move through a database's records, with its `Caption` between them. [`RDFormsData`](../api/RDCore.Forms.Avalonia.Controls.RDFormsData.yml) draws it as VB6 does. The look, the defaults, the ranges and the errors below were measured with VB6.
 
 > [!NOTE]
 > **Not implemented.** The control opens no database. Its buttons move through no records, and it raises no Validate, Reposition or Error. No control is bound to it.

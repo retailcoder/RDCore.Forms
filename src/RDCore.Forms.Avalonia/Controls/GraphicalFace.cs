@@ -4,7 +4,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using RDCore.Forms.Model;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -17,9 +17,9 @@ internal sealed class GraphicalFace : Control
     // How much of its colour a disabled button's caption keeps, and its Picture where it has no DisabledPicture.
     private const double GreyedOpacity = 0.5;
 
-    private readonly VBPicture.Holder picture = new();
-    private readonly VBPicture.Holder downPicture = new();
-    private readonly VBPicture.Holder disabledPicture = new();
+    private readonly RDFormsPicture.Holder picture = new();
+    private readonly RDFormsPicture.Holder downPicture = new();
+    private readonly RDFormsPicture.Holder disabledPicture = new();
     private Control? caption;
     private bool isDown;
     private FormColor maskColor = P.MaskColor.Default;
@@ -59,7 +59,7 @@ internal sealed class GraphicalFace : Control
             LogicalChildren.Remove(caption);
             VisualChildren.Remove(caption);
         }
-        caption = VBCaption.AsShown(text).Length == 0 ? null : VBCaption.Present(text);
+        caption = RDFormsCaption.AsShown(text).Length == 0 ? null : RDFormsCaption.Present(text);
         if (caption is not null)
         {
             caption.HorizontalAlignment = HorizontalAlignment.Center;
@@ -132,10 +132,10 @@ internal sealed class GraphicalFace : Control
         using (context.PushTransform(Matrix.CreateTranslation(x, y)))
         {
             if (!greyed)
-                VBPicture.Draw(context, shown, new Size(pixels.Width, pixels.Height));
+                RDFormsPicture.Draw(context, shown, new Size(pixels.Width, pixels.Height));
             else
                 using (context.PushOpacity(GreyedOpacity))
-                    VBPicture.Draw(context, shown, new Size(pixels.Width, pixels.Height));
+                    RDFormsPicture.Draw(context, shown, new Size(pixels.Width, pixels.Height));
         }
     }
 
@@ -149,11 +149,11 @@ internal sealed class GraphicalFace : Control
     {
         if (face is null)
         {
-            VBCaption.ShowIn(button, caption);
+            RDFormsCaption.ShowIn(button, caption);
             return;
         }
         face.ShowCaption(caption);
-        VBCaption.NameFor(button, caption);
+        RDFormsCaption.NameFor(button, caption);
     }
 
     // Shows the face in a button: it takes the whole of the button inside its border. A disabled graphical button keeps its BackColor

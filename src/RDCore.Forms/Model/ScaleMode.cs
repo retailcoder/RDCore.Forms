@@ -49,9 +49,10 @@ public enum ScaleMode
 public static class ScaleModeExtensions
 {
     /// <summary>
-    /// The twips in a pixel. The model's pixel is a device-independent pixel, 1/96 inch, whatever the screen.
+    /// The twips in a pixel: <see cref="Units.TwipsPerDip"/>. The model's pixel is a device-independent pixel, 1/96 inch, whatever the
+    /// screen.
     /// </summary>
-    public const double TwipsPerPixel = 15;
+    public const double TwipsPerPixel = Units.TwipsPerDip;
 
     /// <summary>
     /// How many twips one unit of <paramref name="mode"/> is, across and down.

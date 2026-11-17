@@ -1,12 +1,11 @@
 ﻿using System.Runtime.CompilerServices;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Menus;
 
 /// <summary>
-/// A form's menus: the <c>VB.Menu</c> components its root holds, as the items of its menu bar, each holding the items of its own
+/// A form's menus: the <c>RDForms.Menu</c> components its root holds, as the items of its menu bar, each holding the items of its own
 /// menu.
 /// </summary>
 /// <remarks>
@@ -158,12 +157,12 @@ public sealed class FormMenuItem
     /// <param name="menu">The menu component.</param>
     /// <returns>The item: the same object each time for the same component.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="menu"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="menu"/> is not a <see cref="VBClasses.Menu"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="menu"/> is not a <see cref="ComponentClasses.Menu"/>.</exception>
     public static FormMenuItem Of(ComponentInstance menu)
     {
         ArgumentNullException.ThrowIfNull(menu);
         if (!IsMenu(menu))
-            throw new ArgumentException($"The component is a {menu.Class.TypeName}, not a VB.Menu.", nameof(menu));
+            throw new ArgumentException($"The component is a {menu.Class.TypeName}, not an RDForms.Menu.", nameof(menu));
         return items.GetValue(menu, m => new FormMenuItem(m));
     }
 
@@ -346,7 +345,7 @@ public sealed class FormMenuItem
 
     internal IEnumerable<FormMenuItem> WithAllItems() => [this, .. Items.SelectMany(item => item.WithAllItems())];
 
-    private static bool IsMenu(ComponentInstance component) => ReferenceEquals(component.Class, VBClasses.Menu);
+    private static bool IsMenu(ComponentInstance component) => ReferenceEquals(component.Class, ComponentClasses.Menu);
 
     // The root the item is placed under, or null for an item taken out of its form.
     private static ComponentInstance? RootOf(ComponentInstance component)

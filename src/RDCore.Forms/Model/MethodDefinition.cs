@@ -7,7 +7,7 @@
 /// <remarks>
 /// <para>
 /// The definition describes the call. What the method does is the form's: a shown form's window runs it (see
-/// <c>VBFormWindow.Invoke</c> in RDCore.Forms.Avalonia).
+/// <c>RDFormsFormWindow.Invoke</c> in RDCore.Forms.Avalonia).
 /// </para>
 /// <para>
 /// A property here is one whose value the window's control holds, such as a ListBox's <c>ListIndex</c>, or one that

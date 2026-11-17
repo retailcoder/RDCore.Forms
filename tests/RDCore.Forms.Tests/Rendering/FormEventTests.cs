@@ -7,9 +7,8 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -18,7 +17,7 @@ namespace RDCore.Forms.Tests.Rendering;
 public sealed class FormEventTests
 {
     private static ComponentInstance Root(string name = "Form1", ScaleMode scaleMode = ScaleMode.Twip) =>
-        new ComponentInstance(VBClasses.Form, name).Set(P.Width, 320d).Set(P.Height, 240d).Set(P.ScaleMode, scaleMode);
+        new ComponentInstance(ComponentClasses.Form, name).Set(P.Width, 320d).Set(P.Height, 240d).Set(P.ScaleMode, scaleMode);
 
     private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double left, double top,
         double width, double height)
@@ -29,10 +28,10 @@ public sealed class FormEventTests
     }
 
     // A window with its sink, shown, with what it raised as it was shown kept.
-    private static VBFormWindow Open(ComponentInstance root, RecordingSink sink)
+    private static RDFormsFormWindow Open(ComponentInstance root, RecordingSink sink)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -222,7 +221,7 @@ public sealed class FormEventTests
             var sink = new RecordingSink();
             var window = Open(Root(), sink);
             sink.Raised.Clear();
-            Answer(sink, cancelledIn == "Unload" ? VBEvents.Unload : VBEvents.QueryUnload, arguments => arguments[0] = FormValue.FromInteger(-1));
+            Answer(sink, cancelledIn == "Unload" ? Events.Unload : Events.QueryUnload, arguments => arguments[0] = FormValue.FromInteger(-1));
             CloseBox(window);
             Dispatcher.UIThread.RunJobs();
             var result = (sink.Raised.ToList(), window.IsVisible);
@@ -270,7 +269,7 @@ public sealed class FormEventTests
             var window = Open(Root(), sink);
             sink.Raised.Clear();
             bool? nested = null;
-            Answer(sink, VBEvents.QueryUnload, _ => nested = window.Unload());
+            Answer(sink, Events.QueryUnload, _ => nested = window.Unload());
             var result = window.Unload();
             Dispatcher.UIThread.RunJobs();
             return (sink.Raised.ToList(), result, nested, window.IsVisible);
@@ -299,7 +298,7 @@ public sealed class FormEventTests
 
     // A left press and release on the view at a point, as the press's click count says: 2 for a double click's second. The count is
     // given, so that no double-click time decides it.
-    private static void Click(VBFormWindow window, Point at, int clickCount)
+    private static void Click(RDFormsFormWindow window, Point at, int clickCount)
     {
         var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, isPrimary: true);
         var point = window.View.TranslatePoint(at, window) ?? at;
@@ -376,7 +375,7 @@ public sealed class FormEventTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            Add(root, VBClasses.Label, "Label1", 10, 80, 80, 17);
+            Add(root, ComponentClasses.Label, "Label1", 10, 80, 80, 17);
             var sink = new RecordingSink();
             var window = Open(root, sink);
             sink.Raised.Clear();
@@ -425,10 +424,10 @@ public sealed class FormEventTests
         var (raised, after) = UI.Run(() =>
         {
             var root = Root().Set(P.KeyPreview, preview);
-            var text1 = Add(root, VBClasses.TextBox, "Text1", 8, 8, 120, 21);
+            var text1 = Add(root, ComponentClasses.TextBox, "Text1", 8, 8, 120, 21);
             var sink = new RecordingSink();
             var window = Open(root, sink);
-            var box = (VBTextBox)window.View.ControlOf(text1)!;
+            var box = (RDFormsTextBox)window.View.ControlOf(text1)!;
             box.Focus();
             Dispatcher.UIThread.RunJobs();
             var log = new List<string>();

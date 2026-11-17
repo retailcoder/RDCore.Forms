@@ -1,15 +1,15 @@
 # Methods
 
-A program's code calls a method of the root or of a control through the form's window: [`VBFormWindow.Invoke`](../api/RDCore.Forms.Avalonia.Rendering.VBFormWindow.yml) runs it on the UI thread. Each class lists its methods in [`ComponentClass.Methods`](../api/RDCore.Forms.Model.ComponentClass.yml), shared from [`VBMethods`](../api/RDCore.Forms.Model.VB.VBMethods.yml).
+A program's code calls a method of the root or of a control through the form's window: [`RDFormsFormWindow.Invoke`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml) runs it on the UI thread. Each class lists its methods in [`ComponentClass.Methods`](../api/RDCore.Forms.Model.ComponentClass.yml), shared from [`Methods`](../api/RDCore.Forms.Model.Methods.yml).
 
 ```csharp
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
+using RDCore.Forms.Model;
 
 // Text1.Move 600, 900 in VB6 code, then Text1.SetFocus.
 var text = form.Components.First(c => c.Name == "Text1");
-window.Invoke(text, VBMethods.Move, [FormValue.FromSingle(600), FormValue.FromSingle(900)], CodeUnit.VB6);
-window.Invoke(text, VBMethods.SetFocus, []);
+window.Invoke(text, Methods.Move, [FormValue.FromSingle(600), FormValue.FromSingle(900)], CodeUnit.VB6);
+window.Invoke(text, Methods.SetFocus, []);
 ```
 
 An argument left out is `null`, and the list ends at the last one given. A `Variant` parameter takes any value, and the method coerces it.
@@ -46,7 +46,7 @@ The window system's smallest size for a window is not modelled: a form takes the
 |---|---|
 |The form is not shown|Error 5, on a control and on the form.|
 |The control is hidden or disabled|Error 5, and nothing changes.|
-|Otherwise|[`ActiveControl`](../api/RDCore.Forms.Avalonia.Rendering.VBFormWindow.yml) names the control at once. After the call returns, the control that had the focus raises LostFocus, then this one GotFocus.|
+|Otherwise|[`ActiveControl`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml) names the control at once. After the call returns, the control that had the focus raises LostFocus, then this one GotFocus.|
 |The control is on a form that is not the active one|That form is activated, and the control takes the focus after its Activate.|
 |The control has the focus already|Nothing.|
 |The form's own `SetFocus`, on the active form|Nothing.|

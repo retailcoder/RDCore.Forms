@@ -19,7 +19,7 @@ The RDCore language server reads a form into the model and analyses it, without 
 
 ## The model
 
-A form is a [`FormDefinition`](api/RDCore.Forms.Model.FormDefinition.yml): a root component, the form itself, and the components placed in it. Each component is a [`ComponentInstance`](api/RDCore.Forms.Model.ComponentInstance.yml) of a [`ComponentClass`](api/RDCore.Forms.Model.ComponentClass.yml), such as `VB.CommandButton`, with the properties set on it. The classes of Visual Basic 6.0's intrinsic controls are in [`VBClasses`](api/RDCore.Forms.Model.VB.VBClasses.yml), and their properties in [`VBProperties`](api/RDCore.Forms.Model.VB.VBProperties.yml).
+A form is a [`FormDefinition`](api/RDCore.Forms.Model.FormDefinition.yml): a root component, the form itself, and the components placed in it. Each component is a [`ComponentInstance`](api/RDCore.Forms.Model.ComponentInstance.yml) of a [`ComponentClass`](api/RDCore.Forms.Model.ComponentClass.yml), such as `RDForms.CommandButton`, with the properties set on it. The classes that Visual Basic 6.0's intrinsic controls port to are in [`ComponentClasses`](api/RDCore.Forms.Model.ComponentClasses.yml), and their properties in [`Properties`](api/RDCore.Forms.Model.Properties.yml).
 
 What a form sets that the model does not have is kept as it was written: a property as an [`UnmodelledProperty`](api/RDCore.Forms.Model.UnmodelledProperty.yml), and a component of a class the model does not have, such as an ActiveX control, as an [`UnmodelledComponent`](api/RDCore.Forms.Model.UnmodelledComponent.yml).
 

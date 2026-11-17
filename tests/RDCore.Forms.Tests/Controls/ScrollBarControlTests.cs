@@ -8,8 +8,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -18,13 +17,13 @@ namespace RDCore.Forms.Tests.Controls;
 public sealed class ScrollBarControlTests
 {
     private static ComponentInstance Bar(ComponentClass type, short min = 0, short max = 100, short value = 0) =>
-        new ComponentInstance(type, ReferenceEquals(type, VBClasses.HScrollBar) ? "HScroll1" : "VScroll1")
+        new ComponentInstance(type, ReferenceEquals(type, ComponentClasses.HScrollBar) ? "HScroll1" : "VScroll1")
             .Set(P.Min, min).Set(P.Max, max).Set(P.ScrollBarValue, value);
 
     [TestMethod]
     public void EachClass_RunsItsWay()
     {
-        var orientations = UI.Run(() => (new VBScrollBar(Bar(VBClasses.HScrollBar)).Orientation, new VBScrollBar(Bar(VBClasses.VScrollBar)).Orientation));
+        var orientations = UI.Run(() => (new RDFormsScrollBar(Bar(ComponentClasses.HScrollBar)).Orientation, new RDFormsScrollBar(Bar(ComponentClasses.VScrollBar)).Orientation));
 
         Assert.AreEqual((Orientation.Horizontal, Orientation.Vertical), orientations);
     }
@@ -34,8 +33,8 @@ public sealed class ScrollBarControlTests
     {
         var (value, raised) = UI.Run(() =>
         {
-            var instance = Bar(VBClasses.HScrollBar);
-            var bar = new VBScrollBar(instance);
+            var instance = Bar(ComponentClasses.HScrollBar);
+            var bar = new RDFormsScrollBar(instance);
             var (window, sink) = ControlHost.Show(bar);
             // The thumb's track sets the bar's value as it is dragged.
             bar.Value = 41.6;
@@ -53,8 +52,8 @@ public sealed class ScrollBarControlTests
     {
         var (position, raised) = UI.Run(() =>
         {
-            var instance = Bar(VBClasses.VScrollBar);
-            var bar = new VBScrollBar(instance);
+            var instance = Bar(ComponentClasses.VScrollBar);
+            var bar = new RDFormsScrollBar(instance);
             var (window, sink) = ControlHost.Show(bar);
             instance.Set(P.ScrollBarValue, (short)30);
             instance.Set(P.ScrollBarValue, (short)30);
@@ -72,8 +71,8 @@ public sealed class ScrollBarControlTests
     {
         var (atMin, moved) = UI.Run(() =>
         {
-            var instance = Bar(VBClasses.HScrollBar, min: 100, max: 0, value: 100);
-            var bar = new VBScrollBar(instance);
+            var instance = Bar(ComponentClasses.HScrollBar, min: 100, max: 0, value: 100);
+            var bar = new RDFormsScrollBar(instance);
             var atMin = (bar.Minimum, bar.Maximum, bar.Value);
             bar.Value = 30;
             return (atMin, instance.Get(P.ScrollBarValue));
@@ -88,8 +87,8 @@ public sealed class ScrollBarControlTests
     {
         var (afterArrow, afterTrack, raised) = UI.Run(() =>
         {
-            var instance = Bar(VBClasses.HScrollBar).Set(P.SmallChange, (short)3).Set(P.LargeChange, (short)20);
-            var bar = new VBScrollBar(instance);
+            var instance = Bar(ComponentClasses.HScrollBar).Set(P.SmallChange, (short)3).Set(P.LargeChange, (short)20);
+            var bar = new RDFormsScrollBar(instance);
             var (window, sink) = ControlHost.Show((bar, new Rect(10, 10, 200, 17)));
             var buttons = bar.GetVisualDescendants().OfType<RepeatButton>().ToList();
             var arrow = buttons.Single(b => b.Name == "PART_LineDownButton");
@@ -112,8 +111,8 @@ public sealed class ScrollBarControlTests
     {
         var (raised, value) = UI.Run(() =>
         {
-            var instance = Bar(VBClasses.HScrollBar);
-            var bar = new VBScrollBar(instance);
+            var instance = Bar(ComponentClasses.HScrollBar);
+            var bar = new RDFormsScrollBar(instance);
             var (window, sink) = ControlHost.Show((bar, new Rect(10, 10, 200, 17)));
             var thumb = bar.GetVisualDescendants().OfType<Thumb>().Single();
             var at = thumb.TranslatePoint(new Point(thumb.Bounds.Width / 2, thumb.Bounds.Height / 2), window)!.Value;
@@ -142,7 +141,7 @@ public sealed class ScrollBarControlTests
     {
         var raised = UI.Run(() =>
         {
-            var bar = new VBScrollBar(Bar(VBClasses.HScrollBar, value: 50));
+            var bar = new RDFormsScrollBar(Bar(ComponentClasses.HScrollBar, value: 50));
             var (window, sink) = ControlHost.Show((bar, new Rect(10, 10, 200, 17)));
             var thumb = bar.GetVisualDescendants().OfType<Thumb>().Single();
             Click(window, thumb);
@@ -159,8 +158,8 @@ public sealed class ScrollBarControlTests
     {
         var (values, changes) = UI.Run(() =>
         {
-            var instance = Bar(VBClasses.HScrollBar).Set(P.SmallChange, (short)3).Set(P.LargeChange, (short)20);
-            var bar = new VBScrollBar(instance);
+            var instance = Bar(ComponentClasses.HScrollBar).Set(P.SmallChange, (short)3).Set(P.LargeChange, (short)20);
+            var bar = new RDFormsScrollBar(instance);
             var (window, sink) = ControlHost.Show((bar, new Rect(10, 10, 200, 17)));
             bar.Focus();
             Dispatcher.UIThread.RunJobs();

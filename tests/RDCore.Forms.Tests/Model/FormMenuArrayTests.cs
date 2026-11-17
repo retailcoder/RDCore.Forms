@@ -1,8 +1,7 @@
 ﻿using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -315,7 +314,7 @@ public sealed class FormMenuArrayTests
         Assert.AreEqual(-5, open.HelpContextID);
         Assert.AreEqual(4, Read() is var fresh ? Item(fresh, "mnuOpen").HelpContextID : 0);
         Assert.AreEqual(NegotiatePosition.Left, Item(menu, "mnuEdit").Component.Get(P.NegotiatePosition));
-        Assert.IsTrue(VBClasses.Menu.IsNotAvailableAtRunTime(P.NegotiatePosition));
-        Assert.IsFalse(VBClasses.Menu.IsReadOnlyAtRunTime(P.HelpContextID));
+        Assert.IsTrue(ComponentClasses.Menu.IsNotAvailableAtRunTime(P.NegotiatePosition));
+        Assert.IsFalse(ComponentClasses.Menu.IsReadOnlyAtRunTime(P.HelpContextID));
     }
 }

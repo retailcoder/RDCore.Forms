@@ -5,8 +5,7 @@ using Avalonia.Input;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -42,16 +41,16 @@ public sealed class FileListControlTests
 
     private static readonly string DriveRoot = Path.GetPathRoot(Root)!;
 
-    private static ComponentInstance File() => new(VBClasses.FileListBox, "File1");
+    private static ComponentInstance File() => new(ComponentClasses.FileListBox, "File1");
 
-    private static string[] Items(VBFileListBox list) => [.. Enumerable.Range(0, list.ListCount).Select(list.GetList)];
+    private static string[] Items(RDFormsFileListBox list) => [.. Enumerable.Range(0, list.ListCount).Select(list.GetList)];
 
     [TestMethod]
     public void AFileList_ListsTheCurrentDirectorysFiles_SortedIgnoringCase_WithoutHiddenOrSystemFiles()
     {
         var (path, items, fileName, index) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             return (list.Path, Items(list), list.FileName, list.ListIndex);
         });
 
@@ -71,7 +70,7 @@ public sealed class FileListControlTests
     [DataRow("z*", "Zeta.Txt")]
     public void APattern_ListsTheFilesThatMatchAnyOfItsParts_WithoutRegardToCase(string pattern, string expected)
     {
-        var items = UI.Run(() => Items(new VBFileListBox(File().Set(P.Pattern, pattern), Tree())));
+        var items = UI.Run(() => Items(new RDFormsFileListBox(File().Set(P.Pattern, pattern), Tree())));
 
         Assert.AreEqual(expected, string.Join("|", items));
     }
@@ -81,7 +80,7 @@ public sealed class FileListControlTests
     {
         var (items, raised) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.Pattern = "*.bas";
             list.Pattern = "*.bas";
@@ -99,7 +98,7 @@ public sealed class FileListControlTests
         var (shown, hidden) = UI.Run(() =>
         {
             var instance = File();
-            var list = new VBFileListBox(instance, Tree());
+            var list = new RDFormsFileListBox(instance, Tree());
             var (window, _) = ControlHost.Show(list);
             instance.Set(P.Hidden, true).Set(P.SystemFiles, true);
             var shown = string.Join("|", Items(list));
@@ -118,7 +117,7 @@ public sealed class FileListControlTests
         var items = UI.Run(() =>
         {
             var instance = File();
-            var list = new VBFileListBox(instance, Tree());
+            var list = new RDFormsFileListBox(instance, Tree());
             var (window, _) = ControlHost.Show(list);
             instance.Set(P.ReadOnly, false).Set(P.Archive, false).Set(P.Normal, false);
             window.Close();
@@ -133,7 +132,7 @@ public sealed class FileListControlTests
     {
         var (fileName, raised, past, below) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.ListIndex = 1;
             list.ListIndex = 1;
@@ -154,7 +153,7 @@ public sealed class FileListControlTests
     {
         var (pattern, fileName, index, items, raised) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.FileName = "c.txt";
             list.FileName = "c.txt";
@@ -174,7 +173,7 @@ public sealed class FileListControlTests
     {
         var (error, pattern, count, raised) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
             var error = Assert.ThrowsExactly<FormErrorException>(() => list.FileName = "nothere.txt").Error.Number;
             window.Close();
@@ -192,7 +191,7 @@ public sealed class FileListControlTests
     {
         var (pattern, fileName, index, items) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             list.ListIndex = 0;
             list.FileName = "*.bas";
             return (list.Pattern, list.FileName, list.ListIndex, Items(list));
@@ -209,7 +208,7 @@ public sealed class FileListControlTests
     {
         var (path, fileName, index, raised) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.FileName = In("SubOne", "x.bas");
             window.Close();
@@ -227,7 +226,7 @@ public sealed class FileListControlTests
     {
         var (log, raised, read, set) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
             var log = new List<string>();
             void Step(string name, Action act)
@@ -261,7 +260,7 @@ public sealed class FileListControlTests
     {
         var (log, error) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File().Set(P.MultiSelect, mode), Tree());
+            var list = new RDFormsFileListBox(File().Set(P.MultiSelect, mode), Tree());
             var (window, sink) = ControlHost.Show(list);
             var log = new List<string>();
             void Step(string name, Action act)
@@ -299,7 +298,7 @@ public sealed class FileListControlTests
     {
         var (index, fileName, selected, raised) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File().Set(P.MultiSelect, ListBoxMultiSelect.Extended), Tree());
+            var list = new RDFormsFileListBox(File().Set(P.MultiSelect, ListBoxMultiSelect.Extended), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.SetSelected(2, true);
             sink.Raised.Clear();
@@ -319,7 +318,7 @@ public sealed class FileListControlTests
     {
         var (path, fileName, raised) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.ListIndex = 0;
             list.Path = In("SubOne") + Path.DirectorySeparatorChar;
@@ -338,7 +337,7 @@ public sealed class FileListControlTests
     {
         var (down, up) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             list.Path = "SubOne";
             var down = list.Path;
             list.Path = "..";
@@ -354,7 +353,7 @@ public sealed class FileListControlTests
     {
         var (error, fileNameError, path, count) = UI.Run(() =>
         {
-            var list = new VBFileListBox(File(), Tree());
+            var list = new RDFormsFileListBox(File(), Tree());
             var error = Assert.ThrowsExactly<FormErrorException>(() => list.Path = In("nothere")).Error.Number;
             var fileNameError = Assert.ThrowsExactly<FormErrorException>(() => list.FileName = In("nothere", "a.txt")).Error.Number;
             return (error, fileNameError, list.Path, list.ListCount);
@@ -372,7 +371,7 @@ public sealed class FileListControlTests
         var (before, after) = UI.Run(() =>
         {
             var files = Mock();
-            var list = new VBFileListBox(File(), OnThisOs(files));
+            var list = new RDFormsFileListBox(File(), OnThisOs(files));
             files.AddFile(In("new.txt"), new MockFileData(""));
             var before = list.ListCount;
             list.Refresh();
@@ -388,20 +387,20 @@ public sealed class FileListControlTests
     {
         var path = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1");
-            var file = new ComponentInstance(VBClasses.FileListBox, "File1");
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1");
+            var file = new ComponentInstance(ComponentClasses.FileListBox, "File1");
             file.SetContainer(root);
-            var view = new VBFormView(new FormDefinition(root), Tree());
-            return ((VBFileListBox)view.ControlOf(file)!).Path;
+            var view = new RDFormsFormView(new FormDefinition(root), Tree());
+            return ((RDFormsFileListBox)view.ControlOf(file)!).Path;
         });
 
         Assert.AreEqual(Root, path);
     }
 
-    private static ComponentInstance Dir() => new(VBClasses.DirListBox, "Dir1");
+    private static ComponentInstance Dir() => new(ComponentClasses.DirListBox, "Dir1");
 
     // The folders from -n, the root, to the last one Path holds.
-    private static string[] Folders(VBDirListBox list)
+    private static string[] Folders(RDFormsDirListBox list)
     {
         var top = -1;
         while (list.GetList(top - 1) != "")
@@ -414,7 +413,7 @@ public sealed class FileListControlTests
     {
         var (path, index, count, folders) = UI.Run(() =>
         {
-            var list = new VBDirListBox(Dir(), Tree());
+            var list = new RDFormsDirListBox(Dir(), Tree());
             return (list.Path, list.ListIndex, list.ListCount, Folders(list));
         });
 
@@ -429,7 +428,7 @@ public sealed class FileListControlTests
     {
         var (path, above, count, index, raised) = UI.Run(() =>
         {
-            var list = new VBDirListBox(Dir(), Tree());
+            var list = new RDFormsDirListBox(Dir(), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.ListIndex = 0;
             list.Path = In("SubOne", "deep");
@@ -452,7 +451,7 @@ public sealed class FileListControlTests
     {
         var (path, above) = UI.Run(() =>
         {
-            var list = new VBDirListBox(Dir(), Tree());
+            var list = new RDFormsDirListBox(Dir(), Tree());
             list.Path = In("subone", "deep");
             return (list.Path, list.GetList(-2));
         });
@@ -468,7 +467,7 @@ public sealed class FileListControlTests
     {
         var (error, path) = UI.Run(() =>
         {
-            var list = new VBDirListBox(Dir(), Tree());
+            var list = new RDFormsDirListBox(Dir(), Tree());
             return (Assert.ThrowsExactly<FormErrorException>(() => list.Path = In("subone", "deep")).Error.Number, list.Path);
         });
 
@@ -481,7 +480,7 @@ public sealed class FileListControlTests
     {
         var (path, error) = UI.Run(() =>
         {
-            var list = new VBDirListBox(Dir(), Tree());
+            var list = new RDFormsDirListBox(Dir(), Tree());
             list.Path = list.GetList(1);
             list.Path = "..";
             return (list.Path, Assert.ThrowsExactly<FormErrorException>(() => list.Path = "nothere").Error.Number);
@@ -496,7 +495,7 @@ public sealed class FileListControlTests
     {
         var (path, index, raised, below, past) = UI.Run(() =>
         {
-            var list = new VBDirListBox(Dir(), Tree());
+            var list = new RDFormsDirListBox(Dir(), Tree());
             var (window, sink) = ControlHost.Show(list);
             list.ListIndex = 0;
             list.ListIndex = -2;
@@ -518,7 +517,7 @@ public sealed class FileListControlTests
     {
         var (path, raised) = UI.Run(() =>
         {
-            var list = new VBDirListBox(Dir(), Tree());
+            var list = new RDFormsDirListBox(Dir(), Tree());
             var (window, sink) = ControlHost.Show((list, new Rect(10, 5, 160, 120)));
             var item = list.ContainerFromIndex(3)!;
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, isPrimary: true);
@@ -544,9 +543,9 @@ public sealed class FileListControlTests
         var (dir, file) = UI.Run(() =>
         {
             var files = Tree();
-            var drive = new VBDriveListBox(new ComponentInstance(VBClasses.DriveListBox, "Drive1"), files);
-            var dirList = new VBDirListBox(Dir(), files);
-            var fileList = new VBFileListBox(File(), files);
+            var drive = new RDFormsDriveListBox(new ComponentInstance(ComponentClasses.DriveListBox, "Drive1"), files);
+            var dirList = new RDFormsDirListBox(Dir(), files);
+            var fileList = new RDFormsFileListBox(File(), files);
             dirList.Path = In("SubOne");
             fileList.Path = In("SubOne");
             dirList.Path = drive.Drive;
@@ -559,7 +558,7 @@ public sealed class FileListControlTests
         Assert.AreEqual(OperatingSystem.IsWindows() ? Root : DriveRoot, file);
     }
 
-    private static ComponentInstance Drive() => new(VBClasses.DriveListBox, "Drive1");
+    private static ComponentInstance Drive() => new(ComponentClasses.DriveListBox, "Drive1");
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
@@ -570,7 +569,7 @@ public sealed class FileListControlTests
             var files = Mock();
             files.AddDrive(@"D:\", new MockDriveData { VolumeLabel = "Data" });
             files.AddDrive(@"B:\", new MockDriveData { VolumeLabel = "" });
-            var list = new VBDriveListBox(Drive(), files);
+            var list = new RDFormsDriveListBox(Drive(), files);
             return (Enumerable.Range(0, list.ListCount).Select(list.GetList).ToArray(), list.Drive, list.ListIndex);
         });
 
@@ -585,7 +584,7 @@ public sealed class FileListControlTests
     {
         var (error, index, raised) = UI.Run(() =>
         {
-            var list = new VBDriveListBox(Drive(), Tree());
+            var list = new RDFormsDriveListBox(Drive(), Tree());
             var (window, sink) = ControlHost.Show(list);
             var error = Assert.ThrowsExactly<FormErrorException>(() => list.ListIndex = list.ListCount).Error.Number;
             window.Close();
@@ -602,7 +601,7 @@ public sealed class FileListControlTests
     {
         var log = UI.Run(() =>
         {
-            var list = new VBDriveListBox(Drive(), Tree());
+            var list = new RDFormsDriveListBox(Drive(), Tree());
             var (window, sink) = ControlHost.Show(list);
             var first = list.GetList(0);
             var log = new List<string>();
@@ -647,7 +646,7 @@ public sealed class FileListControlTests
         {
             var files = Mock();
             files.AddDrive(@"D:\", new MockDriveData { VolumeLabel = "Data" });
-            var list = new VBDriveListBox(Drive(), files);
+            var list = new RDFormsDriveListBox(Drive(), files);
             var (window, sink) = ControlHost.Show(list);
             list.Drive = "c";
             list.Drive = @"C:\Windows";
@@ -669,7 +668,7 @@ public sealed class FileListControlTests
     {
         var (items, drive) = UI.Run(() =>
         {
-            var list = new VBDriveListBox(Drive(), Tree());
+            var list = new RDFormsDriveListBox(Drive(), Tree());
             list.Drive = In("SubOne");
             return (Enumerable.Range(0, list.ListCount).Select(list.GetList).ToArray(), list.Drive);
         });

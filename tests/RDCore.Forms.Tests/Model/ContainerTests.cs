@@ -1,6 +1,5 @@
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -12,18 +11,18 @@ public sealed class ContainerTests
 {
     private static FormDefinition Form()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1");
-        var frame = Place(new ComponentInstance(VBClasses.Frame, "Frame1"), root, 600, 600, 0);
-        var picture2 = Place(new ComponentInstance(VBClasses.PictureBox, "Picture2"), frame, 100, 240, 1);
-        Place(new ComponentInstance(VBClasses.CheckBox, "Check1"), picture2, 50, 50, 2);
-        Place(new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.ScaleMode, ScaleMode.Pixel), root, 3600, 600, 4);
-        Place(new ComponentInstance(VBClasses.CommandButton, "Command1"), root, 200, 300, 5);
-        Place(new ComponentInstance(VBClasses.TextBox, "Text1"), root, 200, 3000, 6);
-        Place(new ComponentInstance(VBClasses.Label, "Label1"), root, 200, 3500, 7);
-        new ComponentInstance(VBClasses.Shape, "Shape1").Set(P.Left, 2000 / 15d).Set(P.Top, 3500 / 15d).SetContainer(root);
-        new ComponentInstance(VBClasses.Line, "Line1").Set(P.X1, 3000d).Set(P.Y1, 3500d).Set(P.X2, 4000d).Set(P.Y2, 3900d).SetContainer(root);
-        new ComponentInstance(VBClasses.Timer, "Timer1").SetContainer(root);
-        new ComponentInstance(VBClasses.Menu, "mnuFile").Set(P.Caption, "File").SetContainer(root);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1");
+        var frame = Place(new ComponentInstance(ComponentClasses.Frame, "Frame1"), root, 600, 600, 0);
+        var picture2 = Place(new ComponentInstance(ComponentClasses.PictureBox, "Picture2"), frame, 100, 240, 1);
+        Place(new ComponentInstance(ComponentClasses.CheckBox, "Check1"), picture2, 50, 50, 2);
+        Place(new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.ScaleMode, ScaleMode.Pixel), root, 3600, 600, 4);
+        Place(new ComponentInstance(ComponentClasses.CommandButton, "Command1"), root, 200, 300, 5);
+        Place(new ComponentInstance(ComponentClasses.TextBox, "Text1"), root, 200, 3000, 6);
+        Place(new ComponentInstance(ComponentClasses.Label, "Label1"), root, 200, 3500, 7);
+        new ComponentInstance(ComponentClasses.Shape, "Shape1").Set(P.Left, 2000 / 15d).Set(P.Top, 3500 / 15d).SetContainer(root);
+        new ComponentInstance(ComponentClasses.Line, "Line1").Set(P.X1, 3000d).Set(P.Y1, 3500d).Set(P.X2, 4000d).Set(P.Y2, 3900d).SetContainer(root);
+        new ComponentInstance(ComponentClasses.Timer, "Timer1").SetContainer(root);
+        new ComponentInstance(ComponentClasses.Menu, "mnuFile").Set(P.Caption, "File").SetContainer(root);
         return new FormDefinition(root);
     }
 
@@ -124,8 +123,8 @@ public sealed class ContainerTests
     public void AContainerTheControlCannotBeIn_Is425_AndNothingChanges()
     {
         var form = Form();
-        var other = new ComponentInstance(VBClasses.Form, "Form2");
-        var frame2 = new ComponentInstance(VBClasses.Frame, "Frame2");
+        var other = new ComponentInstance(ComponentClasses.Form, "Form2");
+        var frame2 = new ComponentInstance(ComponentClasses.Frame, "Frame2");
         frame2.SetContainer(other);
         _ = new FormDefinition(other);
         var events = 0;
@@ -156,8 +155,8 @@ public sealed class ContainerTests
 
         CollectionAssert.AreEqual(new[] { "Timer1" }, form.Controls.Where(c => c.Class.Kind == ComponentKind.Control && !c.Class.HasContainer)
             .Select(c => c.Name).ToArray());
-        Assert.IsFalse(VBClasses.Menu.HasContainer);
-        Assert.IsFalse(VBClasses.Form.HasContainer);
+        Assert.IsFalse(ComponentClasses.Menu.HasContainer);
+        Assert.IsFalse(ComponentClasses.Form.HasContainer);
         Assert.ThrowsExactly<ArgumentException>(() => form.SetContainer(C(form, "Timer1"), C(form, "Frame1")));
         Assert.ThrowsExactly<ArgumentException>(() => form.SetContainer(C(form, "mnuFile"), C(form, "Frame1")));
     }
@@ -200,7 +199,7 @@ public sealed class ContainerTests
     public void AControlAddedAtRunTime_PlacedInAnotherContainer_CanStillBeRemoved()
     {
         var form = Form();
-        var added = form.AddControl("VB.CommandButton", "cmdNew", C(form, "Frame1"));
+        var added = form.AddControl("RDForms.CommandButton", "cmdNew", C(form, "Frame1"));
 
         form.SetContainer(added, form.Root);
         form.RemoveControl(added);

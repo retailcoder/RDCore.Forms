@@ -3,7 +3,7 @@
 
 using Avalonia;
 using Avalonia.Media;
-using RDCore.Forms.Model.VB;
+using RDCore.Forms.Model;
 
 namespace RDCore.Forms.Avalonia.Controls;
 

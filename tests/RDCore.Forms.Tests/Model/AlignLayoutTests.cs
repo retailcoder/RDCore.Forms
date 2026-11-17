@@ -1,8 +1,7 @@
 ﻿using System.Globalization;
 using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -174,9 +173,9 @@ public sealed class AlignLayoutTests
     public void ADataControlAndAnAlignableUserControl_DockAsABoxDoes_AndAnInvisibleOneDoesNot()
     {
         static ComponentClass Placed(string name, bool invisible) => UserControlClasses.Of(new FormDefinition(
-            new ComponentInstance(VBClasses.UserControl, name).Set(P.Alignable, true).Set(P.InvisibleAtRuntime, invisible)), "Project1");
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d);
-        var data = new ComponentInstance(VBClasses.Data, "Data1").Set(P.Left, 50d).Set(P.Top, 50d).Set(P.Width, 100d).Set(P.Height, 20d)
+            new ComponentInstance(ComponentClasses.UserControl, name).Set(P.Alignable, true).Set(P.InvisibleAtRuntime, invisible)), "Project1");
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d);
+        var data = new ComponentInstance(ComponentClasses.Data, "Data1").Set(P.Left, 50d).Set(P.Top, 50d).Set(P.Width, 100d).Set(P.Height, 20d)
             .Set(P.Align, Align.Top);
         var gauge = new ComponentInstance(Placed("Gauge", false), "Gauge1").Set(P.Left, 50d).Set(P.Top, 90d).Set(P.Width, 60d)
             .Set(P.Height, 40d).Set(P.Align, Align.Left);
@@ -245,17 +244,17 @@ public sealed class AlignLayoutTests
 
         CollectionAssert.AreEqual(new[] { 387, 387, 387, 387, 387, 387, 387, 387 }, new[]
         {
-            Refused(() => VBRunTime.Assign(top, P.Width, 10d)), Refused(() => VBRunTime.Assign(top, P.Left, 10d)),
-            Refused(() => VBRunTime.Assign(bottom, P.Width, 10d)), Refused(() => VBRunTime.Assign(bottom, P.Left, 10d)),
-            Refused(() => VBRunTime.Assign(left, P.Height, 10d)), Refused(() => VBRunTime.Assign(left, P.Top, 10d)),
-            Refused(() => VBRunTime.Assign(right, P.Height, 10d)), Refused(() => VBRunTime.Assign(right, P.Top, 10d)),
+            Refused(() => RunTime.Assign(top, P.Width, 10d)), Refused(() => RunTime.Assign(top, P.Left, 10d)),
+            Refused(() => RunTime.Assign(bottom, P.Width, 10d)), Refused(() => RunTime.Assign(bottom, P.Left, 10d)),
+            Refused(() => RunTime.Assign(left, P.Height, 10d)), Refused(() => RunTime.Assign(left, P.Top, 10d)),
+            Refused(() => RunTime.Assign(right, P.Height, 10d)), Refused(() => RunTime.Assign(right, P.Top, 10d)),
         });
-        StringAssert.Contains(Assert.ThrowsExactly<FormErrorException>(() => VBRunTime.Assign(top, P.Width, 10d)).Message, "Width");
+        StringAssert.Contains(Assert.ThrowsExactly<FormErrorException>(() => RunTime.Assign(top, P.Width, 10d)).Message, "Width");
         var before = (At(layout, "PicT1"), At(layout, "PicL"));
-        VBRunTime.Assign(top, P.Top, 10d);
-        VBRunTime.Assign(left, P.Left, 10d);
+        RunTime.Assign(top, P.Top, 10d);
+        RunTime.Assign(left, P.Left, 10d);
         Assert.AreEqual(before, (At(layout, "PicT1"), At(layout, "PicL")));
-        VBRunTime.Assign(top, P.Height, 800 / TwipsPerPixel);
+        RunTime.Assign(top, P.Height, 800 / TwipsPerPixel);
         Assert.AreEqual(("0,405 6000x800", "0,1200 900x2805"), (At(layout, "PicT1"), At(layout, "PicL")));
         Assert.IsNull(AlignLayout.Refusal(Box(layout, "PicP"), P.Width));
         Assert.IsNull(AlignLayout.Refusal(top, P.Height));
@@ -296,7 +295,7 @@ public sealed class AlignLayoutTests
         var log = new List<string>();
         foreach (var align in new[] { Align.Right, Align.None, Align.Top, Align.Left, Align.None })
         {
-            VBRunTime.Assign(box, P.Align, align);
+            RunTime.Assign(box, P.Align, align);
             log.Add($"{align}: {At(layout, "PicP")} / {At(layout, "PicL")}");
         }
 
@@ -308,8 +307,8 @@ public sealed class AlignLayoutTests
             "Left: 900,1710 4500x3300 / 0,1710 900x3300",
             "None: 900,1710 4500x3300 / 0,1710 900x3300",
         }, log);
-        Assert.AreEqual(380, Refused(() => VBRunTime.Assign(box, P.Align, (Align)5)));
-        Assert.AreEqual(380, Refused(() => VBRunTime.Assign(box, P.Align, (Align)(-1))));
+        Assert.AreEqual(380, Refused(() => RunTime.Assign(box, P.Align, (Align)5)));
+        Assert.AreEqual(380, Refused(() => RunTime.Assign(box, P.Align, (Align)(-1))));
         CollectionAssert.AreEqual(new[] { "PicR", "PicT2", "PicB", "PicT1", "PicL" }, layout.Docked.Select(docked => docked.Name).ToArray());
     }
 
@@ -320,7 +319,7 @@ public sealed class AlignLayoutTests
         Set(layout, "PicT2", P.Height, 1000);
         Set(layout, "PicT1", P.Height, 700);
         Box(layout, "PicT2").Set(P.Visible, false);
-        VBRunTime.Assign(Box(layout, "PicP"), P.Align, Align.Bottom);
+        RunTime.Assign(Box(layout, "PicP"), P.Align, Align.Bottom);
         Set(layout, "PicP", P.Height, 3300);
         Resize(layout, 1800, 915);
 
@@ -337,7 +336,7 @@ public sealed class AlignLayoutTests
         var framed = Laid(InAFrame);
         var layout = Laid(Probe);
         var box = Box(layout, "PicF");
-        VBRunTime.Assign(box, P.Align, Align.Top);
+        RunTime.Assign(box, P.Align, Align.Top);
 
         Assert.AreEqual(Align.None, Box(framed, "PicF").Get(P.Align));
         Assert.AreEqual("100,300 600x400", At(framed, "PicF"));
@@ -350,23 +349,23 @@ public sealed class AlignLayoutTests
     {
         var layout = Laid(Mdi);
         ComponentInstance one = Box(layout, "PicM1"), two = Box(layout, "PicM2");
-        VBRunTime.Assign(one, P.Align, Align.None);
-        VBRunTime.Assign(two, P.Align, Align.None);
+        RunTime.Assign(one, P.Align, Align.None);
+        RunTime.Assign(two, P.Align, Align.None);
         var kept = (one.Get(P.Align), two.Get(P.Align));
-        VBRunTime.Assign(one, P.Align, Align.Left);
+        RunTime.Assign(one, P.Align, Align.Left);
 
         Assert.AreEqual((Align.Top, Align.Bottom), kept);
         Assert.AreEqual(("0,0 6000x3900", "0,3900 6000x600"), (At(layout, "PicM1"), At(layout, "PicM2")));
-        Assert.AreEqual(387, Refused(() => VBRunTime.Assign(two, P.Width, 10d)));
+        Assert.AreEqual(387, Refused(() => RunTime.Assign(two, P.Width, 10d)));
     }
 
     [TestMethod]
     public void ABoxAProgramAdds_DocksInsideTheOthers_AndTheOthersTakeItsRoomAsItIsRemoved()
     {
         var layout = Laid(Probe);
-        var added = layout.Form.AddControl(VBClasses.PictureBox, "PicNew");
+        var added = layout.Form.AddControl(ComponentClasses.PictureBox, "PicNew");
         added.Set(P.Height, 300 / TwipsPerPixel).Set(P.Visible, true);
-        VBRunTime.Assign(added, P.Align, Align.Top);
+        RunTime.Assign(added, P.Align, Align.Top);
         var docked = (At(layout, "PicNew"), At(layout, "PicL"));
         layout.Form.RemoveControl(added);
 
@@ -408,14 +407,14 @@ public sealed class AlignLayoutTests
         ComponentInstance file = form.Components.First(c => c.Name == "mnuFile"), open = form.Components.First(c => c.Name == "mnuOpen"),
             separator = form.Components.First(c => c.Name == "mnuSep");
 
-        Assert.AreEqual(382, Refused(() => VBRunTime.Assign(open, P.Shortcut, null)));
-        Assert.AreEqual(380, Refused(() => VBRunTime.Assign(open, P.Caption, 5)));
-        Assert.AreEqual(387, Refused(() => VBRunTime.Assign(file, P.Checked, true)));
-        Assert.AreEqual(387, Refused(() => VBRunTime.Assign(separator, P.Enabled, false)));
-        Assert.AreEqual(395, Refused(() => VBRunTime.Assign(open, P.Caption, "-")));
-        Assert.ThrowsExactly<ArgumentException>(() => VBRunTime.Assign(open, P.Align, Align.Top));
-        VBRunTime.Assign(open, P.Checked, true);
-        VBRunTime.Assign(open, P.Tag, "t");
+        Assert.AreEqual(382, Refused(() => RunTime.Assign(open, P.Shortcut, null)));
+        Assert.AreEqual(380, Refused(() => RunTime.Assign(open, P.Caption, 5)));
+        Assert.AreEqual(387, Refused(() => RunTime.Assign(file, P.Checked, true)));
+        Assert.AreEqual(387, Refused(() => RunTime.Assign(separator, P.Enabled, false)));
+        Assert.AreEqual(395, Refused(() => RunTime.Assign(open, P.Caption, "-")));
+        Assert.ThrowsExactly<ArgumentException>(() => RunTime.Assign(open, P.Align, Align.Top));
+        RunTime.Assign(open, P.Checked, true);
+        RunTime.Assign(open, P.Tag, "t");
         Assert.AreEqual((true, "t"), (open.Get(P.Checked), open.Get(P.Tag)));
     }
 }

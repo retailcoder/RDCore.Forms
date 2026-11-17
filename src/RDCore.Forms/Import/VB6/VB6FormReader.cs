@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
+using RDCore.Forms.Porting;
 
 namespace RDCore.Forms.Import.VB6;
 
@@ -123,7 +123,7 @@ public static partial class VB6FormReader
 
     // The path a cited companion is looked for at, and the file found there. A rooted name, a network path among them, is not in the
     // designer file's folder, and a name with a NUL is no file's: neither is looked for.
-    private static (string LookedFor, string? File) FindCompanion(string folder, string cited)
+    internal static (string LookedFor, string? File) FindCompanion(string folder, string cited)
     {
         if (cited.Contains('\0') || Path.IsPathRooted(cited))
         {
@@ -157,15 +157,22 @@ public static partial class VB6FormReader
     {
         private static readonly Dictionary<string, PropertyDefinition> ClientRectangle = new(StringComparer.OrdinalIgnoreCase)
         {
-            ["ClientLeft"] = VBProperties.Left,
-            ["ClientTop"] = VBProperties.Top,
-            ["ClientWidth"] = VBProperties.Width,
-            ["ClientHeight"] = VBProperties.Height,
+            ["ClientLeft"] = Properties.Left,
+            ["ClientTop"] = Properties.Top,
+            ["ClientWidth"] = Properties.Width,
+            ["ClientHeight"] = Properties.Height,
         };
 
         public UnmodelledComponent? UnmodelledRoot { get; private set; }
 
         public List<UnmodelledProperty> UnmodelledHeader { get; } = [];
+
+        // The RDForms class a class of VB6's VB library ports to: VB.TextBox is RDForms.TextBox. A class of another library has none, and
+        // nor has a name VB's library does not have, such as VB.MultiPage: RDForms has a MultiPage, which MSForms' ports to.
+        private static ComponentClass? PortedClass(string typeName) =>
+            typeName.StartsWith("VB.", StringComparison.OrdinalIgnoreCase) && FormsPortMap.VB6.TypeOf(typeName) is { Kind: TypePortKind.Class } port
+                ? ComponentClasses.ByTypeName(port.RDFormsName)
+                : null;
 
         public FormDefinition? Import(DesignerFile file, DesignerBlock root)
         {
@@ -176,7 +183,7 @@ public static partial class VB6FormReader
                 return null;
             }
 
-            var rootClass = VBClasses.ByTypeName(root.TypeName);
+            var rootClass = PortedClass(root.TypeName);
             if (rootClass is not { Kind: ComponentKind.Root })
             {
                 diagnostics.Add(VB6ImportDiagnosticKind.NotAFormRoot, root.Line, root.TypeName);
@@ -193,8 +200,8 @@ public static partial class VB6FormReader
                     SetFromText(rootInstance, axis, property, root.Name);
                 }
                 else if (rootClass.Property(property.Name) is { } definition
-                    && definition != VBProperties.Left && definition != VBProperties.Top
-                    && definition != VBProperties.Width && definition != VBProperties.Height)
+                    && definition != Properties.Left && definition != Properties.Top
+                    && definition != Properties.Width && definition != Properties.Height)
                 {
                     SetFromText(rootInstance, definition, property, root.Name);
                 }
@@ -209,7 +216,7 @@ public static partial class VB6FormReader
             var form = new FormDefinition(rootInstance);
             ReadHeader(file, form);
 
-            var ambientFont = rootClass == VBClasses.Form && rootInstance.IsSet(VBProperties.Font) ? rootInstance.Get(VBProperties.Font) : (FormFont?)null;
+            var ambientFont = rootClass == ComponentClasses.Form && rootInstance.IsSet(Properties.Font) ? rootInstance.Get(Properties.Font) : (FormFont?)null;
             ReadContents(rootInstance, root, ambientFont);
             return form;
         }
@@ -236,7 +243,7 @@ public static partial class VB6FormReader
                     continue;
                 }
 
-                var componentClass = VBClasses.ByTypeName(child.TypeName)
+                var componentClass = PortedClass(child.TypeName)
                     ?? projectClasses.FirstOrDefault(c => c.TypeName.Equals(child.TypeName, StringComparison.OrdinalIgnoreCase));
                 if (componentClass is null or { Kind: ComponentKind.Root })
                 {
@@ -264,9 +271,9 @@ public static partial class VB6FormReader
 
                 // a control whose Font bag could not be read keeps that bag as text, and does not take the form's font as well.
                 var hasFontBag = ReadBags(instance, child);
-                if (ambientFont is { } font && componentClass.Has(VBProperties.Font) && !hasFontBag)
+                if (ambientFont is { } font && componentClass.Has(Properties.Font) && !hasFontBag)
                 {
-                    instance.Set(VBProperties.Font, font);
+                    instance.Set(Properties.Font, font);
                 }
 
                 OffsetByTimers(instance, container);
@@ -287,17 +294,17 @@ public static partial class VB6FormReader
         // written inside another control that cannot hold it keeps the position the file gives it.
         private static void OffsetByTimers(ComponentInstance instance, ComponentInstance writtenIn)
         {
-            if (!instance.Class.Has(VBProperties.Left))
+            if (!instance.Class.Has(Properties.Left))
             {
                 return;
             }
 
             for (ComponentInstance? host = writtenIn; host is not null && host != instance.Container; host = host.Container)
             {
-                if (ReferenceEquals(host.Class, VBClasses.Timer))
+                if (ReferenceEquals(host.Class, ComponentClasses.Timer))
                 {
-                    instance.Set(VBProperties.Left, instance.Get(VBProperties.Left) + host.Get(VBProperties.Left))
-                        .Set(VBProperties.Top, instance.Get(VBProperties.Top) + host.Get(VBProperties.Top));
+                    instance.Set(Properties.Left, instance.Get(Properties.Left) + host.Get(Properties.Left))
+                        .Set(Properties.Top, instance.Get(Properties.Top) + host.Get(Properties.Top));
                 }
             }
         }
@@ -378,11 +385,11 @@ public static partial class VB6FormReader
             var hasFontBag = false;
             foreach (var bag in block.Bags)
             {
-                var isFont = bag.Name.Equals("Font", StringComparison.OrdinalIgnoreCase) && instance.Class.Has(VBProperties.Font);
+                var isFont = bag.Name.Equals("Font", StringComparison.OrdinalIgnoreCase) && instance.Class.Has(Properties.Font);
                 hasFontBag |= isFont;
                 if (isFont && ReadFont(bag) is { } font)
                 {
-                    instance.Set(VBProperties.Font, font);
+                    instance.Set(Properties.Font, font);
                     continue;
                 }
 
@@ -445,7 +452,7 @@ public static partial class VB6FormReader
             }
 
             if (TryConvert(definition.ValueType, literal, out var value)
-                && instance.TryRead(definition, CodeUnits.IsExtent(definition) && value is double twips ? twips / ScaleModeExtensions.TwipsPerPixel : value))
+                && instance.TryRead(definition, CodeUnits.IsExtent(definition) && value is double twips ? Units.FromTwips(twips) : value))
             {
                 return;
             }
@@ -589,7 +596,7 @@ public sealed class VB6ImportOptions
 
     /// <summary>
     /// The classes of the project's own controls, such as the ones <see cref="UserControlClasses.Of"/> makes for its UserControls. A
-    /// placed component whose type name, compared without regard to case, is none of <see cref="VBClasses"/> is read as an instance of
+    /// placed component whose type name, compared without regard to case, is none of <see cref="ComponentClasses"/> is read as an instance of
     /// the first of these with that name; one that is none of these either is kept as text. None by default.
     /// </summary>
     public IReadOnlyList<ComponentClass> Classes { get; init; } = [];
@@ -617,7 +624,7 @@ public sealed class VB6FormImport
     public FormDefinition? Form { get; }
 
     /// <summary>
-    /// The file's root block kept as text, when its class is not one of the roots of <see cref="VBClasses"/>, or it has no name;
+    /// The file's root block kept as text, when its class is not one of the roots of <see cref="ComponentClasses"/>, or it has no name;
     /// otherwise <see langword="null"/>. <see cref="Form"/> is then <see langword="null"/>.
     /// </summary>
     public UnmodelledComponent? UnmodelledRoot { get; }

@@ -39,4 +39,7 @@
   <data name="InvalidValue" xml:space="preserve">
     <value>{0}.{1} ne peut pas prendre la valeur « {2} »; elle est donc conservée sous forme de texte.</value>
   </data>
+  <data name="UnplaceableComponent" xml:space="preserve">
+    <value>{0} ne peut être placé dans aucun des composants où il est écrit; il est donc conservé sous forme de texte.</value>
+  </data>
 </root>

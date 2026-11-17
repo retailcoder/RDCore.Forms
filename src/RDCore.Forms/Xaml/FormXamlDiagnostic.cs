@@ -53,6 +53,11 @@ public enum FormXamlDiagnosticKind
     /// <see cref="Model.UnmodelledProperty"/>.
     /// </summary>
     InvalidValue,
+    /// <summary>
+    /// A component can be placed in none of the components it is written in, such as a Page outside a MultiPage, so it is kept as an
+    /// <see cref="Model.UnmodelledComponent"/>, its own contents included.
+    /// </summary>
+    UnplaceableComponent,
 }
 
 /// <summary>

@@ -1,8 +1,7 @@
 ﻿using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Xaml;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -12,18 +11,18 @@ public sealed class SelectionPropertyTests
 {
     private static ComponentInstance Box(string text)
     {
-        var box = new ComponentInstance(VBClasses.TextBox, "Text1");
+        var box = new ComponentInstance(ComponentClasses.TextBox, "Text1");
         box.Let(P.Text, text);
         return box;
     }
 
-    private static ComponentInstance Combo(ComboBoxStyle style) => new ComponentInstance(VBClasses.ComboBox, "Combo1").Set(P.ComboBoxStyle, style);
+    private static ComponentInstance Combo(ComboBoxStyle style) => new ComponentInstance(ComponentClasses.ComboBox, "Combo1").Set(P.ComboBoxStyle, style);
 
     [TestMethod]
     public void TheRunTimeOnlyProperties_AreTheSelections() =>
         CollectionAssert.AreEqual(
             new[] { "ComboBox.SelLength", "ComboBox.SelStart", "ComboBox.SelText", "TextBox.SelLength", "TextBox.SelStart", "TextBox.SelText" },
-            VBClasses.All.SelectMany(c => c.Properties.Where(p => p.RunTimeOnly).Select(p => $"{c.ClassName}.{p.Name}")).Order().ToArray());
+            ComponentClasses.All.SelectMany(c => c.Properties.Where(p => p.RunTimeOnly).Select(p => $"{c.ClassName}.{p.Name}")).Order().ToArray());
 
     // A run-time-only property is neither read-only nor unavailable: the host lets a program read and set it.
     [TestMethod]
@@ -31,8 +30,8 @@ public sealed class SelectionPropertyTests
     {
         foreach (var property in new PropertyDefinition[] { P.SelStart, P.SelLength, P.SelText })
         {
-            Assert.IsFalse(VBClasses.TextBox.IsReadOnlyAtRunTime(property), property.Name);
-            Assert.IsFalse(VBClasses.ComboBox.IsNotAvailableAtRunTime(property), property.Name);
+            Assert.IsFalse(ComponentClasses.TextBox.IsReadOnlyAtRunTime(property), property.Name);
+            Assert.IsFalse(ComponentClasses.ComboBox.IsNotAvailableAtRunTime(property), property.Name);
         }
     }
 
@@ -109,7 +108,7 @@ public sealed class SelectionPropertyTests
     {
         var box = Box("Hello world");
         box.Let(P.SelStart, 2);
-        var form = new FormDefinition(new ComponentInstance(VBClasses.Form, "Form1"));
+        var form = new FormDefinition(new ComponentInstance(ComponentClasses.Form, "Form1"));
         box.SetContainer(form.Root);
 
         var written = FormXaml.Write(form);

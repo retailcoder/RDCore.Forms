@@ -7,9 +7,8 @@ using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -18,7 +17,7 @@ namespace RDCore.Forms.Tests.Rendering;
 public sealed class FormRenderingTests
 {
     private static ComponentInstance Root(ScaleMode scaleMode = ScaleMode.Twip) =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d).Set(P.ScaleMode, scaleMode);
+        new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d).Set(P.ScaleMode, scaleMode);
 
     // A component placed in a container, in pixels.
     private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double left, double top,
@@ -29,12 +28,12 @@ public sealed class FormRenderingTests
         return component;
     }
 
-    private static (VBFormWindow Window, RecordingSink Sink) Show(ComponentInstance root)
+    private static (RDFormsFormWindow Window, RecordingSink Sink) Show(ComponentInstance root)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
+        var window = new RDFormsFormWindow(new FormDefinition(root));
         var sink = new RecordingSink();
-        VBControl.SetEventSink(window, sink);
-        window.Closing += (_, _) => VBControl.SetEventSink(window, null);
+        RDFormsControl.SetEventSink(window, sink);
+        window.Closing += (_, _) => RDFormsControl.SetEventSink(window, null);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         // A hit test reads the rendered scene, which takes the stacking at a render: one is forced here, with no clock.
@@ -45,7 +44,7 @@ public sealed class FormRenderingTests
     }
 
     // Where a control is in the view, in pixels.
-    private static Rect InTheView(VBFormWindow window, Control control) =>
+    private static Rect InTheView(RDFormsFormWindow window, Control control) =>
         new(control.TranslatePoint(default, window.View)!.Value, control.Bounds.Size);
 
     [TestMethod]
@@ -54,7 +53,7 @@ public sealed class FormRenderingTests
         var (bounds, client) = UI.Run(() =>
         {
             var root = Root();
-            var command = Add(root, VBClasses.CommandButton, "Command1", 8, 16, 81, 33);
+            var command = Add(root, ComponentClasses.CommandButton, "Command1", 8, 16, 81, 33);
             var (window, _) = Show(root);
             var result = (InTheView(window, window.View.ControlOf(command)!), window.ClientSize);
             window.Close();
@@ -73,7 +72,7 @@ public sealed class FormRenderingTests
     {
         var client = UI.Run(() =>
         {
-            var (window, _) = Show(new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, width).Set(P.Height, height));
+            var (window, _) = Show(new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, width).Set(P.Height, height));
             var result = window.ClientSize;
             window.Close();
             return result;
@@ -88,11 +87,11 @@ public sealed class FormRenderingTests
         var (onForm, inPicture, inFrame) = UI.Run(() =>
         {
             var root = Root(ScaleMode.Pixel);
-            var text1 = Add(root, VBClasses.TextBox, "Text1", 8, 8, 81, 19);
-            var picture = Add(root, VBClasses.PictureBox, "Picture1", 8, 40, 200, 100).Set(P.ScaleMode, ScaleMode.Pixel);
-            var text2 = Add(picture, VBClasses.TextBox, "Text2", 10, 5, 81, 19);
-            var frame = Add(root, VBClasses.Frame, "Frame1", 8, 160, 200, 60);
-            var text3 = Add(frame, VBClasses.TextBox, "Text3", 16, 24, 60, 19);
+            var text1 = Add(root, ComponentClasses.TextBox, "Text1", 8, 8, 81, 19);
+            var picture = Add(root, ComponentClasses.PictureBox, "Picture1", 8, 40, 200, 100).Set(P.ScaleMode, ScaleMode.Pixel);
+            var text2 = Add(picture, ComponentClasses.TextBox, "Text2", 10, 5, 81, 19);
+            var frame = Add(root, ComponentClasses.Frame, "Frame1", 8, 160, 200, 60);
+            var text3 = Add(frame, ComponentClasses.TextBox, "Text3", 16, 24, 60, 19);
             var (window, _) = Show(root);
             var view = window.View;
             var box = view.ControlOf(text3)!;
@@ -117,7 +116,7 @@ public sealed class FormRenderingTests
         var bounds = UI.Run(() =>
         {
             var root = Root();
-            var command = Add(root, VBClasses.CommandButton, "Command1", 8, 16, 81, 33);
+            var command = Add(root, ComponentClasses.CommandButton, "Command1", 8, 16, 81, 33);
             var (window, _) = Show(root);
             command.Set(P.Left, 20d).Set(P.Width, 100d);
             Dispatcher.UIThread.RunJobs();
@@ -135,10 +134,10 @@ public sealed class FormRenderingTests
         var (overlap, label) = UI.Run(() =>
         {
             var root = Root();
-            var first = Add(root, VBClasses.CommandButton, "Command1", 0, 0, 100, 33);
-            Add(root, VBClasses.CommandButton, "Command2", 50, 0, 100, 33);
-            var over = Add(root, VBClasses.Label, "Label1", 0, 40, 100, 33);
-            var button = Add(root, VBClasses.CommandButton, "Command3", 50, 40, 100, 33);
+            var first = Add(root, ComponentClasses.CommandButton, "Command1", 0, 0, 100, 33);
+            Add(root, ComponentClasses.CommandButton, "Command2", 50, 0, 100, 33);
+            var over = Add(root, ComponentClasses.Label, "Label1", 0, 40, 100, 33);
+            var button = Add(root, ComponentClasses.CommandButton, "Command3", 50, 40, 100, 33);
             var (window, _) = Show(root);
             var view = window.View;
             bool Under(Point point, ComponentInstance component) =>
@@ -159,13 +158,13 @@ public sealed class FormRenderingTests
         var order = UI.Run(() =>
         {
             var root = Root();
-            Add(root, VBClasses.TextBox, "Text1", 0, 0, 80, 19).Set(P.TabIndex, (short)3);
-            var frame = Add(root, VBClasses.Frame, "Frame1", 0, 40, 200, 100).Set(P.TabIndex, (short)0);
-            Add(frame, VBClasses.TextBox, "Text2", 8, 16, 80, 19).Set(P.TabIndex, (short)1);
-            Add(root, VBClasses.CommandButton, "Command1", 0, 160, 80, 33).Set(P.TabIndex, (short)17);
-            new ComponentInstance(VBClasses.Timer, "Timer1").SetContainer(root);
-            var view = new VBFormView(new FormDefinition(root));
-            return view.TabOrder.Select(c => VBControl.GetInstance(c)!.Name).ToArray();
+            Add(root, ComponentClasses.TextBox, "Text1", 0, 0, 80, 19).Set(P.TabIndex, (short)3);
+            var frame = Add(root, ComponentClasses.Frame, "Frame1", 0, 40, 200, 100).Set(P.TabIndex, (short)0);
+            Add(frame, ComponentClasses.TextBox, "Text2", 8, 16, 80, 19).Set(P.TabIndex, (short)1);
+            Add(root, ComponentClasses.CommandButton, "Command1", 0, 160, 80, 33).Set(P.TabIndex, (short)17);
+            new ComponentInstance(ComponentClasses.Timer, "Timer1").SetContainer(root);
+            var view = new RDFormsFormView(new FormDefinition(root));
+            return view.TabOrder.Select(c => RDFormsControl.GetInstance(c)!.Name).ToArray();
         });
 
         Expect.Lines(new[] { "Frame1", "Text2", "Command1", "Text1" }, order);
@@ -177,13 +176,13 @@ public sealed class FormRenderingTests
         var focused = UI.Run(() =>
         {
             var root = Root();
-            var text1 = Add(root, VBClasses.TextBox, "Text1", 0, 0, 80, 19).Set(P.TabIndex, (short)0);
-            var frame = Add(root, VBClasses.Frame, "Frame1", 0, 40, 200, 100).Set(P.TabIndex, (short)1);
-            Add(frame, VBClasses.TextBox, "Text2", 8, 16, 80, 19).Set(P.TabIndex, (short)2);
-            Add(root, VBClasses.TextBox, "Text3", 100, 0, 80, 19).Set(P.TabIndex, (short)3).Set(P.TabStop, false);
-            Add(root, VBClasses.TextBox, "Text4", 200, 0, 80, 19).Set(P.TabIndex, (short)4).Set(P.Enabled, false);
-            Add(root, VBClasses.TextBox, "Text5", 200, 400, 80, 19).Set(P.TabIndex, (short)5).Set(P.Visible, false);
-            Add(root, VBClasses.CommandButton, "Command1", 0, 160, 80, 33).Set(P.TabIndex, (short)6);
+            var text1 = Add(root, ComponentClasses.TextBox, "Text1", 0, 0, 80, 19).Set(P.TabIndex, (short)0);
+            var frame = Add(root, ComponentClasses.Frame, "Frame1", 0, 40, 200, 100).Set(P.TabIndex, (short)1);
+            Add(frame, ComponentClasses.TextBox, "Text2", 8, 16, 80, 19).Set(P.TabIndex, (short)2);
+            Add(root, ComponentClasses.TextBox, "Text3", 100, 0, 80, 19).Set(P.TabIndex, (short)3).Set(P.TabStop, false);
+            Add(root, ComponentClasses.TextBox, "Text4", 200, 0, 80, 19).Set(P.TabIndex, (short)4).Set(P.Enabled, false);
+            Add(root, ComponentClasses.TextBox, "Text5", 200, 400, 80, 19).Set(P.TabIndex, (short)5).Set(P.Visible, false);
+            Add(root, ComponentClasses.CommandButton, "Command1", 0, 160, 80, 33).Set(P.TabIndex, (short)6);
             var (window, _) = Show(root);
             var names = new List<string>();
             void Press(RawInputModifiers modifiers)
@@ -191,7 +190,7 @@ public sealed class FormRenderingTests
                 window.KeyPress(Key.Tab, modifiers, PhysicalKey.Tab, null);
                 window.KeyRelease(Key.Tab, modifiers, PhysicalKey.Tab, null);
                 var at = window.FocusManager?.GetFocusedElement() as Control;
-                names.Add(at is null ? "none" : VBControl.GetInstance(at)?.Name ?? at.GetType().Name);
+                names.Add(at is null ? "none" : RDFormsControl.GetInstance(at)?.Name ?? at.GetType().Name);
             }
             window.View.ControlOf(text1)!.Focus();
             Press(RawInputModifiers.None);
@@ -211,8 +210,8 @@ public sealed class FormRenderingTests
         var (visible, shown, focusable, raised) = UI.Run(() =>
         {
             var root = Root();
-            var frame = Add(root, VBClasses.Frame, "Frame1", 0, 0, 200, 100).Set(P.Visible, false);
-            var text = Add(frame, VBClasses.TextBox, "Text1", 8, 16, 80, 19);
+            var frame = Add(root, ComponentClasses.Frame, "Frame1", 0, 0, 200, 100).Set(P.Visible, false);
+            var text = Add(frame, ComponentClasses.TextBox, "Text1", 8, 16, 80, 19);
             var (window, sink) = Show(root);
             var box = window.View.ControlOf(text)!;
             text.Set(P.Text, "set by code");
@@ -233,8 +232,8 @@ public sealed class FormRenderingTests
         var (enabled, effectivelyEnabled, raised) = UI.Run(() =>
         {
             var root = Root();
-            var frame = Add(root, VBClasses.Frame, "Frame1", 0, 0, 200, 100).Set(P.Enabled, false);
-            var command = Add(frame, VBClasses.CommandButton, "Command1", 8, 16, 80, 33);
+            var frame = Add(root, ComponentClasses.Frame, "Frame1", 0, 0, 200, 100).Set(P.Enabled, false);
+            var command = Add(frame, ComponentClasses.CommandButton, "Command1", 8, 16, 80, 33);
             var (window, sink) = Show(root);
             window.MouseDown(new Point(20, 25), MouseButton.Left);
             window.MouseUp(new Point(20, 25), MouseButton.Left);
@@ -254,7 +253,7 @@ public sealed class FormRenderingTests
         var raised = UI.Run(() =>
         {
             var root = Root().Set(P.Enabled, false);
-            Add(root, VBClasses.CommandButton, "Command1", 8, 16, 80, 33);
+            Add(root, ComponentClasses.CommandButton, "Command1", 8, 16, 80, 33);
             var (window, sink) = Show(root);
             window.MouseDown(new Point(20, 25), MouseButton.Left);
             window.MouseUp(new Point(20, 25), MouseButton.Left);
@@ -290,11 +289,11 @@ public sealed class FormRenderingTests
     {
         var (parameter, control) = UI.Run(() =>
         {
-            var error = Assert.ThrowsExactly<ArgumentException>(() => new VBFormWindow(new FormDefinition(new ComponentInstance(VBClasses.UserControl, "UserControl1"))));
+            var error = Assert.ThrowsExactly<ArgumentException>(() => new RDFormsFormWindow(new FormDefinition(new ComponentInstance(ComponentClasses.UserControl, "UserControl1"))));
             var root = Root();
-            var menu = new ComponentInstance(VBClasses.Menu, "mnuFile");
+            var menu = new ComponentInstance(ComponentClasses.Menu, "mnuFile");
             menu.SetContainer(root);
-            return (error.ParamName, new VBFormView(new FormDefinition(root)).ControlOf(menu));
+            return (error.ParamName, new RDFormsFormView(new FormDefinition(root)).ControlOf(menu));
         });
 
         Assert.AreEqual("form", parameter);

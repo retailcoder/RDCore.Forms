@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using RDCore.Forms.Model;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -116,7 +116,7 @@ internal sealed class ItemIcons
             if (!kept.TryGetValue(bytes, out var picture))
             {
                 if (!decoded.Remove(bytes, out picture))
-                    picture = VBPicture.Decode(bytes, out _);
+                    picture = RDFormsPicture.Decode(bytes, out _);
                 kept[bytes] = picture;
             }
             pictures[i] = picture;

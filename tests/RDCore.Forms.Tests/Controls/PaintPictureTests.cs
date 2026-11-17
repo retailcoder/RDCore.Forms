@@ -1,9 +1,8 @@
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Drawing;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Controls.PictureControlTests;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -28,13 +27,13 @@ public sealed class PaintPictureTests
         })]);
 
     private static ComponentInstance Box() =>
-        new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Width, 100d).Set(P.Height, 100d).Set(P.BorderStyle, BorderStyle.None)
+        new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Width, 100d).Set(P.Height, 100d).Set(P.BorderStyle, BorderStyle.None)
             .Set(P.ScaleMode, ScaleMode.Pixel).Set(P.BackColor, Grey);
 
     private delegate void Painting(IDrawingSurface surface, byte[] picture);
 
     // Each row on a cleared surface: its label, the error its painting raised (0 for none), and Point at each of its points.
-    private static List<string> Rows(VBDrawingLayer surface, params (string Label, Painting Paint, (double X, double Y)[] Points)[] rows)
+    private static List<string> Rows(RDFormsDrawingLayer surface, params (string Label, Painting Paint, (double X, double Y)[] Points)[] rows)
     {
         var lines = new List<string>();
         foreach (var (label, paint, points) in rows)
@@ -57,7 +56,7 @@ public sealed class PaintPictureTests
     [TestMethod]
     public void TheDestination_IsThePicturesSize_OrStretched_AndANegativeSizeMirrorsIt()
     {
-        var rows = UI.Run(() => Rows(new VBDrawingLayer(Box()),
+        var rows = UI.Run(() => Rows(new RDFormsDrawingLayer(Box()),
             ("at 30,30", (s, p) => s.PaintPicture(p, 30, 30), [(32, 32), (45, 32), (32, 45), (45, 45), (50, 50), (29, 29)]),
             ("edges", (s, p) => s.PaintPicture(p, 30, 30), [(30, 30), (49, 49), (50, 49), (49, 50)]),
             ("40 x 40", (s, p) => s.PaintPicture(p, 30, 30, 40, 40), [(35, 35), (55, 35), (35, 55), (55, 55), (69, 69), (70, 70)]),
@@ -101,7 +100,7 @@ public sealed class PaintPictureTests
     [TestMethod]
     public void TheSource_DefaultsToTheRestOfThePicture_AndIsCutToIt()
     {
-        var rows = UI.Run(() => Rows(new VBDrawingLayer(Box()),
+        var rows = UI.Run(() => Rows(new RDFormsDrawingLayer(Box()),
             ("q2", (s, p) => s.PaintPicture(p, 30, 30, 10, 10, 10, 0, 10, 10), [(32, 32), (38, 38), (40, 40)]),
             ("from 10,10", (s, p) => s.PaintPicture(p, 30, 30, null, null, 10, 10), [(32, 32), (38, 38), (41, 41), (45, 45), (50, 50)]),
             ("from 10,10 to 40", (s, p) => s.PaintPicture(p, 30, 30, 40, 40, 10, 10), [(35, 35), (45, 45), (55, 55), (65, 65)]),
@@ -149,7 +148,7 @@ public sealed class PaintPictureTests
     [Ignore("A mirrored source past the picture's edge: VB6 cuts the destination on another side than the one the source is cut on, by a rule that is not measured.")]
     public void AMirroredSourcePastThePicturesEdge_IsCutAsVB6CutsIt()
     {
-        var rows = UI.Run(() => Rows(new VBDrawingLayer(Box()),
+        var rows = UI.Run(() => Rows(new RDFormsDrawingLayer(Box()),
             ("from 20 -20", (s, p) => s.PaintPicture(p, 30, 30, 20, 20, 20, 0, -20, 20), [(30, 32), (31, 32), (48, 32), (49, 32)]),
             ("from 25 -10", (s, p) => s.PaintPicture(p, 30, 30, 20, 20, 25, 0, -10, 10), [(30, 30), (32, 32), (40, 40), (48, 48)]),
             ("from 5 -10", (s, p) => s.PaintPicture(p, 30, 30, 20, 20, 5, 0, -10, 20), [(30, 32), (39, 32), (40, 32), (49, 32)])));
@@ -165,7 +164,7 @@ public sealed class PaintPictureTests
     [TestMethod]
     public void AZeroSize_ASourceBeforeThePictureOrAtItsFarEdge_IsError5_AndAPixelPastALong_6()
     {
-        var rows = UI.Run(() => Rows(new VBDrawingLayer(Box()),
+        var rows = UI.Run(() => Rows(new RDFormsDrawingLayer(Box()),
             ("Width1 0", (s, p) => s.PaintPicture(p, 30, 30, 0, 20), [(30, 32)]),
             ("Width1 0.4", (s, p) => s.PaintPicture(p, 30, 30, 0.4, 20), [(30, 32)]),
             ("Width1 -0.4", (s, p) => s.PaintPicture(p, 30, 30, -0.4, 20), [(30, 32)]),
@@ -236,7 +235,7 @@ public sealed class PaintPictureTests
     [DataRow(0xE20746, "808080\t808080")]
     public void TheOpcode_CombinesThePatternTheSourceAndWhatIsThere_AndOneThatReadsThePattern_DrawsNothingWithNoFill(int opcode, string expected)
     {
-        var points = UI.Run(() => Rows(new VBDrawingLayer(Box()),
+        var points = UI.Run(() => Rows(new RDFormsDrawingLayer(Box()),
             ("q1 q4 back", (s, p) => s.PaintPicture(p, 30, 30, opcode: opcode), [(32, 32), (45, 45), (50, 50)]))[0]);
 
         Assert.AreEqual($"q1 q4 back\t0\t{expected}\t808080", points);
@@ -255,7 +254,7 @@ public sealed class PaintPictureTests
         var points = UI.Run(() =>
         {
             var box = Box().Set(P.FillStyle, FillStyle.Solid).Set(P.FillColor, Yellow);
-            return Rows(new VBDrawingLayer(box), ("q1 q4", (s, p) => s.PaintPicture(p, 30, 30, opcode: opcode), [(32, 32), (45, 45)]))[0];
+            return Rows(new RDFormsDrawingLayer(box), ("q1 q4", (s, p) => s.PaintPicture(p, 30, 30, opcode: opcode), [(32, 32), (45, 45)]))[0];
         });
 
         Assert.AreEqual($"q1 q4\t0\t{expected}", points);
@@ -270,7 +269,7 @@ public sealed class PaintPictureTests
         var rows = UI.Run(() =>
         {
             var box = Box().Set(P.FillColor, Yellow);
-            var surface = new VBDrawingLayer(box);
+            var surface = new RDFormsDrawingLayer(box);
             var rows = new List<string>();
             foreach (var style in new[] { FillStyle.HorizontalLine, FillStyle.VerticalLine, FillStyle.Cross })
             {
@@ -315,7 +314,7 @@ public sealed class PaintPictureTests
         var rows = UI.Run(() =>
         {
             var box = Box();
-            var surface = new VBDrawingLayer(box);
+            var surface = new RDFormsDrawingLayer(box);
             var rows = Rows(surface,
                 ("vbSrcInvert twice", (s, p) => { s.PaintPicture(p, 30, 30, opcode: 0x660046); s.PaintPicture(p, 30, 30, opcode: 0x660046); },
                     [(32, 32), (50, 50)]),
@@ -328,7 +327,7 @@ public sealed class PaintPictureTests
             surface.CurrentY = 9;
             surface.PaintPicture(Quadrants, 30, 30);
             rows.Add($"current point\t{surface.CurrentX}\t{surface.CurrentY}");
-            var pictured = new VBDrawingLayer(Box()) { Picture = VBPicture.Decode(Quadrants, out _) };
+            var pictured = new RDFormsDrawingLayer(Box()) { Picture = RDFormsPicture.Decode(Quadrants, out _) };
             rows.AddRange(Rows(pictured, ("over the Picture", (s, p) => s.PaintPicture(p, 5, 5, opcode: 0x660046), [(2, 2), (7, 7), (25, 25)])));
             return rows;
         });
@@ -350,14 +349,14 @@ public sealed class PaintPictureTests
     {
         var rows = UI.Run(() =>
         {
-            var user = new VBDrawingLayer(Box());
+            var user = new RDFormsDrawingLayer(Box());
             user.Scale(0, 0, 50, 50);
             var rows = Rows(user,
                 ("user at 10,10", (s, p) => s.PaintPicture(p, 10, 10), [(11, 11), (17, 11), (11, 17), (17, 17), (20.5, 20.5)]),
                 ("user 20 x 20", (s, p) => s.PaintPicture(p, 10, 10, 20, 20), [(12, 12), (27, 27), (30.5, 30.5)]),
                 ("user source 5,5", (s, p) => s.PaintPicture(p, 10, 10, 5, 5, 5, 5, 5, 5), [(11, 11), (14, 14), (15.5, 15.5)]),
                 ("user source 10,0", (s, p) => s.PaintPicture(p, 10, 10, 5, 5, 10, 0, 10, 10), [(11, 11)]));
-            var twips = new VBDrawingLayer(Box());
+            var twips = new RDFormsDrawingLayer(Box());
             twips.Scale();
             rows.AddRange(Rows(twips,
                 ("twips at 300,300", (s, p) => s.PaintPicture(p, 300, 300), [(330, 330), (500, 330), (330, 500), (500, 500), (615, 615)]),

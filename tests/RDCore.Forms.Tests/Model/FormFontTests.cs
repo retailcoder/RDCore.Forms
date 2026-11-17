@@ -1,5 +1,4 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.SDK.Runtime.Stdole;
 
 namespace RDCore.Forms.Tests.Model;
@@ -137,10 +136,10 @@ public sealed class FormFontTests
     [TestMethod]
     public void AComponentsFont_HoldsTheSizeItIsDrawnAt_AndANewNameIsDrawnFromIt()
     {
-        var label = new ComponentInstance(VBClasses.Label, "Label1").Set(VBProperties.Font, new FormFont("MS Sans Serif", 14));
-        var held = label.Get(VBProperties.Font);
-        label.Set(VBProperties.Font, held with { Name = "Arial" });
+        var label = new ComponentInstance(ComponentClasses.Label, "Label1").Set(Properties.Font, new FormFont("MS Sans Serif", 14));
+        var held = label.Get(Properties.Font);
+        label.Set(Properties.Font, held with { Name = "Arial" });
 
-        Assert.AreEqual("13.5, 13.5", $"{held.Size}, {label.Get(VBProperties.Font).Size}");
+        Assert.AreEqual("13.5, 13.5", $"{held.Size}, {label.Get(Properties.Font).Size}");
     }
 }

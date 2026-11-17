@@ -6,9 +6,8 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -19,17 +18,17 @@ namespace RDCore.Forms.Tests.Rendering;
 public sealed class RunTimeControlViewTests
 {
     // Frame1 (TabIndex 1) at 140, 8, then Command1 (TabIndex 0) at 8, 8, on a shown form.
-    private static (VBFormWindow Window, FormDefinition Form, RecordingSink Sink) Open()
+    private static (RDFormsFormWindow Window, FormDefinition Form, RecordingSink Sink) Open()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
-        new ComponentInstance(VBClasses.Frame, "Frame1").Set(P.TabIndex, (short)1).Set(P.Left, 140d).Set(P.Top, 8d)
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+        new ComponentInstance(ComponentClasses.Frame, "Frame1").Set(P.TabIndex, (short)1).Set(P.Left, 140d).Set(P.Top, 8d)
             .Set(P.Width, 160d).Set(P.Height, 120d).SetContainer(root);
-        new ComponentInstance(VBClasses.CommandButton, "Command1").Set(P.TabIndex, (short)0).Set(P.Left, 8d).Set(P.Top, 8d)
+        new ComponentInstance(ComponentClasses.CommandButton, "Command1").Set(P.TabIndex, (short)0).Set(P.Left, 8d).Set(P.Top, 8d)
             .Set(P.Width, 100d).Set(P.Height, 32d).SetContainer(root);
         var form = new FormDefinition(root);
-        var window = new VBFormWindow(form);
+        var window = new RDFormsFormWindow(form);
         var sink = new RecordingSink();
-        VBControl.SetEventSink(window, sink);
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -42,17 +41,17 @@ public sealed class RunTimeControlViewTests
         var (inView, inFrame, under, hidden, tabOrder) = UI.Run(() =>
         {
             var (window, form, _) = Open();
-            var button = form.AddControl("VB.CommandButton", "cmdNew");
-            var inside = form.AddControl("VB.CommandButton", "cmdIn", form.Find("Frame1"));
+            var button = form.AddControl("RDForms.CommandButton", "cmdNew");
+            var inside = form.AddControl("RDForms.CommandButton", "cmdIn", form.Find("Frame1"));
             var view = window.View;
             var shown = view.ControlOf(button)!;
             var hidden = !shown.IsVisible;
             button.Set(P.Visible, true);
             Dispatcher.UIThread.RunJobs();
-            var frameHost = ((IVBContainer)view.ControlOf(form.Find("Frame1")!)!).ChildHost;
+            var frameHost = ((IRDFormsContainer)view.ControlOf(form.Find("Frame1")!)!).ChildHost;
             var result = (ReferenceEquals(shown.Parent, view), ReferenceEquals(view.ControlOf(inside)!.Parent, frameHost),
                 shown.ZIndex < view.ControlOf(form.Find("Command1")!)!.ZIndex, hidden,
-                view.TabOrder.Select(c => VBControl.GetInstance(c)!.Name).ToArray());
+                view.TabOrder.Select(c => RDFormsControl.GetInstance(c)!.Name).ToArray());
             window.Close();
             return result;
         });
@@ -70,17 +69,17 @@ public sealed class RunTimeControlViewTests
     {
         var (hidden, shown, inFrame, under, tabOrder) = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
-            var frame = new ComponentInstance(VBClasses.Frame, "Frame1").Set(P.TabIndex, (short)1).Set(P.Left, 140d).Set(P.Top, 8d)
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+            var frame = new ComponentInstance(ComponentClasses.Frame, "Frame1").Set(P.TabIndex, (short)1).Set(P.Left, 140d).Set(P.Top, 8d)
                 .Set(P.Width, 160d).Set(P.Height, 120d);
             frame.SetContainer(root);
-            new ComponentInstance(VBClasses.CommandButton, "Command1").Set(P.TabIndex, (short)0).Set(P.Left, 8d).Set(P.Top, 8d)
+            new ComponentInstance(ComponentClasses.CommandButton, "Command1").Set(P.TabIndex, (short)0).Set(P.Left, 8d).Set(P.Top, 8d)
                 .Set(P.Width, 100d).Set(P.Height, 32d).SetContainer(root);
-            var first = new ComponentInstance(VBClasses.CommandButton, "cmd", 0).Set(P.TabIndex, (short)2).Set(P.Left, 8d).Set(P.Top, 24d)
+            var first = new ComponentInstance(ComponentClasses.CommandButton, "cmd", 0).Set(P.TabIndex, (short)2).Set(P.Left, 8d).Set(P.Top, 24d)
                 .Set(P.Width, 100d).Set(P.Height, 32d);
             first.SetContainer(frame);
             var form = new FormDefinition(root);
-            var window = new VBFormWindow(form);
+            var window = new RDFormsFormWindow(form);
             window.Show();
             Dispatcher.UIThread.RunJobs();
             var loaded = form.ArrayOf("cmd")!.Load(1);
@@ -90,9 +89,9 @@ public sealed class RunTimeControlViewTests
             var hidden = !control.IsVisible;
             loaded.Set(P.Visible, true);
             Dispatcher.UIThread.RunJobs();
-            var frameHost = ((IVBContainer)view.ControlOf(frame)!).ChildHost;
+            var frameHost = ((IRDFormsContainer)view.ControlOf(frame)!).ChildHost;
             var result = (hidden, control.IsVisible, ReferenceEquals(control.Parent, frameHost), control.ZIndex < view.ControlOf(first)!.ZIndex,
-                view.TabOrder.Select(c => VBControl.GetInstance(c)!.ToString()).ToArray());
+                view.TabOrder.Select(c => RDFormsControl.GetInstance(c)!.ToString()).ToArray());
             window.Close();
             return result;
         });
@@ -110,7 +109,7 @@ public sealed class RunTimeControlViewTests
         var raised = UI.Run(() =>
         {
             var (window, form, sink) = Open();
-            var button = form.AddControl("VB.CommandButton", "cmdNew");
+            var button = form.AddControl("RDForms.CommandButton", "cmdNew");
             button.Set(P.Left, 8d).Set(P.Top, 160d).Set(P.Visible, true);
             Dispatcher.UIThread.RunJobs();
             sink.Raised.Clear();
@@ -131,13 +130,13 @@ public sealed class RunTimeControlViewTests
         var (onShown, beforeShown, afterShown) = UI.Run(() =>
         {
             var (window, form, _) = Open();
-            var onShown = form.AddControl("VB.ListBox", "lstNew").Get(P.Height);
+            var onShown = form.AddControl("RDForms.ListBox", "lstNew").Get(P.Height);
             window.Close();
 
-            var hiddenForm = new FormDefinition(new ComponentInstance(VBClasses.Form, "Form2").Set(P.Width, 320d).Set(P.Height, 240d));
-            var list = hiddenForm.AddControl("VB.ListBox", "lstNew");
+            var hiddenForm = new FormDefinition(new ComponentInstance(ComponentClasses.Form, "Form2").Set(P.Width, 320d).Set(P.Height, 240d));
+            var list = hiddenForm.AddControl("RDForms.ListBox", "lstNew");
             var beforeShown = list.Get(P.Height);
-            var hiddenWindow = new VBFormWindow(hiddenForm);
+            var hiddenWindow = new RDFormsFormWindow(hiddenForm);
             hiddenWindow.Show();
             Dispatcher.UIThread.RunJobs();
             var afterShown = list.Get(P.Height);
@@ -156,9 +155,9 @@ public sealed class RunTimeControlViewTests
         var (gone, heldGone, focused, raised) = UI.Run(() =>
         {
             var (window, form, sink) = Open();
-            var frame = form.AddControl("VB.Frame", "fraNew");
-            var inFrame = form.AddControl("VB.CommandButton", "cmdInNew", frame);
-            var button = form.AddControl("VB.CommandButton", "cmdNew");
+            var frame = form.AddControl("RDForms.Frame", "fraNew");
+            var inFrame = form.AddControl("RDForms.CommandButton", "cmdInNew", frame);
+            var button = form.AddControl("RDForms.CommandButton", "cmdNew");
             button.Set(P.Top, 160d).Set(P.Visible, true);
             Dispatcher.UIThread.RunJobs();
             var buttonControl = window.View.ControlOf(button)!;

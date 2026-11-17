@@ -1,7 +1,6 @@
 ﻿using RDCore.Forms.Drawing;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -11,7 +10,7 @@ public sealed class ScaleRulesTests
 {
     private static ComponentInstance Picture()
     {
-        var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1")
+        var picture = new ComponentInstance(ComponentClasses.PictureBox, "Picture1")
             .Set(P.Width, 400d).Set(P.Height, 100d).Set(P.BorderStyle, BorderStyle.None);
         ScaleRules.Follow(picture);
         return picture;
@@ -19,7 +18,7 @@ public sealed class ScaleRulesTests
 
     private static ComponentInstance Form()
     {
-        var form = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 467d).Set(P.Height, 200d);
+        var form = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 467d).Set(P.Height, 200d);
         ScaleRules.Follow(form);
         return form;
     }
@@ -156,9 +155,9 @@ public sealed class ScaleRulesTests
     public void Following_SetsAUnitScale_ToTheInside_AndKeepsAUserScale()
     {
         // A designer file can hold a ScaleWidth that is not its client width: 8000 over 7995 twips.
-        var twips = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 533d).Set(P.Height, 200d)
+        var twips = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 533d).Set(P.Height, 200d)
             .Set(P.ScaleWidth, 8000d).Set(P.ScaleHeight, 3000d);
-        var user = new ComponentInstance(VBClasses.Form, "Form2").Set(P.Width, 533d).Set(P.Height, 200d)
+        var user = new ComponentInstance(ComponentClasses.Form, "Form2").Set(P.Width, 533d).Set(P.Height, 200d)
             .Set(P.ScaleMode, ScaleMode.User).Set(P.ScaleLeft, 5d).Set(P.ScaleWidth, 100d).Set(P.ScaleHeight, 50d);
         ScaleRules.Follow(twips);
         ScaleRules.Follow(user);
@@ -180,7 +179,7 @@ public sealed class ScaleRulesTests
 
     private static ComponentInstance Line(ComponentInstance container, double x1, double y1, double x2, double y2)
     {
-        var line = new ComponentInstance(VBClasses.Line, "Line1").Set(P.X1, x1).Set(P.Y1, y1).Set(P.X2, x2).Set(P.Y2, y2);
+        var line = new ComponentInstance(ComponentClasses.Line, "Line1").Set(P.X1, x1).Set(P.Y1, y1).Set(P.X2, x2).Set(P.Y2, y2);
         line.SetContainer(container);
         return line;
     }
@@ -226,7 +225,7 @@ public sealed class ScaleRulesTests
     public void AScaleChange_LeavesALineInAFrame_AsItIs()
     {
         var picture = Picture();
-        var frame = new ComponentInstance(VBClasses.Frame, "Frame1");
+        var frame = new ComponentInstance(ComponentClasses.Frame, "Frame1");
         frame.SetContainer(picture);
         var line = Line(frame, 3000, 3500, 4000, 3900);
         picture.TrySet(P.ScaleMode, ScaleMode.Pixel);
@@ -237,7 +236,7 @@ public sealed class ScaleRulesTests
     [TestMethod]
     public void AComponent_NotFollowed_KeepsWhatIsSet()
     {
-        var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Width, 400d).Set(P.Height, 100d);
+        var picture = new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Width, 400d).Set(P.Height, 100d);
         picture.TrySet(P.ScaleWidth, 3000d);
 
         Assert.AreEqual(ScaleMode.Twip, picture.Get(P.ScaleMode));

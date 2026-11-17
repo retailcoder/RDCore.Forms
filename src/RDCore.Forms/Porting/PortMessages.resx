@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AcceleratorAssignment" xml:space="preserve">
+    <value>The port cannot rewrite an assignment to Accelerator: put a &amp; before the access key's letter in the Caption.</value>
+  </data>
+  <data name="ValueNotConvertible" xml:space="preserve">
+    <value>{0} has no RDForms value, so the port leaves it as written.</value>
+  </data>
+  <data name="ExpressionNotConvertible" xml:space="preserve">
+    <value>The port converts a value of {0} only when it is a literal or a constant: rewrite this expression with the values of {1}.</value>
+  </data>
+  <data name="ComputedProgId" xml:space="preserve">
+    <value>The port rewrites a literal ProgID only: give Controls.Add the name of an RDForms class, such as RDForms.TextBox.</value>
+  </data>
+  <data name="UnknownProgId" xml:space="preserve">
+    <value>{0} is not a ProgID the port maps to an RDForms class.</value>
+  </data>
+  <data name="LateBoundMember" xml:space="preserve">
+    <value>This late-bound call uses {0}, which the port renames or converts: declare the variable with its control's class so that the port can rewrite the call.</value>
+  </data>
+  <data name="UnresolvedDataSource" xml:space="preserve">
+    <value>Nothing resolves {0}: give the form a binding source of that name, or set the property from code.</value>
+  </data>
+  <data name="ExitPortedToValidate" xml:space="preserve">
+    <value>This Exit handler is ported to Validate, which is raised only when the control that takes the focus has CausesValidation set to True.</value>
+  </data>
+  <data name="ScrollBarReference" xml:space="preserve">
+    <value>A ScrollBar ports to RDForms.HScrollBar or RDForms.VScrollBar by its orientation, so the port types this reference as RDForms.Control.</value>
+  </data>
+  <data name="UnitWrapped" xml:space="preserve">
+    <value>The port wrapped this expression in {0} to keep its legacy unit: rewrite it in DIP and remove the call.</value>
+  </data>
+  <data name="CoordinatesConverted" xml:space="preserve">
+    <value>The port converts X and Y back to the legacy unit with {0} on this handler's first lines: rewrite the handler in DIP and remove them.</value>
+  </data>
+  <data name="ScrollBarTypeNameChanged" xml:space="preserve">
+    <value>This control is a {0} after the port, so its TypeName is no longer ScrollBar: compare it with {0}.</value>
+  </data>
+  <data name="FindWindowThunderDFrame" xml:space="preserve">
+    <value>{0} looks for a UserForm's window by its class, ThunderDFrame. A ported form is an RDForms window, so the call finds none: to change the form's icon, set its Icon property.</value>
+  </data>
+</root>

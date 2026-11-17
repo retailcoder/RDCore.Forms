@@ -2,12 +2,11 @@
 using System.Xml;
 using System.Xml.Linq;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Xaml;
 
 /// <summary>
-/// Reads and writes RDForms documents: a form as a constrained XAML dialect, with the classes of <see cref="VBClasses"/> as its
+/// Reads and writes RDForms documents: a form as a constrained XAML dialect, with the classes of <see cref="ComponentClasses"/> as its
 /// elements.
 /// </summary>
 /// <remarks>

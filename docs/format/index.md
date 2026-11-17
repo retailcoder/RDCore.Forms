@@ -28,7 +28,7 @@ Every element is in the namespace `https://rubberduckvba.ca/schemas/rdforms`.
 |Element|Is|Holds|
 |---|---|---|
 |`Form`, `MDIForm`, `UserControl`, `PropertyPage`|The root: the form itself. Only the root has `FormatVersion`.|The form's components, and its property elements.|
-|A control class, such as `CommandButton` or `Frame`|A component of that class of [`VBClasses`](../api/RDCore.Forms.Model.VB.VBClasses.yml).|The components placed in it, where its class is a container, and its property elements.|
+|A control class, such as `CommandButton` or `Frame`|A component of that class of [`ComponentClasses`](../api/RDCore.Forms.Model.ComponentClasses.yml).|The components placed in it, where its class is a container, and its property elements.|
 |`Menu`|A menu item.|Its submenu's items.|
 |`UnmodelledComponent`|A component the model does not have, such as an ActiveX control, kept as text: its `TypeName`, its `Name`, and its text as the element's content.|Text.|
 
@@ -47,6 +47,7 @@ A component that its parent cannot hold, such as a control written in a CommandB
 |---|---|---|
 |String|The text.|`Caption="&amp;OK"`|
 |Boolean|`True` or `False`.|`Enabled="False"`|
+|Boolean or Null, a ToggleButton's `Value`|`True`, `False` or `Null`.|`Value="Null"`|
 |Number|Invariant digits, with `.` for decimals.|`Left="120"`, `Size="8.25"`|
 |Enumeration|The member's name; a number is read too.|`BorderStyle="FixedSingle"`|
 |Colour|A system colour by its name, or `#RRGGBB`.|`BackColor="ButtonFace"`, `ForeColor="#1234AB"`|
@@ -62,6 +63,7 @@ A property element is named for its component's element and the property, such a
 |---|---|
 |`<Class>.Font`|One `Font` element: `Name` and `Size`, and where they differ from the default, `Weight` (400 normal, 700 bold), `Italic`, `Underline`, `Strikethrough` and `Charset`.|
 |`<Class>.List`|One `Item` for each item of a ListBox or ComboBox: its `Text`, and its `ItemData` and `ItemIcon` where it has them. An item with no `ItemData` has 0, and one with no `ItemIcon` has none.|
+|`<Class>.Tabs`|One `Tab` for each tab of a TabStrip: its `Name` and `Caption`, and its `ToolTipText`, `Enabled`, `Visible` and `Tag` where they differ from a tab's default. A TabStrip with no `Tabs` element has the two default tabs, and an empty one has none.|
 |`<Root>.ControlLibraries`|One `ControlLibrary` for each control library the form lists: its `Id`, `Version` and `FileName`.|
 |`<Class>.UnmodelledProperties`|One `UnmodelledProperty` for each property the model does not have: its `Name` and `Text`.|
 |`<Class>.<Property>`|Any other property's value as text, such as a caption of several lines.|

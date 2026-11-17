@@ -9,8 +9,7 @@ using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -24,9 +23,9 @@ public sealed class ComboStyleTests
     // Combo1, the combo under test, 100 pixels high, and Text1 under it.
     private static (ComponentInstance Root, ComponentInstance Combo) Form(ComboBoxStyle style, bool locked = false)
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
-        var combo = Add(root, VBClasses.ComboBox, "Combo1", 8, 100).Set(P.ComboBoxStyle, style).Set(P.List, Fruit).Set(P.Locked, locked);
-        Add(root, VBClasses.TextBox, "Text1", 160, 21);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+        var combo = Add(root, ComponentClasses.ComboBox, "Combo1", 8, 100).Set(P.ComboBoxStyle, style).Set(P.List, Fruit).Set(P.Locked, locked);
+        Add(root, ComponentClasses.TextBox, "Text1", 160, 21);
         return (root, combo);
     }
 
@@ -38,13 +37,13 @@ public sealed class ComboStyleTests
     }
 
     // The window, with a control focused and what was raised so far forgotten.
-    private static (VBFormWindow Window, VBComboBox Combo) Open(ComponentInstance root, ComponentInstance combo, RecordingSink sink, string focused = "Combo1")
+    private static (RDFormsFormWindow Window, RDFormsComboBox Combo) Open(ComponentInstance root, ComponentInstance combo, RecordingSink sink, string focused = "Combo1")
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
-        var control = (VBComboBox)window.View.ControlOf(combo)!;
+        var control = (RDFormsComboBox)window.View.ControlOf(combo)!;
         window.View.ControlOf(root.Descendants().Single(component => component.Name == focused))!.Focus();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         Dispatcher.UIThread.RunJobs();
@@ -66,11 +65,11 @@ public sealed class ComboStyleTests
         Dispatcher.UIThread.RunJobs();
     }
 
-    private static Control Item(VBComboBox combo, int index) => combo.ContainerFromIndex(index)!;
+    private static Control Item(RDFormsComboBox combo, int index) => combo.ContainerFromIndex(index)!;
 
-    private static Border List(VBComboBox combo) => combo.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PART_List");
+    private static Border List(RDFormsComboBox combo) => combo.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PART_List");
 
-    private static void Hit(VBFormWindow window, Key key, PhysicalKey physical, RawInputModifiers modifiers = RawInputModifiers.None)
+    private static void Hit(RDFormsFormWindow window, Key key, PhysicalKey physical, RawInputModifiers modifiers = RawInputModifiers.None)
     {
         window.KeyPress(key, modifiers, physical, null);
         Dispatcher.UIThread.RunJobs();
@@ -78,7 +77,7 @@ public sealed class ComboStyleTests
         Dispatcher.UIThread.RunJobs();
     }
 
-    private static void Type(VBFormWindow window, string text)
+    private static void Type(RDFormsFormWindow window, string text)
     {
         window.KeyTextInput(text);
         Dispatcher.UIThread.RunJobs();
@@ -164,7 +163,7 @@ public sealed class ComboStyleTests
             return result;
         });
 
-        Expect.Lines(["Text1.LostFocus", "Combo1.GotFocus", "Combo1.Click"], raised);
+        Expect.Lines(["Text1.Validate(Boolean False)", "Text1.LostFocus", "Combo1.GotFocus", "Combo1.Click"], raised);
     }
 
     [TestMethod]
@@ -370,7 +369,7 @@ public sealed class ComboStyleTests
         var (snapped, unsnapped) = UI.Run(() =>
         {
             var (root, instance) = Form(ComboBoxStyle.SimpleCombo);
-            var other = new ComponentInstance(VBClasses.ComboBox, "Combo2").Set(P.ComboBoxStyle, ComboBoxStyle.SimpleCombo)
+            var other = new ComponentInstance(ComponentClasses.ComboBox, "Combo2").Set(P.ComboBoxStyle, ComboBoxStyle.SimpleCombo)
                 .Set(P.Left, 160d).Set(P.Top, 8d).Set(P.Width, 140d).Set(P.Height, 100d).Set(P.IntegralHeight, false);
             other.SetContainer(root);
             var large = new FormFont("MS Sans Serif", 12);
@@ -421,6 +420,7 @@ public sealed class ComboStyleTests
         });
 
         var before = typed ? "typed" : "apple";
-        Expect.Lines([$"Text1.LostFocus 2 {before} {before}", $"Combo1.GotFocus 2 {before} {before}", "Combo1.Click 2 cherry cherry"], log);
+        Expect.Lines([$"Text1.Validate 2 {before} {before}", $"Text1.LostFocus 2 {before} {before}", $"Combo1.GotFocus 2 {before} {before}",
+            "Combo1.Click 2 cherry cherry"], log);
     }
 }

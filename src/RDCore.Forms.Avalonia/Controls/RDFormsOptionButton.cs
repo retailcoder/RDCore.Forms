@@ -1,0 +1,200 @@
+﻿// Derived from HexIDE (https://github.com/hexide-io/HexIDE), commit ae17f1db.
+// Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
+
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Rendering;
+using RDCore.Forms.Model;
+using P = RDCore.Forms.Model.Properties;
+
+namespace RDCore.Forms.Avalonia.Controls;
+
+/// <summary>
+/// A VB OptionButton: a <see cref="RadioButton"/> that shows a <see cref="ComponentClasses.OptionButton"/> component.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The option buttons in one container are a group, and selecting one clears the others. The component's <c>Value</c> is the
+/// button's. Setting it to False from code on the selected button leaves the group with none selected. <c>Click</c> is raised as a
+/// button becomes selected, whichever way: by a click, by the focus, or by code. Clearing a button, and selecting the selected one
+/// again, raises none.
+/// </para>
+/// <para>
+/// A button that takes the focus by the keyboard or from code is selected before its GotFocus, and its Click comes after the GotFocus.
+/// A group is one tab stop: its selected button, or each of them where none is selected. An arrow key moves the focus to the previous
+/// or next control in the container, which selects a button it lands on, and raises no key event. It raises GotFocus, LostFocus,
+/// KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp. Space on the selected button raises its key events and no Click. A double
+/// click's second press raises MouseDown, then DblClick. The whole rectangle takes the pointer, as a VB OptionButton's window does,
+/// whatever part of it the theme draws.
+/// </para>
+/// <para>
+/// Its <c>Style</c> is read as it is made, and a later change is ignored. A Standard button does not draw its <c>Picture</c>. A
+/// Graphical button is a push button, drawn as a <see cref="ToggleButton"/>, with the face of a graphical <see cref="RDFormsCommandButton"/>;
+/// it is pushed in, and shows its <c>DownPicture</c>, while it is pressed or selected.
+/// </para>
+/// </remarks>
+public sealed class RDFormsOptionButton : RadioButton, ICustomHitTest, IRaisesKeyEvents
+{
+    private readonly ComponentInstance instance;
+    private readonly GraphicalFace? face;
+    private bool showing;
+    // Set while the focus selects it, until its GotFocus has been raised.
+    private bool clickAfterFocus;
+    // The TabStop of the component, apart from the stop the group allows.
+    private bool tabStop = true;
+    private bool settingTabStop;
+
+    static RDFormsOptionButton()
+    {
+        ControlKeys.Attach<RDFormsOptionButton>(arrowsMoveTheFocus: true);
+        ControlEvents.AttachMouse<RDFormsOptionButton>(DblClick.AfterMouseDown);
+        // Before the GotFocus raised: the focus by the keyboard or from code selects the button. A press selects it on its own path.
+        GotFocusEvent.AddClassHandler<RDFormsOptionButton>((option, e) =>
+        {
+            if (!ReferenceEquals(e.Source, option) || e is not FocusChangedEventArgs { NavigationMethod: not NavigationMethod.Pointer }
+                || option.IsChecked == true)
+                return;
+            option.clickAfterFocus = true;
+            option.IsChecked = true;
+        }, handledEventsToo: true);
+        ControlEvents.AttachFocus<RDFormsOptionButton>();
+        ArrowNavigation.Attach<RDFormsOptionButton>();
+        // After the GotFocus raised.
+        GotFocusEvent.AddClassHandler<RDFormsOptionButton>((option, _) =>
+        {
+            if (!option.clickAfterFocus)
+                return;
+            option.clickAfterFocus = false;
+            RDFormsControl.Raise(option, Events.Click);
+        }, handledEventsToo: true);
+        KeyboardNavigation.IsTabStopProperty.Changed.AddClassHandler<RDFormsOptionButton>((option, e) =>
+        {
+            if (option.settingTabStop)
+                return;
+            option.tabStop = e.GetNewValue<bool>();
+            option.UpdateGroupTabStops();
+        });
+    }
+
+    /// <summary>
+    /// Creates a button that shows an OptionButton.
+    /// </summary>
+    /// <param name="instance">The OptionButton.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="instance"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="instance"/> is not an OptionButton.</exception>
+    public RDFormsOptionButton(ComponentInstance instance)
+    {
+        ArgumentNullException.ThrowIfNull(instance);
+        this.instance = instance;
+        if (instance.Get(P.ButtonStyle) == ButtonStyle.Graphical)
+            GraphicalFace.ShowIn(this, face = new GraphicalFace());
+        ComponentBinding.Bind(this, instance, ComponentClasses.OptionButton, Apply);
+    }
+
+    /// <inheritdoc/>
+    protected override Type StyleKeyOverride => face is null ? typeof(RadioButton) : typeof(ToggleButton);
+
+    /// <inheritdoc/>
+    public bool HitTest(Point point) => new Rect(Bounds.Size).Contains(point);
+
+    // The other option buttons of its container.
+    private IEnumerable<RDFormsOptionButton> Group => (Parent as Panel)?.Children.OfType<RDFormsOptionButton>() ?? [this];
+
+    /// <inheritdoc/>
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (face is not null && (change.Property == IsPressedProperty || change.Property == IsCheckedProperty))
+            face.IsDown = IsPressed || IsChecked == true;
+        if (change.Property != IsCheckedProperty)
+            return;
+        // A selection by a click, by the focus or by the group clearing it goes to the component, which raises Click from it.
+        if (!showing)
+            instance.Set(P.OptionButtonValue, IsChecked == true);
+        // Selecting it makes it its group's stop again, whatever TabStop it had.
+        if (IsChecked == true)
+            tabStop = true;
+        UpdateGroupTabStops();
+    }
+
+    /// <inheritdoc/>
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateGroupTabStops();
+    }
+
+    /// <inheritdoc/>
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        // The group it leaves may have lost its selected button, which makes the others tab stops again.
+        var group = Group.Where(o => !ReferenceEquals(o, this)).ToList();
+        base.OnDetachedFromVisualTree(e);
+        if (group.Count > 0)
+            group[0].UpdateGroupTabStops();
+    }
+
+    private void Apply(ComponentPropertyChangedEventArgs e)
+    {
+        if (ReferenceEquals(e.Property, P.OptionButtonValue))
+        {
+            var selected = (bool)e.After!;
+            if (IsChecked != selected)
+            {
+                showing = true;
+                try
+                {
+                    IsChecked = selected;
+                }
+                finally
+                {
+                    showing = false;
+                }
+                // Selecting it from code clears the button it replaces, which tells its own component.
+                if (selected)
+                    foreach (var other in Group.Where(o => !ReferenceEquals(o, this) && o.instance.Get(P.OptionButtonValue)))
+                        other.instance.Set(P.OptionButtonValue, false);
+            }
+            if (selected && !Equals(e.Before, e.After) && !clickAfterFocus)
+                RDFormsControl.Raise(this, Events.Click);
+        }
+        else if (ReferenceEquals(e.Property, P.Caption))
+            GraphicalFace.ShowCaption(this, face, (string)e.After!);
+        else if (GraphicalFace.IsDrawnByFace(e.Property))
+            face?.Take(e.Property, e.After);
+        else if (ReferenceEquals(e.Property, P.ButtonStyle))
+        {
+            // Kept as the button was made.
+        }
+        else if (ReferenceEquals(e.Property, P.TabStop))
+        {
+            tabStop = (bool)e.After!;
+            UpdateGroupTabStops();
+        }
+        else
+            ComponentBinding.ApplyCommon(this, e.Property, e.After);
+    }
+
+    private void UpdateGroupTabStops()
+    {
+        var group = Group.ToList();
+        var anySelected = group.Any(o => o.IsChecked == true);
+        foreach (var option in group)
+            option.ApplyTabStop(option.IsChecked == true || !anySelected);
+    }
+
+    private void ApplyTabStop(bool groupStop)
+    {
+        settingTabStop = true;
+        try
+        {
+            KeyboardNavigation.SetIsTabStop(this, tabStop && groupStop);
+        }
+        finally
+        {
+            settingTabStop = false;
+        }
+    }
+}

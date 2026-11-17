@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
-using RDCore.Forms.Model.VB;
+using RDCore.Forms.Model;
 
 namespace RDCore.Forms.Avalonia.Controls;
 

@@ -2,9 +2,8 @@
 using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using M = RDCore.Forms.Model.VB.VBMethods;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using M = RDCore.Forms.Model.Methods;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -16,7 +15,7 @@ public sealed class AlignViewTests
 {
     private static ComponentInstance Box(ComponentInstance root, string name, Align align, double size)
     {
-        var box = new ComponentInstance(VBClasses.PictureBox, name).Set(P.Width, size).Set(P.Height, size);
+        var box = new ComponentInstance(ComponentClasses.PictureBox, name).Set(P.Width, size).Set(P.Height, size);
         box.SetContainer(root);
         return box.Set(P.Align, align);
     }
@@ -26,11 +25,11 @@ public sealed class AlignViewTests
     {
         var (shown, docked) = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d);
             var first = Box(root, "First", Align.Top, 30);
             var last = Box(root, "Last", Align.Top, 20);
             var left = Box(root, "Side", Align.Left, 50);
-            var window = new VBFormWindow(new FormDefinition(root));
+            var window = new RDFormsFormWindow(new FormDefinition(root));
             window.Show();
             window.Invoke(first, M.ZOrder, [FormValue.FromInteger(0)]);
             window.Invoke(last, M.ZOrder, [FormValue.FromInteger(1)]);

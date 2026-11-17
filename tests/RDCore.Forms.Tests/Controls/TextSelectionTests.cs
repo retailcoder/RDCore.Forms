@@ -2,8 +2,7 @@
 using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -219,7 +218,7 @@ public sealed class TextSelectionTests
 
     private static ComponentInstance Box(string name, params (PropertyDefinition Property, object Value)[] set)
     {
-        var instance = new ComponentInstance(VBClasses.TextBox, name);
+        var instance = new ComponentInstance(ComponentClasses.TextBox, name);
         foreach (var (property, value) in set)
             Assert.IsTrue(instance.TrySet(property, value));
         return instance;
@@ -228,11 +227,11 @@ public sealed class TextSelectionTests
     // The rows the steps give on the box, in a window with a sink: shown, or loaded and not shown.
     private static List<string> Script(ComponentInstance instance, bool shown) => UI.Run(() =>
     {
-        var box = new VBTextBox(instance);
+        var box = new RDFormsTextBox(instance);
         var (changes, seen) = (0, "");
         var sink = new RecordingSink();
         var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { box } } };
-        VBControl.SetEventSink(window, sink);
+        RDFormsControl.SetEventSink(window, sink);
         if (shown)
         {
             window.Show();
@@ -240,7 +239,7 @@ public sealed class TextSelectionTests
         }
         sink.Handler = (source, definition, _) =>
             {
-                if (ReferenceEquals(source, instance) && ReferenceEquals(definition, VBEvents.Change))
+                if (ReferenceEquals(source, instance) && ReferenceEquals(definition, Events.Change))
                 {
                     changes++;
                     seen += $"|{instance.Get(P.Text)}@{instance.Read(P.SelStart)}";
@@ -254,7 +253,7 @@ public sealed class TextSelectionTests
             seen = "";
             return row;
         });
-        VBControl.SetEventSink(window, null);
+        RDFormsControl.SetEventSink(window, null);
         window.Close();
         return rows;
     });
@@ -333,7 +332,7 @@ public sealed class TextSelectionTests
             instance.Let(P.Text, "Hello world");
             instance.Let(P.SelStart, 2);
             instance.Let(P.SelLength, 3);
-            var box = new VBTextBox(instance);
+            var box = new RDFormsTextBox(instance);
             var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { box } } };
             window.Show();
             Dispatcher.UIThread.RunJobs();
@@ -356,7 +355,7 @@ public sealed class TextSelectionTests
         var caret = UI.Run(() =>
         {
             var instance = Box("Text1");
-            var box = new VBTextBox(instance);
+            var box = new RDFormsTextBox(instance);
             var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { box } } };
             window.Show();
             Dispatcher.UIThread.RunJobs();
@@ -377,7 +376,7 @@ public sealed class TextSelectionTests
         var user = UI.Run(() =>
         {
             var instance = Box("Text1");
-            var box = new VBTextBox(instance);
+            var box = new RDFormsTextBox(instance);
             var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { box } } };
             window.Show();
             Dispatcher.UIThread.RunJobs();
@@ -393,5 +392,5 @@ public sealed class TextSelectionTests
 
     [TestMethod]
     public void SelText_IsNotNull() =>
-        Assert.ThrowsExactly<ArgumentNullException>(() => UI.Run(() => new VBTextBox(Box("Text1")).SelText = null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => UI.Run(() => new RDFormsTextBox(Box("Text1")).SelText = null!));
 }

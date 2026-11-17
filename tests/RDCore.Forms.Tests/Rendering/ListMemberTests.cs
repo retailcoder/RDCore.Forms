@@ -3,11 +3,10 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
 using static RDCore.Forms.Tests.Model.TestPictures;
-using M = RDCore.Forms.Model.VB.VBMethods;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using M = RDCore.Forms.Model.Methods;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -18,24 +17,24 @@ namespace RDCore.Forms.Tests.Rendering;
 [TestClass]
 public sealed class ListMemberTests
 {
-    private const string ListBox = "VB.ListBox";
-    private const string ComboBox = "VB.ComboBox";
+    private const string ListBox = "RDForms.ListBox";
+    private const string ComboBox = "RDForms.ComboBox";
 
     // A shown form with one list of the class, holding the items, and the window that shows it.
-    private static (VBFormWindow Window, ComponentInstance List, RecordingSink Sink) Open(string type, params string[] items) =>
-        Open(VBClasses.All.Single(c => c.TypeName == type), null, items);
+    private static (RDFormsFormWindow Window, ComponentInstance List, RecordingSink Sink) Open(string type, params string[] items) =>
+        Open(ComponentClasses.All.Single(c => c.TypeName == type), null, items);
 
-    private static (VBFormWindow Window, ComponentInstance List, RecordingSink Sink) Open(ComponentClass type, ComboBoxStyle? style, string[] items)
+    private static (RDFormsFormWindow Window, ComponentInstance List, RecordingSink Sink) Open(ComponentClass type, ComboBoxStyle? style, string[] items)
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
         var list = new ComponentInstance(type, "List1").Set(P.Left, 8d).Set(P.Top, 8d).Set(P.Width, 120d).Set(P.Height, 90d)
             .Set(P.List, items);
         if (style is { } chosen)
             list.Set(P.ComboBoxStyle, chosen);
         list.SetContainer(root);
         var sink = new RecordingSink();
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -46,14 +45,14 @@ public sealed class ListMemberTests
 
     private static FormValue I(int value) => FormValue.FromInteger((short)value);
 
-    private static FormValue Get(VBFormWindow window, ComponentInstance list, MethodDefinition member, params FormValue?[] arguments) =>
+    private static FormValue Get(RDFormsFormWindow window, ComponentInstance list, MethodDefinition member, params FormValue?[] arguments) =>
         window.Invoke(list, member, arguments, CodeUnit.VB6);
 
-    private static void Call(VBFormWindow window, ComponentInstance list, MethodDefinition member, params FormValue?[] arguments) =>
+    private static void Call(RDFormsFormWindow window, ComponentInstance list, MethodDefinition member, params FormValue?[] arguments) =>
         window.Invoke(list, member, arguments, CodeUnit.VB6);
 
     // The items as List(0) to List(ListCount - 1) read them.
-    private static string Items(VBFormWindow window, ComponentInstance list)
+    private static string Items(RDFormsFormWindow window, ComponentInstance list)
     {
         var count = Get(window, list, M.ListCount).AsInteger();
         return string.Join(", ", Enumerable.Range(0, count).Select(i => Get(window, list, M.List, I(i)).AsString()));
@@ -163,7 +162,7 @@ public sealed class ListMemberTests
     }
 
     // What ItemIcon(0) to ItemIcon(ListCount - 1) read: "gif" for the picture, "-" for Nothing.
-    private static string Icons(VBFormWindow window, ComponentInstance list, byte[] gif) =>
+    private static string Icons(RDFormsFormWindow window, ComponentInstance list, byte[] gif) =>
         string.Join(", ", Enumerable.Range(0, Get(window, list, M.ListCount).AsInteger()).Select(i => Get(window, list, M.ItemIcon, I(i)) switch
         {
             { Kind: FormValueKind.Object, ClrValue: null } => "-",
@@ -275,7 +274,7 @@ public sealed class ListMemberTests
         {
             string TextAfter(ComboBoxStyle style)
             {
-                var (window, combo, _) = Open(VBClasses.ComboBox, style, ["one", "two"]);
+                var (window, combo, _) = Open(ComponentClasses.ComboBox, style, ["one", "two"]);
                 window.Assign(combo, M.ListIndex, [], I(1));
                 window.Assign(combo, M.List, [I(1)], S("TWO"));
                 var text = $"{Get(window, combo, M.ListText).AsString()} | {Get(window, combo, M.ListIndex).AsInteger()}"
@@ -296,12 +295,12 @@ public sealed class ListMemberTests
     {
         var lines = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
-            var list = new ComponentInstance(VBClasses.ListBox, "List1").Set(P.Left, 8d).Set(P.Top, 8d).Set(P.Width, 120d).Set(P.Height, 90d)
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+            var list = new ComponentInstance(ComponentClasses.ListBox, "List1").Set(P.Left, 8d).Set(P.Top, 8d).Set(P.Width, 120d).Set(P.Height, 90d)
                 .Set(P.List, ["a", "b", "c"]).Set(P.MultiSelect, ListBoxMultiSelect.Simple);
             list.SetContainer(root);
-            var window = new VBFormWindow(new FormDefinition(root));
-            VBControl.SetEventSink(window, new RecordingSink());
+            var window = new RDFormsFormWindow(new FormDefinition(root));
+            RDFormsControl.SetEventSink(window, new RecordingSink());
             window.Show();
             Dispatcher.UIThread.RunJobs();
             window.Assign(list, M.Selected, [I(0)], FormValue.FromBoolean(true));
@@ -346,7 +345,7 @@ public sealed class ListMemberTests
             var listResult = $"{Get(window, list, M.ListIndex).AsInteger()} | {Get(window, list, M.ListText).AsString()}";
             window.Close();
 
-            var (comboWindow, dropdown, _) = Open(VBClasses.ComboBox, ComboBoxStyle.DropdownCombo, ["Human", "Merciless AI"]);
+            var (comboWindow, dropdown, _) = Open(ComponentClasses.ComboBox, ComboBoxStyle.DropdownCombo, ["Human", "Merciless AI"]);
             comboWindow.Assign(dropdown, M.ListText, [], S("Someone"));
             var comboResult = $"{Get(comboWindow, dropdown, M.ListIndex).AsInteger()} | {Get(comboWindow, dropdown, M.ListText).AsString()} | {dropdown.Get(P.Text)}";
             comboWindow.Close();
@@ -385,7 +384,7 @@ public sealed class ListMemberTests
     {
         var lines = UI.Run(() =>
         {
-            var (window, list, _) = Open(VBClasses.ComboBox, ComboBoxStyle.DropdownList, ["Human", "Merciless AI"]);
+            var (window, list, _) = Open(ComponentClasses.ComboBox, ComboBoxStyle.DropdownList, ["Human", "Merciless AI"]);
             window.Assign(list, M.ListIndex, [], I(1));
             List<string> result = [Get(window, list, M.ListText).AsString()];
             window.Assign(list, M.ListText, [], S("human"));
@@ -440,11 +439,11 @@ public sealed class ListMemberTests
     [TestMethod]
     public void AComboBox_HasNoSelectedAndNoSelCount_AndAListBoxNoColumn_AsVB6sHaveNone()
     {
-        Assert.IsNull(VBClasses.ComboBox.Method("Selected"));
-        Assert.IsNull(VBClasses.ComboBox.Method("SelCount"));
+        Assert.IsNull(ComponentClasses.ComboBox.Method("Selected"));
+        Assert.IsNull(ComponentClasses.ComboBox.Method("SelCount"));
         // Column is an MSForms ListBox's: VB6's ListBox has no member of that name, and a program's call is 438.
-        Assert.IsNull(VBClasses.ListBox.Method("Column"));
-        Assert.IsNull(VBClasses.ListBox.Property("Column"));
+        Assert.IsNull(ComponentClasses.ListBox.Method("Column"));
+        Assert.IsNull(ComponentClasses.ListBox.Property("Column"));
     }
 
     [TestMethod]
@@ -487,10 +486,10 @@ public sealed class ListMemberTests
     {
         var lines = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
             var form = new FormDefinition(root);
-            var window = new VBFormWindow(form);
-            VBControl.SetEventSink(window, new RecordingSink());
+            var window = new RDFormsFormWindow(form);
+            RDFormsControl.SetEventSink(window, new RecordingSink());
             window.Show();
             Dispatcher.UIThread.RunJobs();
             var list = form.AddControl(type, "cboPlayer");

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NoDesignerBlock" xml:space="preserve">
+    <value>The file has no Begin block, so it holds no form.</value>
+  </data>
+  <data name="NotAUserForm" xml:space="preserve">
+    <value>{0} is not a VBA UserForm's designer, so the file holds no form the reader imports.</value>
+    <comment>{0} is the class the root block names.</comment>
+  </data>
+  <data name="NamelessForm" xml:space="preserve">
+    <value>The file's Begin line names no form, so it holds no form the reader imports.</value>
+  </data>
+  <data name="MalformedLine" xml:space="preserve">
+    <value>Line {0}: {1}</value>
+    <comment>{0} is the 1-based line of the file; {1} is what is wrong with it.</comment>
+  </data>
+  <data name="MissingCompanionNotCited" xml:space="preserve">
+    <value>{0} cites no designer data, so it is imported with no controls.</value>
+    <comment>{0} is the form's name.</comment>
+  </data>
+  <data name="MissingCompanion" xml:space="preserve">
+    <value>The designer data of {0}, in {1}, was not found, so it is imported with no controls.</value>
+    <comment>{0} is the form's name; {1} is the companion file's name.</comment>
+  </data>
+  <data name="UnreadableDesignerData" xml:space="preserve">
+    <value>The designer data of {0} cannot be read ({1}), so it is imported with no controls.</value>
+    <comment>{0} is the form's name; {1} is why.</comment>
+  </data>
+  <data name="UnmodelledClass" xml:space="preserve">
+    <value>{0} is left out, with the {2} controls it holds: RDForms has no class for {1}.</value>
+    <comment>{0} is the control's name; {1} is its MSForms class; {2} is how many controls it holds.</comment>
+  </data>
+  <data name="UnmodelledClassEmpty" xml:space="preserve">
+    <value>{0} is left out: RDForms has no class for {1}.</value>
+    <comment>{0} is the control's name; {1} is its MSForms class.</comment>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>The {1} of {0}, {2}, is not a value RDForms can hold, so it is kept as text.</value>
+    <comment>{0} is the component's name; {1} is the property's name; {2} is its value.</comment>
+  </data>
+  <data name="ValueNotPorted" xml:space="preserve">
+    <value>The {1} of {0}, {2}, has no equivalent in RDForms, so it is kept as text.</value>
+    <comment>{0} is the component's name; {1} is the property's name; {2} is its value.</comment>
+  </data>
+  <data name="NotImplemented" xml:space="preserve">
+    <value>The {1} of {0} is {2}, which RDForms does not implement, so it is kept as text.</value>
+    <comment>{0} is the component's name; {1} is the property's name; {2} is its value.</comment>
+  </data>
+  <data name="MetafilePicture" xml:space="preserve">
+    <value>The {1} of {0} is a metafile: it is kept, and RDForms does not draw it.</value>
+    <comment>{0} is the component's name; {1} is the property's name.</comment>
+  </data>
+  <data name="AcceleratorNotInCaption" xml:space="preserve">
+    <value>The Accelerator of {0}, {1}, is not in its caption, so the caption has no access key.</value>
+    <comment>{0} is the control's name; {1} is the key.</comment>
+  </data>
+  <data name="UnresolvedDataSource" xml:space="preserve">
+    <value>The {1} of {0} is kept as text. {2}</value>
+    <comment>{0} is the control's name; {1} is ControlSource or RowSource; {2} is the port diagnostic's message.</comment>
+  </data>
+</root>

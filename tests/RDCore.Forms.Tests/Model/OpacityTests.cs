@@ -1,7 +1,6 @@
 using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -12,12 +11,12 @@ public sealed class OpacityTests
     [TestMethod]
     public void EveryControlWithVisible_HasOpacity_AndNoRootMenuOrTimerHasIt()
     {
-        var shown = VBClasses.All.Where(c => c.Kind == ComponentKind.Control && c.Has(P.Visible)).ToArray();
-        var withOpacity = VBClasses.All.Where(c => c.Has(P.Opacity)).ToArray();
+        var shown = ComponentClasses.All.Where(c => c.Kind == ComponentKind.Control && c.Has(P.Visible)).ToArray();
+        var withOpacity = ComponentClasses.All.Where(c => c.Has(P.Opacity)).ToArray();
 
         CollectionAssert.AreEquivalent(shown, withOpacity);
-        Assert.IsTrue(shown.Contains(VBClasses.Line));
-        Assert.IsFalse(withOpacity.Any(c => c.Kind != ComponentKind.Control || ReferenceEquals(c, VBClasses.Timer)));
+        Assert.IsTrue(shown.Contains(ComponentClasses.Line));
+        Assert.IsFalse(withOpacity.Any(c => c.Kind != ComponentKind.Control || ReferenceEquals(c, ComponentClasses.Timer)));
     }
 
     [TestMethod]
@@ -39,7 +38,7 @@ public sealed class OpacityTests
 
     [TestMethod]
     public void Opacity_IsOne_ByDefault()
-        => Assert.AreEqual(1d, new ComponentInstance(VBClasses.Label, "Label1").Get(P.Opacity));
+        => Assert.AreEqual(1d, new ComponentInstance(ComponentClasses.Label, "Label1").Get(P.Opacity));
 
     [TestMethod]
     [DataRow(0d)]
@@ -47,8 +46,8 @@ public sealed class OpacityTests
     [DataRow(1d)]
     public void AnOpacityFrom0To1_IsTaken(double opacity)
     {
-        var label = new ComponentInstance(VBClasses.Label, "Label1");
-        VBRunTime.Assign(label, P.Opacity, opacity);
+        var label = new ComponentInstance(ComponentClasses.Label, "Label1");
+        RunTime.Assign(label, P.Opacity, opacity);
 
         Assert.AreEqual(opacity, label.Get(P.Opacity));
     }
@@ -59,9 +58,9 @@ public sealed class OpacityTests
     [DataRow(double.NaN)]
     public void AnOpacityOutside0To1_Is380_AndTheDesignerRefusesIt(double opacity)
     {
-        var label = new ComponentInstance(VBClasses.Label, "Label1").Set(P.Opacity, 0.5);
+        var label = new ComponentInstance(ComponentClasses.Label, "Label1").Set(P.Opacity, 0.5);
 
-        Assert.AreEqual(380, Assert.ThrowsExactly<FormErrorException>(() => VBRunTime.Assign(label, P.Opacity, opacity)).Error.Number);
+        Assert.AreEqual(380, Assert.ThrowsExactly<FormErrorException>(() => RunTime.Assign(label, P.Opacity, opacity)).Error.Number);
         Assert.IsFalse(label.TrySet(P.Opacity, opacity));
         Assert.AreEqual(0.5, label.Get(P.Opacity));
     }

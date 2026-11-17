@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NoDesignerBlock" xml:space="preserve">
+    <value>Le fichier n'a pas de bloc Begin, donc il ne contient aucun formulaire.</value>
+  </data>
+  <data name="NotAUserForm" xml:space="preserve">
+    <value>{0} n'est pas le concepteur d'un UserForm VBA, donc le fichier ne contient aucun formulaire que le lecteur importe.</value>
+  </data>
+  <data name="NamelessForm" xml:space="preserve">
+    <value>La ligne Begin du fichier ne nomme aucun formulaire, donc il ne contient aucun formulaire que le lecteur importe.</value>
+  </data>
+  <data name="MalformedLine" xml:space="preserve">
+    <value>Ligne {0} : {1}</value>
+  </data>
+  <data name="MissingCompanionNotCited" xml:space="preserve">
+    <value>{0} ne cite aucune donnée de conception, donc il est importé sans contrôles.</value>
+  </data>
+  <data name="MissingCompanion" xml:space="preserve">
+    <value>Les données de conception de {0}, dans {1}, sont introuvables, donc il est importé sans contrôles.</value>
+  </data>
+  <data name="UnreadableDesignerData" xml:space="preserve">
+    <value>Les données de conception de {0} ne peuvent pas être lues ({1}), donc il est importé sans contrôles.</value>
+  </data>
+  <data name="UnmodelledClass" xml:space="preserve">
+    <value>{0} est laissé de côté, avec les {2} contrôles qu'il contient : RDForms n'a pas de classe pour {1}.</value>
+  </data>
+  <data name="UnmodelledClassEmpty" xml:space="preserve">
+    <value>{0} est laissé de côté : RDForms n'a pas de classe pour {1}.</value>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>La propriété {1} de {0}, {2}, n'est pas une valeur que RDForms peut contenir, donc elle est conservée sous forme de texte.</value>
+  </data>
+  <data name="ValueNotPorted" xml:space="preserve">
+    <value>La propriété {1} de {0}, {2}, n'a pas d'équivalent dans RDForms, donc elle est conservée sous forme de texte.</value>
+  </data>
+  <data name="NotImplemented" xml:space="preserve">
+    <value>La propriété {1} de {0} vaut {2}, ce que RDForms n'implémente pas, donc elle est conservée sous forme de texte.</value>
+  </data>
+  <data name="MetafilePicture" xml:space="preserve">
+    <value>La propriété {1} de {0} est un métafichier : elle est conservée, et RDForms ne la dessine pas.</value>
+  </data>
+  <data name="AcceleratorNotInCaption" xml:space="preserve">
+    <value>L'Accelerator de {0}, {1}, n'est pas dans sa légende, donc la légende n'a pas de touche d'accès.</value>
+  </data>
+  <data name="UnresolvedDataSource" xml:space="preserve">
+    <value>La propriété {1} de {0} est conservée sous forme de texte. {2}</value>
+  </data>
+</root>

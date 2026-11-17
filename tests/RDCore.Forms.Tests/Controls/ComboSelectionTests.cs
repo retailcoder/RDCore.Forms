@@ -3,8 +3,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -18,7 +17,7 @@ namespace RDCore.Forms.Tests.Controls;
 [TestClass]
 public sealed class ComboSelectionTests
 {
-    private static readonly (string Label, Action<VBComboBox, ComponentInstance>[] Statements)[] Steps =
+    private static readonly (string Label, Action<RDFormsComboBox, ComponentInstance>[] Statements)[] Steps =
     [
         ("reset", [
             (b, c) =>
@@ -178,7 +177,7 @@ public sealed class ComboSelectionTests
 
     private static ComponentInstance Combo(string name, ComboBoxStyle style)
     {
-        var instance = new ComponentInstance(VBClasses.ComboBox, name);
+        var instance = new ComponentInstance(ComponentClasses.ComboBox, name);
         Assert.IsTrue(instance.TrySet(P.ComboBoxStyle, style));
         return instance;
     }
@@ -202,11 +201,11 @@ public sealed class ComboSelectionTests
     // The rows the steps give on the combo, in a window with a sink: shown, or loaded and not shown.
     private static List<string> Script(ComponentInstance instance, bool shown) => UI.Run(() =>
     {
-        var combo = new VBComboBox(instance) { Width = 120 };
+        var combo = new RDFormsComboBox(instance) { Width = 120 };
         var (changes, clicks, seen, error) = (0, 0, "", "0");
         var sink = new RecordingSink();
         var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { combo } } };
-        VBControl.SetEventSink(window, sink);
+        RDFormsControl.SetEventSink(window, sink);
         if (shown)
         {
             window.Show();
@@ -216,12 +215,12 @@ public sealed class ComboSelectionTests
             {
                 if (!ReferenceEquals(source, instance))
                     return;
-                if (ReferenceEquals(definition, VBEvents.Change))
+                if (ReferenceEquals(definition, Events.Change))
                 {
                     changes++;
                     seen += $"|{combo.Text}@{combo.SelStart}";
                 }
-                else if (ReferenceEquals(definition, VBEvents.Click))
+                else if (ReferenceEquals(definition, Events.Click))
                 {
                     clicks++;
                     try
@@ -256,7 +255,7 @@ public sealed class ComboSelectionTests
                 $"\tListIndex={combo.ListIndex}\tClicks={clicks}");
             seen = "";
         }
-        VBControl.SetEventSink(window, null);
+        RDFormsControl.SetEventSink(window, null);
         window.Close();
         return rows;
     });
@@ -286,7 +285,7 @@ public sealed class ComboSelectionTests
     {
         var (shown, user, set) = UI.Run(() =>
         {
-            var combo = new VBComboBox(Combo("Combo1", ComboBoxStyle.DropdownCombo)) { Width = 120 };
+            var combo = new RDFormsComboBox(Combo("Combo1", ComboBoxStyle.DropdownCombo)) { Width = 120 };
             var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { combo } } };
             combo.SetText("Hello world");
             combo.SelStart = 2;
@@ -316,7 +315,7 @@ public sealed class ComboSelectionTests
         var caret = UI.Run(() =>
         {
             var instance = Combo("Combo1", ComboBoxStyle.DropdownCombo);
-            var combo = new VBComboBox(instance) { Width = 120 };
+            var combo = new RDFormsComboBox(instance) { Width = 120 };
             var window = new Window { Width = 400, Height = 300, Content = new Canvas { Children = { combo } } };
             window.Show();
             Dispatcher.UIThread.RunJobs();
@@ -333,5 +332,5 @@ public sealed class ComboSelectionTests
 
     [TestMethod]
     public void SelText_IsNotNull() =>
-        Assert.ThrowsExactly<ArgumentNullException>(() => UI.Run(() => new VBComboBox(Combo("Combo1", ComboBoxStyle.DropdownCombo)).SelText = null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => UI.Run(() => new RDFormsComboBox(Combo("Combo1", ComboBoxStyle.DropdownCombo)).SelText = null!));
 }

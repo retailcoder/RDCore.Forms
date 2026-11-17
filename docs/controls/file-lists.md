@@ -1,18 +1,18 @@
 # File system lists
 
-DriveListBox lists the drives, DirListBox the folders and FileListBox the files of a folder. They read them from the [`IFileSystem`](https://github.com/TestableIO/System.IO.Abstractions) a host gives [`VBFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.VBFormWindow.yml), [`VBFormView`](../api/RDCore.Forms.Avalonia.Rendering.VBFormView.yml) or [`VBControls.Create`](../api/RDCore.Forms.Avalonia.Controls.VBControls.yml), and start in that file system's current directory. Without one, they read the machine's file system, from the process's current directory.
+DriveListBox lists the drives, DirListBox the folders and FileListBox the files of a folder. They read them from the [`IFileSystem`](https://github.com/TestableIO/System.IO.Abstractions) a host gives [`RDFormsFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml), [`RDFormsFormView`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormView.yml) or [`RDFormsControls.Create`](../api/RDCore.Forms.Avalonia.Controls.RDFormsControls.yml), and start in that file system's current directory. Without one, they read the machine's file system, from the process's current directory.
 
 ```csharp
 using System.IO.Abstractions;
 
-var window = new VBFormWindow(form, new FileSystem());
+var window = new RDFormsFormWindow(form, new FileSystem());
 ```
 
 The behaviour below was measured with VB6, except where a row says it is RDForms' own.
 
 ## DriveListBox
 
-[`VBDriveListBox`](../api/RDCore.Forms.Avalonia.Controls.VBDriveListBox.yml), a drop-down list. It raises Change, GotFocus, LostFocus, KeyDown, KeyPress and KeyUp.
+[`RDFormsDriveListBox`](../api/RDCore.Forms.Avalonia.Controls.RDFormsDriveListBox.yml), a drop-down list. It raises Change, GotFocus, LostFocus, KeyDown, KeyPress and KeyUp.
 
 |Member|Behaviour|Error|
 |---|---|---|
@@ -23,7 +23,7 @@ The behaviour below was measured with VB6, except where a row says it is RDForms
 
 ## DirListBox
 
-[`VBDirListBox`](../api/RDCore.Forms.Avalonia.Controls.VBDirListBox.yml). It raises Change, Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp, and no DblClick.
+[`RDFormsDirListBox`](../api/RDCore.Forms.Avalonia.Controls.RDFormsDirListBox.yml). It raises Change, Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp, and no DblClick.
 
 |Member|Behaviour|Error|
 |---|---|---|
@@ -39,7 +39,7 @@ A press, a key or a typed character selects a folder and raises Click as on a [L
 
 ## FileListBox
 
-[`VBFileListBox`](../api/RDCore.Forms.Avalonia.Controls.VBFileListBox.yml). It raises Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, PathChange and PatternChange.
+[`RDFormsFileListBox`](../api/RDCore.Forms.Avalonia.Controls.RDFormsFileListBox.yml). It raises Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, PathChange and PatternChange.
 
 |Member|Behaviour|Error|
 |---|---|---|

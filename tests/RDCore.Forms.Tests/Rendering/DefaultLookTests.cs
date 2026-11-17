@@ -5,9 +5,8 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -20,7 +19,7 @@ public sealed class DefaultLookTests
     // A form holding a control of each class named, one under the other, each named for its class and its place (TextBox1, CommandButton2).
     private static ComponentInstance Form(params ComponentClass[] classes)
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
         var top = 8d;
         foreach (var (type, index) in classes.Select((type, index) => (type, index)))
         {
@@ -32,21 +31,21 @@ public sealed class DefaultLookTests
         return root;
     }
 
-    private static VBFormWindow Open(ComponentInstance root)
+    private static RDFormsFormWindow Open(ComponentInstance root)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, new RecordingSink());
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, new RecordingSink());
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return window;
     }
 
     // The buttons that have the default look, by name.
-    private static string Looks(VBFormWindow window) =>
+    private static string Looks(RDFormsFormWindow window) =>
         string.Join(", ", window.Root.Contents.Where(c => window.View.ControlOf(c) is Button button && button.Classes.Contains(":default"))
             .Select(c => c.Name));
 
-    private static void Focus(VBFormWindow window, ComponentInstance component)
+    private static void Focus(RDFormsFormWindow window, ComponentInstance component)
     {
         window.View.ControlOf(component)!.Focus();
         Dispatcher.UIThread.RunJobs();
@@ -57,7 +56,7 @@ public sealed class DefaultLookTests
     {
         var looks = UI.Run(() =>
         {
-            var root = Form(VBClasses.TextBox, VBClasses.CommandButton, VBClasses.CommandButton);
+            var root = Form(ComponentClasses.TextBox, ComponentClasses.CommandButton, ComponentClasses.CommandButton);
             root.Contents[1].Set(P.Default, true);
             var window = Open(root);
             List<string> result = [Looks(window)];
@@ -79,7 +78,7 @@ public sealed class DefaultLookTests
     {
         var looks = UI.Run(() =>
         {
-            var root = Form(VBClasses.TextBox, VBClasses.CommandButton);
+            var root = Form(ComponentClasses.TextBox, ComponentClasses.CommandButton);
             var window = Open(root);
             List<string> result = [Looks(window)];
             Focus(window, root.Contents[1]);
@@ -96,7 +95,7 @@ public sealed class DefaultLookTests
     {
         var looks = UI.Run(() =>
         {
-            var root = Form(VBClasses.TextBox, VBClasses.CommandButton, VBClasses.CommandButton);
+            var root = Form(ComponentClasses.TextBox, ComponentClasses.CommandButton, ComponentClasses.CommandButton);
             var window = Open(root);
             root.Contents[1].Set(P.Default, true);
             List<string> result = [Looks(window)];
@@ -119,7 +118,7 @@ public sealed class DefaultLookTests
     {
         var (wide, colour, after) = UI.Run(() =>
         {
-            var root = Form(VBClasses.TextBox, VBClasses.CommandButton);
+            var root = Form(ComponentClasses.TextBox, ComponentClasses.CommandButton);
             root.Contents[1].Set(P.Default, true);
             var window = Open(root);
             var button = (Button)window.View.ControlOf(root.Contents[1])!;

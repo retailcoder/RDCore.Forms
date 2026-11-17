@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Drawing;
 
@@ -108,7 +107,7 @@ public static class ScaleRules
             var now = DrawingScale.Of(component);
             if (now == scale)
                 return;
-            foreach (var line in component.Contents.Where(content => ReferenceEquals(content.Class, VBClasses.Line)).ToList())
+            foreach (var line in component.Contents.Where(content => ReferenceEquals(content.Class, ComponentClasses.Line)).ToList())
             {
                 var (x1, y1) = scale.ToTwips(line.Get(P.X1), line.Get(P.Y1));
                 var (x2, y2) = scale.ToTwips(line.Get(P.X2), line.Get(P.Y2));

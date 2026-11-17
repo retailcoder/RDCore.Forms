@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Tests.Import.VB6;
 
@@ -45,12 +44,25 @@ public sealed class VB6FormReaderTests
         Assert.AreEqual(new UnmodelledComponent("VB.CommandButton", "Command1", 0, "Begin VB.CommandButton Command1 \r\nEnd"), import.UnmodelledRoot);
     }
 
+    // the classes of VB6's VB library port to RDForms': VB.Form is RDForms.Form, VB.Label is RDForms.Label. A class an RDForms
+    // document names is no VB6 class.
+    [TestMethod]
+    public void AVBClass_IsReadAsTheRDFormsClassItPortsTo()
+    {
+        var import = VB6FormReader.Read(Form([.. Label(), "   Begin RDForms.Label Label2 ", "   End"]));
+
+        Assert.AreSame(ComponentClasses.Form, import.Form!.Root.Class);
+        Assert.AreEqual("RDForms.Label", import.Form.Find("Label1")!.Class.TypeName);
+        Assert.IsNull(import.Form.Find("Label2"));
+        Assert.AreEqual(VB6ImportDiagnosticKind.UnmodelledClass, import.Diagnostics.Single().Kind);
+    }
+
     [TestMethod]
     public void PropertyAndClassNames_AreReadWithoutRegardToCase()
     {
         var import = VB6FormReader.Read(Form("   begin vb.label Label1 ", "      CAPTION = \"x\"", "   End"));
 
-        Assert.AreEqual("x", import.Form!.Find("Label1")!.Get(VBProperties.Caption));
+        Assert.AreEqual("x", import.Form!.Find("Label1")!.Get(Properties.Caption));
         Assert.IsEmpty(import.Diagnostics);
     }
 
@@ -73,11 +85,11 @@ public sealed class VB6FormReaderTests
             "   End"), companion);
         var button = import.Form!.Find("Command1")!;
 
-        Assert.AreEqual(ButtonStyle.Graphical, button.Get(VBProperties.ButtonStyle));
-        CollectionAssert.AreEqual(Bytes(0x42, 0x4D), button.Get(VBProperties.DownPicture));
-        CollectionAssert.AreEqual(Bytes(0x42, 0x4D), button.Get(VBProperties.DisabledPicture));
-        Assert.AreEqual(ButtonStyle.Graphical, import.Form.Find("Check1")!.Get(VBProperties.ButtonStyle));
-        Assert.AreEqual(ButtonStyle.Graphical, import.Form.Find("Option1")!.Get(VBProperties.ButtonStyle));
+        Assert.AreEqual(ButtonStyle.Graphical, button.Get(Properties.ButtonStyle));
+        CollectionAssert.AreEqual(Bytes(0x42, 0x4D), button.Get(Properties.DownPicture));
+        CollectionAssert.AreEqual(Bytes(0x42, 0x4D), button.Get(Properties.DisabledPicture));
+        Assert.AreEqual(ButtonStyle.Graphical, import.Form.Find("Check1")!.Get(Properties.ButtonStyle));
+        Assert.AreEqual(ButtonStyle.Graphical, import.Form.Find("Option1")!.Get(Properties.ButtonStyle));
         Assert.IsEmpty(import.Diagnostics);
     }
 
@@ -88,7 +100,7 @@ public sealed class VB6FormReaderTests
         var import = VB6FormReader.Read(Form("   Begin VB.CommandButton Command1 ", "      ForeColor       =   &H000000FF&", "   End"));
         var button = import.Form!.Find("Command1")!;
 
-        Assert.IsFalse(VBClasses.CommandButton.Has(VBProperties.ForeColor));
+        Assert.IsFalse(ComponentClasses.CommandButton.Has(Properties.ForeColor));
         Assert.Contains(new UnmodelledProperty("ForeColor", "&H000000FF&"), button.UnmodelledProperties);
         Assert.IsEmpty(import.Diagnostics);
     }
@@ -107,7 +119,7 @@ public sealed class VB6FormReaderTests
             "   End"));
         var button = import.Form!.Find("Button1")!;
 
-        Assert.AreEqual((FormColor.FromRgb(255, 0, 255), true), (button.Get(VBProperties.MaskColor), button.Get(VBProperties.UseMaskColor)));
+        Assert.AreEqual((FormColor.FromRgb(255, 0, 255), true), (button.Get(Properties.MaskColor), button.Get(Properties.UseMaskColor)));
         Assert.IsEmpty(button.UnmodelledProperties);
         Assert.IsEmpty(import.Diagnostics);
     }
@@ -125,11 +137,11 @@ public sealed class VB6FormReaderTests
         var file = form.Find("File1")!;
 
         Assert.IsEmpty(import.Diagnostics);
-        Assert.AreSame(VBClasses.DriveListBox, form.Find("Drive1")!.Class);
-        Assert.AreSame(VBClasses.DirListBox, form.Find("Dir1")!.Class);
-        Assert.AreSame(VBClasses.FileListBox, file.Class);
-        Assert.AreEqual(("*.txt;*.bas", true, false, true, true, true), (file.Get(VBProperties.Pattern), file.Get(VBProperties.Hidden),
-            file.Get(VBProperties.ReadOnly), file.Get(VBProperties.SystemFiles), file.Get(VBProperties.Archive), file.Get(VBProperties.Normal)));
+        Assert.AreSame(ComponentClasses.DriveListBox, form.Find("Drive1")!.Class);
+        Assert.AreSame(ComponentClasses.DirListBox, form.Find("Dir1")!.Class);
+        Assert.AreSame(ComponentClasses.FileListBox, file.Class);
+        Assert.AreEqual(("*.txt;*.bas", true, false, true, true, true), (file.Get(Properties.Pattern), file.Get(Properties.Hidden),
+            file.Get(Properties.ReadOnly), file.Get(Properties.SystemFiles), file.Get(Properties.Archive), file.Get(Properties.Normal)));
     }
 
     [TestMethod]
@@ -138,7 +150,7 @@ public sealed class VB6FormReaderTests
         var import = VB6FormReader.Read(Form(Label("Alignment       =   7")));
         var label = import.Form!.Find("Label1")!;
 
-        Assert.IsFalse(label.IsSet(VBProperties.Alignment));
+        Assert.IsFalse(label.IsSet(Properties.Alignment));
         Assert.Contains(new UnmodelledProperty("Alignment", "7"), label.UnmodelledProperties);
         var diagnostic = import.Diagnostics.Single();
         Assert.AreEqual((VB6ImportDiagnosticKind.InvalidValue, 7), (diagnostic.Kind, diagnostic.Line));
@@ -169,7 +181,7 @@ public sealed class VB6FormReaderTests
     {
         var import = VB6FormReader.Read(Form(Label(caption)), Bytes(0x05, 0x00, 0x00, 0x00, (byte)'a'));
 
-        Assert.IsFalse(import.Form!.Find("Label1")!.IsSet(VBProperties.Caption));
+        Assert.IsFalse(import.Form!.Find("Label1")!.IsSet(Properties.Caption));
         Assert.AreEqual(VB6ImportDiagnosticKind.MissingRecord, import.Diagnostics.Single().Kind);
     }
 
@@ -179,7 +191,7 @@ public sealed class VB6FormReaderTests
         // A 4-byte length cited as a short string: VB6 takes its first byte as the length and reads an empty caption.
         var import = VB6FormReader.Read(Form(Label("Caption         =   \"Form1.frx\":0000")), Bytes(0x02, 0x00, 0x00, 0x00, (byte)'a', (byte)'b'));
 
-        Assert.AreEqual("", import.Form!.Find("Label1")!.Get(VBProperties.Caption));
+        Assert.AreEqual("", import.Form!.Find("Label1")!.Get(Properties.Caption));
         Assert.IsEmpty(import.Diagnostics);
     }
 
@@ -188,7 +200,7 @@ public sealed class VB6FormReaderTests
     {
         var import = VB6FormReader.Read(Form(Label("Caption         =   \"Form1.frx\":0000")), Bytes(0x04, 0x63, 0x61, 0x66, 0xE9));
 
-        Assert.AreEqual("café", import.Form!.Find("Label1")!.Get(VBProperties.Caption));
+        Assert.AreEqual("café", import.Form!.Find("Label1")!.Get(Properties.Caption));
     }
 
     [TestMethod]
@@ -207,7 +219,7 @@ public sealed class VB6FormReaderTests
         var import = VB6FormReader.Read(Form("   Begin VB.ListBox List1 ", "      List            =   \"Form1.frx\":0000", "   End"),
             Bytes(0x00, 0x00));
 
-        Assert.IsEmpty(import.Form!.Find("List1")!.Get(VBProperties.List));
+        Assert.IsEmpty(import.Form!.Find("List1")!.Get(Properties.List));
         Assert.IsEmpty(import.Diagnostics);
     }
 
@@ -225,7 +237,7 @@ public sealed class VB6FormReaderTests
     {
         var import = VB6FormReader.Read(Form(Label("BeginProperty Font ", "   name = \"Arial\"", "   size = 12", "EndProperty")));
 
-        Assert.AreEqual(FormFont.Default with { Name = "Arial", Size = 12 }, import.Form!.Find("Label1")!.Get(VBProperties.Font));
+        Assert.AreEqual(FormFont.Default with { Name = "Arial", Size = 12 }, import.Form!.Find("Label1")!.Get(Properties.Font));
     }
 
     // As measured with VB6: a font of the form's file holds the size VB6 draws it at, which is the size it reads back at Load.
@@ -237,7 +249,7 @@ public sealed class VB6FormReaderTests
     {
         var import = VB6FormReader.Read(Form(Label("BeginProperty Font ", $"   name = \"{name}\"", $"   size = {size}", "EndProperty")));
 
-        Assert.AreEqual(expected, import.Form!.Find("Label1")!.Get(VBProperties.Font).Size);
+        Assert.AreEqual(expected, import.Form!.Find("Label1")!.Get(Properties.Font).Size);
     }
 
     [TestMethod]
@@ -247,10 +259,10 @@ public sealed class VB6FormReaderTests
             .. Label("BeginProperty Font ", "   Weight = Bold", "EndProperty")]));
         var label = import.Form!.Find("Label1")!;
 
-        Assert.AreEqual("Arial", import.Form.Root.Get(VBProperties.Font).Name);
+        Assert.AreEqual("Arial", import.Form.Root.Get(Properties.Font).Name);
         Assert.AreEqual(VB6ImportDiagnosticKind.InvalidValue, import.Diagnostics.Single().Kind);
         Assert.AreEqual("Font", label.UnmodelledProperties.Single().Name);
-        Assert.IsFalse(label.IsSet(VBProperties.Font));
+        Assert.IsFalse(label.IsSet(Properties.Font));
     }
 
     [TestMethod]
@@ -259,8 +271,8 @@ public sealed class VB6FormReaderTests
         var import = VB6FormReader.Read(Form(Label("Caption         =   \"say \"\"hi\"\"\"", "Alignment       =   1  'Right Justify")));
         var label = import.Form!.Find("Label1")!;
 
-        Assert.AreEqual("say \"hi\"", label.Get(VBProperties.Caption));
-        Assert.AreEqual(TextAlignment.RightJustify, label.Get(VBProperties.Alignment));
+        Assert.AreEqual("say \"hi\"", label.Get(Properties.Caption));
+        Assert.AreEqual(TextAlignment.RightJustify, label.Get(Properties.Alignment));
     }
 
     [TestMethod]
@@ -268,7 +280,7 @@ public sealed class VB6FormReaderTests
     {
         var import = VB6FormReader.Read("VERSION 5.00\r\nBegin VB.Form Form1 \r\n   Caption = \"x\"\r\n   Begin VB.Label Label1 \r\n");
 
-        Assert.AreEqual("x", import.Form!.Root.Get(VBProperties.Caption));
+        Assert.AreEqual("x", import.Form!.Root.Get(Properties.Caption));
         Assert.IsNotNull(import.Form.Find("Label1"));
         CollectionAssert.AreEqual(new[] { (VB6ImportDiagnosticKind.UnbalancedBlock, 2), (VB6ImportDiagnosticKind.UnbalancedBlock, 4) },
             import.Diagnostics.Select(d => (d.Kind, d.Line)).ToArray());
@@ -296,7 +308,7 @@ public sealed class VB6FormReaderTests
     {
         var import = VB6FormReader.Read("VERSION 5.00\nBegin VB.Form Form1 \n   Caption = \"x\"\nEnd\nAttribute VB_Name = \"Form1\"\r\nSub A()\n");
 
-        Assert.AreEqual("x", import.Form!.Root.Get(VBProperties.Caption));
+        Assert.AreEqual("x", import.Form!.Root.Get(Properties.Caption));
         Assert.AreEqual("Attribute VB_Name = \"Form1\"\r\nSub A()\n", import.ModuleText);
         Assert.AreEqual(5, import.ModuleLine);
     }
@@ -350,11 +362,11 @@ public sealed class VB6FormReaderTests
         var text1 = import.Form!.Find("Text1")!;
         var text2 = import.Form!.Find("Text2")!;
 
-        Assert.AreEqual(3, text1.Get(VBProperties.MaxLength));
-        Assert.IsTrue(text1.Get(VBProperties.MultiLine));
-        Assert.AreEqual("*", text1.Get(VBProperties.PasswordChar));
-        Assert.AreEqual(ScrollBars.Vertical, text1.Get(VBProperties.ScrollBars));
-        Assert.AreEqual("abcdef", text1.Get(VBProperties.Text));
+        Assert.AreEqual(3, text1.Get(Properties.MaxLength));
+        Assert.IsTrue(text1.Get(Properties.MultiLine));
+        Assert.AreEqual("*", text1.Get(Properties.PasswordChar));
+        Assert.AreEqual(ScrollBars.Vertical, text1.Get(Properties.ScrollBars));
+        Assert.AreEqual("abcdef", text1.Get(Properties.Text));
         Assert.IsEmpty(text1.UnmodelledProperties);
         Assert.AreEqual(VB6ImportDiagnosticKind.InvalidValue, import.Diagnostics.Single().Kind);
         Assert.AreEqual(new UnmodelledProperty("MaxLength", "70000"), text2.UnmodelledProperties.Single());
@@ -369,7 +381,7 @@ public sealed class VB6FormReaderTests
             "   End"));
         var picture = import.Form!.Find("Picture1")!;
 
-        Assert.IsFalse(picture.Get(VBProperties.FontTransparent));
+        Assert.IsFalse(picture.Get(Properties.FontTransparent));
         Assert.IsEmpty(picture.UnmodelledProperties);
     }
 
@@ -385,8 +397,8 @@ public sealed class VB6FormReaderTests
             "      Style           =   1  'Simple Combo",
             "   End"));
 
-        Assert.IsFalse(import.Form!.Find("Combo1")!.Get(VBProperties.IntegralHeight));
-        Assert.IsTrue(import.Form.Find("Combo2")!.Get(VBProperties.IntegralHeight));
+        Assert.IsFalse(import.Form!.Find("Combo1")!.Get(Properties.IntegralHeight));
+        Assert.IsTrue(import.Form.Find("Combo2")!.Get(Properties.IntegralHeight));
         Assert.IsEmpty(import.Diagnostics);
     }
 

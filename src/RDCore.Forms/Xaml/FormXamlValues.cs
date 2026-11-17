@@ -24,6 +24,11 @@ internal static class FormXamlValues
         _ => null,
     };
 
+    // The text of a property's value: Format's, and Null for the null of a Boolean that can be Null, such as a ToggleButton's Value.
+    public static string? Format(Type type, object? value) => value is null && type == typeof(bool?) ? NullText : Format(value);
+
+    private const string NullText = "Null";
+
     // A system colour by its name, an RGB colour as #RRGGBB.
     private static string Format(FormColor color) =>
         color.SystemColor is { } system
@@ -34,7 +39,14 @@ internal static class FormXamlValues
     public static bool TryParse(Type type, string text, out object? value)
     {
         value = null;
-        if (type == typeof(string))
+        if (type == typeof(bool?))
+        {
+            if (string.Equals(text.Trim(), NullText, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (bool.TryParse(text, out var state))
+                value = state;
+        }
+        else if (type == typeof(string))
             value = text;
         else if (type == typeof(bool) && bool.TryParse(text, out var flag))
             value = flag;

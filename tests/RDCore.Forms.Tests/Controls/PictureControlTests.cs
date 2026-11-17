@@ -7,10 +7,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.SDK.Workspace.Pictures;
 using static RDCore.Forms.Tests.Model.TestPictures;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -54,7 +53,7 @@ public sealed class PictureControlTests
             var png = Png(3, 2);
             return new[] { Bitmap2x2, Gif1x1, png, Icon(1, png), Icon(2, png) }.Select(bytes =>
             {
-                using var bitmap = VBPicture.Decode(bytes, out var error);
+                using var bitmap = RDFormsPicture.Decode(bytes, out var error);
                 return (bitmap?.PixelSize, error);
             }).ToArray();
         });
@@ -69,7 +68,7 @@ public sealed class PictureControlTests
     [TestMethod]
     public void AMetafile_IsNotDrawn_AndIsNoError()
     {
-        var (bitmap, error) = UI.Run(() => (VBPicture.Decode(Hex("D7CDC69A 0000 00000000 64006400 6009 00000000 0000"), out var error), error));
+        var (bitmap, error) = UI.Run(() => (RDFormsPicture.Decode(Hex("D7CDC69A 0000 00000000 64006400 6009 00000000 0000"), out var error), error));
 
         Assert.IsNull(bitmap);
         Assert.IsNull(error);
@@ -78,7 +77,7 @@ public sealed class PictureControlTests
     [TestMethod]
     public void APictureWhoseHeaderPasses_ButWhoseBodyTheDecoderCannotRead_Is481()
     {
-        var (bitmap, error) = UI.Run(() => (VBPicture.Decode([.. JpegHeader(2, 2), 0xFF, 0xD9], out var error), error));
+        var (bitmap, error) = UI.Run(() => (RDFormsPicture.Decode([.. JpegHeader(2, 2), 0xFF, 0xD9], out var error), error));
 
         Assert.IsNull(bitmap);
         Assert.AreEqual(FormError.InvalidPicture, error);
@@ -95,7 +94,7 @@ public sealed class PictureControlTests
             {
                 foreach (var bytes in Malformed(picture, seed, 150))
                 {
-                    using var bitmap = VBPicture.Decode(bytes, out var error);
+                    using var bitmap = RDFormsPicture.Decode(bytes, out var error);
                     if (bitmap is null)
                         Assert.IsTrue(error is null ? bytes.Length == 0 || FormPictures.Inspect(bytes, out var info) is null && !info.HasPixelSize
                             : error == FormError.InvalidPicture);
@@ -115,10 +114,10 @@ public sealed class PictureControlTests
     {
         var (atItsSize, stretched) = UI.Run(() =>
         {
-            var image = new VBImage(new ComponentInstance(VBClasses.Image, "Image1").Set(P.Picture, Bitmap2x2));
+            var image = new RDFormsImage(new ComponentInstance(ComponentClasses.Image, "Image1").Set(P.Picture, Bitmap2x2));
             var (window, _) = ControlHost.Show((image, new Rect(10, 5, 40, 40)));
             var atItsSize = PixelsAt(window, new(10, 5), new(11, 5), new(10, 6), new(11, 6));
-            VBControl.GetInstance(image)!.Set(P.Stretch, true);
+            RDFormsControl.GetInstance(image)!.Set(P.Stretch, true);
             var stretched = PixelsAt(window, new(20, 15), new(40, 15), new(20, 35), new(40, 35));
             window.Close();
             return (atItsSize, stretched);
@@ -129,13 +128,13 @@ public sealed class PictureControlTests
     }
 
     // a blue and a red pixel stretched over 40 pixels: each repeated 20 times, up to the pixels either side of where they meet, as
-    // VB6's StretchBlt repeats them. A filter that blends neighbours mixes those two.
+    // VB6's StretchBlt repeats them. A filter that blends neighbors mixes those two.
     [TestMethod]
     public void AStretchedPicture_RepeatsItsPixels_WithoutBlendingThem()
     {
         var pixels = UI.Run(() =>
         {
-            var image = new VBImage(new ComponentInstance(VBClasses.Image, "Image1").Set(P.Picture, Png(2, 1, 0xFF0000FF, 0xFFFF0000)).Set(P.Stretch, true));
+            var image = new RDFormsImage(new ComponentInstance(ComponentClasses.Image, "Image1").Set(P.Picture, Png(2, 1, 0xFF0000FF, 0xFFFF0000)).Set(P.Stretch, true));
             var (window, _) = ControlHost.Show((image, new Rect(10, 5, 40, 40)));
             var pixels = PixelsAt(window, new(10, 25), new(29, 25), new(30, 25), new(49, 25));
             window.Close();
@@ -150,7 +149,7 @@ public sealed class PictureControlTests
     {
         var (size, pixels) = UI.Run(() =>
         {
-            var picture = new VBPictureBox(new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Picture, Bitmap2x2)
+            var picture = new RDFormsPictureBox(new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Picture, Bitmap2x2)
                 .Set(P.BorderStyle, BorderStyle.None));
             var (window, _) = ControlHost.Show((picture, new Rect(10, 5, 40, 40)));
             var pixels = PixelsAt(window, new(10, 5), new(11, 6));
@@ -169,7 +168,7 @@ public sealed class PictureControlTests
         {
             // Opaque red, then transparent, then red at half its alpha.
             var png = Png(3, 1, 0xFFFF0000, 0x00000000, 0x80800000);
-            var picture = new VBPictureBox(new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Picture, png)
+            var picture = new RDFormsPictureBox(new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Picture, png)
                 .Set(P.BorderStyle, BorderStyle.None).Set(P.BackColor, FormColor.FromRgb(0, 0, 255)));
             var (window, _) = ControlHost.Show((picture, new Rect(10, 5, 40, 40)));
             var pixels = PixelsAt(window, new(10, 5), new(11, 5), new(12, 5));
@@ -190,12 +189,12 @@ public sealed class PictureControlTests
         {
             // Opaque red, then transparent, then red at half its alpha, over a blue PictureBox.
             var png = Png(3, 1, 0xFFFF0000, 0x00000000, 0x80800000);
-            var under = new VBPictureBox(new ComponentInstance(VBClasses.PictureBox, "Picture1")
+            var under = new RDFormsPictureBox(new ComponentInstance(ComponentClasses.PictureBox, "Picture1")
                 .Set(P.BorderStyle, BorderStyle.None).Set(P.BackColor, FormColor.FromRgb(0, 0, 255)));
-            var image = new VBImage(new ComponentInstance(VBClasses.Image, "Image1").Set(P.Picture, png));
+            var image = new RDFormsImage(new ComponentInstance(ComponentClasses.Image, "Image1").Set(P.Picture, png));
             var (window, _) = ControlHost.Show((under, new Rect(10, 5, 60, 30)), (image, new Rect(10, 5, 60, 30)));
             var atItsSize = PixelsAt(window, new(10, 5), new(11, 5), new(12, 5));
-            VBControl.GetInstance(image)!.Set(P.Stretch, true);
+            RDFormsControl.GetInstance(image)!.Set(P.Stretch, true);
             var stretched = PixelsAt(window, new(20, 20), new(40, 20), new(60, 20));
             window.Close();
             return (atItsSize, stretched);
@@ -214,8 +213,8 @@ public sealed class PictureControlTests
     {
         var (imageError, imageSize, boxError) = UI.Run(() =>
         {
-            var image = new VBImage(new ComponentInstance(VBClasses.Image, "Image1").Set(P.Picture, Hex("424D 00000000 00000000 FF000000")));
-            var box = new VBPictureBox(new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Picture, Hex("89504E47")));
+            var image = new RDFormsImage(new ComponentInstance(ComponentClasses.Image, "Image1").Set(P.Picture, Hex("424D 00000000 00000000 FF000000")));
+            var box = new RDFormsPictureBox(new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Picture, Hex("89504E47")));
             var (window, _) = ControlHost.Show((image, new Rect(10, 5, 40, 40)), (box, new Rect(60, 5, 40, 40)));
             window.Close();
             return (image.PictureError, image.PictureSize, box.PictureError);

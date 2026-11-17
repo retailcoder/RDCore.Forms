@@ -1,6 +1,5 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -9,7 +8,7 @@ namespace RDCore.Forms.Tests.Model;
 public sealed class CodeUnitsTests
 {
     private static ComponentInstance Form(ScaleMode mode = ScaleMode.Twip) =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d).Set(P.ScaleMode, mode);
+        new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d).Set(P.ScaleMode, mode);
 
     private static ComponentInstance In(ComponentInstance container, ComponentClass type, string name)
     {
@@ -38,7 +37,7 @@ public sealed class CodeUnitsTests
     [DataRow(CodeUnit.VB6, new[] { 2400d, 1800d, 480d, 240d })]
     public void AControlInATwipForm_IsInPixels_Points_OrTwips(CodeUnit unit, double[] expected)
     {
-        var control = In(Form(), VBClasses.CommandButton, "Command1");
+        var control = In(Form(), ComponentClasses.CommandButton, "Command1");
 
         CollectionAssert.AreEqual(expected, ToCode(control, unit));
         AssertRoundTrip(control, unit);
@@ -56,8 +55,8 @@ public sealed class CodeUnitsTests
     [TestMethod]
     public void InVB6_AControlInAFrame_IsInTwips_WhateverTheFormsScale()
     {
-        var frame = In(Form(ScaleMode.Pixel), VBClasses.Frame, "Frame1");
-        var control = In(frame, VBClasses.CommandButton, "Command1");
+        var frame = In(Form(ScaleMode.Pixel), ComponentClasses.Frame, "Frame1");
+        var control = In(frame, ComponentClasses.CommandButton, "Command1");
 
         CollectionAssert.AreEqual(new[] { 2400d, 1800d, 480d, 240d }, ToCode(control, CodeUnit.VB6));
     }
@@ -68,7 +67,7 @@ public sealed class CodeUnitsTests
     [DataRow(ScaleMode.Character, new[] { 20d, 7.5d, 4d, 1d })]
     public void InVB6_AControlInAForm_IsInTheFormsScale(ScaleMode mode, double[] expected)
     {
-        var control = In(Form(mode), VBClasses.CommandButton, "Command1");
+        var control = In(Form(mode), ComponentClasses.CommandButton, "Command1");
 
         CollectionAssert.AreEqual(expected, ToCode(control, CodeUnit.VB6));
         AssertRoundTrip(control, CodeUnit.VB6);
@@ -79,7 +78,7 @@ public sealed class CodeUnitsTests
     {
         // 100 units across the form's 4800 twips (48 twips a unit) from 10, and 50 down its 3600 (72 twips a unit) from 20.
         var form = Form(ScaleMode.User).Set(P.ScaleLeft, 10d).Set(P.ScaleTop, 20d).Set(P.ScaleWidth, 100d).Set(P.ScaleHeight, 50d);
-        var control = In(form, VBClasses.CommandButton, "Command1");
+        var control = In(form, ComponentClasses.CommandButton, "Command1");
 
         CollectionAssert.AreEqual(new[] { 60d, 45d, 10d, 10d / 3 }, ToCode(control, CodeUnit.VB6));
         AssertRoundTrip(control, CodeUnit.VB6);
@@ -89,7 +88,7 @@ public sealed class CodeUnitsTests
     public void InVB6_AScaleThatRunsRightToLeft_GivesASizeNoSign()
     {
         var form = Form(ScaleMode.User).Set(P.ScaleLeft, 100d).Set(P.ScaleTop, 0d).Set(P.ScaleWidth, -100d).Set(P.ScaleHeight, 50d);
-        var control = In(form, VBClasses.CommandButton, "Command1");
+        var control = In(form, ComponentClasses.CommandButton, "Command1");
 
         Assert.AreEqual(50d, CodeUnits.ToCode(control, P.Left, 160d, CodeUnit.VB6));
         Assert.AreEqual(10d, CodeUnits.ToCode(control, P.Width, 32d, CodeUnit.VB6));

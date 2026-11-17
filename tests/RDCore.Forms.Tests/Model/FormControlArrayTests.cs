@@ -1,7 +1,6 @@
 using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -95,7 +94,7 @@ public sealed class FormControlArrayTests
 
         var loaded = picCell.Load(1);
 
-        Assert.AreSame(VBClasses.PictureBox, loaded.Class);
+        Assert.AreSame(ComponentClasses.PictureBox, loaded.Class);
         Assert.AreEqual(("picCell", 1), (loaded.Name, loaded.Index));
         Assert.AreEqual(picCell[0].Get(P.BackColor), loaded.Get(P.BackColor));
         Assert.AreEqual((10d, picCell[0].Get(P.Top), picCell[0].Get(P.Width), picCell[0].Get(P.Height)),

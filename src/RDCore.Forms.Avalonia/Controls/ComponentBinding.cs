@@ -6,9 +6,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using MousePointer = RDCore.Forms.Model.VB.MousePointer;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using MousePointer = RDCore.Forms.Model.MousePointer;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -23,7 +22,7 @@ internal static class ComponentBinding
         if (!ReferenceEquals(instance.Class, expected))
             throw new ArgumentException($"The component is a {instance.Class.TypeName}, not a {expected.TypeName}.", nameof(instance));
 
-        VBControl.SetInstance(control, instance);
+        RDFormsControl.SetInstance(control, instance);
         void OnChanged(object? sender, ComponentPropertyChangedEventArgs e) => changed(e);
         void ApplyAll()
         {

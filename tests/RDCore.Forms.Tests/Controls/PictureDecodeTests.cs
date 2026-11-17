@@ -20,7 +20,7 @@ public sealed class PictureDecodeTests
     // each pixel of a decoded picture as its premultiplied bytes, blue, green, red and alpha, in hex.
     private static string[] Premultiplied(byte[] picture) => UI.Run(() =>
     {
-        using var bitmap = VBPicture.Decode(picture, out var error);
+        using var bitmap = RDFormsPicture.Decode(picture, out var error);
         Assert.IsNull(error);
         using var copy = new WriteableBitmap(bitmap!.PixelSize, new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Premul);
         using var buffer = copy.Lock();
@@ -73,7 +73,7 @@ public sealed class PictureDecodeTests
     {
         var size = UI.Run(() =>
         {
-            using var bitmap = VBPicture.Decode(Icon(1, Png(first, first), Png(second, second)), out _);
+            using var bitmap = RDFormsPicture.Decode(Icon(1, Png(first, first), Png(second, second)), out _);
             return bitmap?.PixelSize;
         });
 
@@ -87,7 +87,7 @@ public sealed class PictureDecodeTests
         var bitmap = Hex("424D 3A000000 00000000 36000000", "28000000 01000000 01000000 0100 1800 04000000 04000000 00000000 00000000 00000000 00000000",
             "00000000");
 
-        var (decoded, error) = UI.Run(() => (VBPicture.Decode(bitmap, out var error), error));
+        var (decoded, error) = UI.Run(() => (RDFormsPicture.Decode(bitmap, out var error), error));
 
         Assert.IsNull(decoded);
         Assert.AreEqual(FormError.InvalidPicture, error);

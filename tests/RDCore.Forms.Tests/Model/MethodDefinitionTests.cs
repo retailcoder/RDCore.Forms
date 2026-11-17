@@ -1,5 +1,4 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -16,8 +15,8 @@ public sealed class MethodDefinitionTests
     [TestMethod]
     public void RequiredCount_IsTheParametersBeforeTheFirstOptionalOne()
     {
-        Assert.AreEqual(1, VBMethods.Move.RequiredCount);
-        Assert.AreEqual(0, VBMethods.ZOrder.RequiredCount);
+        Assert.AreEqual(1, Methods.Move.RequiredCount);
+        Assert.AreEqual(0, Methods.ZOrder.RequiredCount);
     }
 
     [TestMethod]
@@ -30,18 +29,18 @@ public sealed class MethodDefinitionTests
     [TestMethod]
     public void Method_IsFoundWithoutRegardToCase()
     {
-        Assert.AreSame(VBMethods.SetFocus, VBClasses.TextBox.Method("setfocus"));
-        Assert.IsNull(VBClasses.Timer.Method("Move"));
+        Assert.AreSame(Methods.SetFocus, ComponentClasses.TextBox.Method("setfocus"));
+        Assert.IsNull(ComponentClasses.Timer.Method("Move"));
     }
 
     [TestMethod]
     public void AControlThatCanTakeTheFocus_HasSetFocus_AndOneThatCannot_HasNot()
     {
-        Assert.IsNotNull(VBClasses.CommandButton.Method("SetFocus"));
-        Assert.IsNotNull(VBClasses.PictureBox.Method("SetFocus"));
-        Assert.IsNull(VBClasses.Label.Method("SetFocus"));
-        Assert.IsNull(VBClasses.Frame.Method("SetFocus"));
-        Assert.IsNull(VBClasses.Shape.Method("SetFocus"));
+        Assert.IsNotNull(ComponentClasses.CommandButton.Method("SetFocus"));
+        Assert.IsNotNull(ComponentClasses.PictureBox.Method("SetFocus"));
+        Assert.IsNull(ComponentClasses.Label.Method("SetFocus"));
+        Assert.IsNull(ComponentClasses.Frame.Method("SetFocus"));
+        Assert.IsNull(ComponentClasses.Shape.Method("SetFocus"));
     }
 
     [TestMethod]
@@ -49,11 +48,11 @@ public sealed class MethodDefinitionTests
     {
         var methods = (ComponentClass type) => string.Join(", ", type.Methods.Select(m => m.Name));
 
-        Assert.AreEqual("Move, Refresh, ZOrder", methods(VBClasses.Image));
-        Assert.AreEqual("Move, Refresh, SetFocus, ZOrder", methods(VBClasses.TextBox));
-        Assert.AreEqual("Refresh, ZOrder", methods(VBClasses.Line));
-        Assert.AreEqual("Move, Refresh, SetFocus", methods(VBClasses.Form));
-        Assert.AreEqual("Move, SetFocus", methods(VBClasses.MDIForm));
-        Assert.AreEqual("", methods(VBClasses.Menu));
+        Assert.AreEqual("Move, Refresh, ZOrder", methods(ComponentClasses.Image));
+        Assert.AreEqual("Move, Refresh, SetFocus, ZOrder", methods(ComponentClasses.TextBox));
+        Assert.AreEqual("Refresh, ZOrder", methods(ComponentClasses.Line));
+        Assert.AreEqual("Move, Refresh, SetFocus", methods(ComponentClasses.Form));
+        Assert.AreEqual("Move, SetFocus", methods(ComponentClasses.MDIForm));
+        Assert.AreEqual("", methods(ComponentClasses.Menu));
     }
 }

@@ -30,7 +30,7 @@ Un projet qui lit des formulaires référence `src/RDCore.Forms/RDCore.Forms.csp
 
 ```csharp
 using RDCore.Forms.Import.VB6;
-using RDCore.Forms.Model.VB;
+using RDCore.Forms.Model;
 
 var import = VB6FormReader.ReadFile("Form1.frm");
 
@@ -46,7 +46,7 @@ if (import.Form is { } form)
         Console.WriteLine($"{component} ({component.Class.TypeName})");
     }
 
-    Console.WriteLine(form.Find("Command1")?.Get(VBProperties.Caption));
+    Console.WriteLine(form.Find("Command1")?.Get(Properties.Caption));
 }
 ```
 

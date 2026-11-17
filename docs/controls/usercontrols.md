@@ -1,6 +1,6 @@
 # UserControls
 
-A UserControl's designer file (`.ctl`) reads as a [`FormDefinition`](../api/RDCore.Forms.Model.FormDefinition.yml) whose root is a `VB.UserControl`. A form places the UserControl as a control of the class [`UserControlClasses.Of`](../api/RDCore.Forms.Model.VB.UserControlClasses.yml) makes from that definition, and a [`VBUserControl`](../api/RDCore.Forms.Avalonia.Controls.VBUserControl.yml) shows it.
+A UserControl's designer file (`.ctl`) reads as a [`FormDefinition`](../api/RDCore.Forms.Model.FormDefinition.yml) whose root is an `RDForms.UserControl`. A form places the UserControl as a control of the class [`UserControlClasses.Of`](../api/RDCore.Forms.Model.UserControlClasses.yml) makes from that definition, and a [`RDFormsUserControl`](../api/RDCore.Forms.Avalonia.Controls.RDFormsUserControl.yml) shows it.
 
 ## The root
 
@@ -25,11 +25,11 @@ Its drawing properties (`AutoRedraw`, `DrawMode`, `DrawStyle`, `DrawWidth`, `Fil
 
 ## Placed UserControls
 
-[`UserControlClasses.Of`](../api/RDCore.Forms.Model.VB.UserControlClasses.yml) makes the class from the UserControl's definition, the project's name and the events the UserControl's code declares. Its type name is the project's name and the UserControl's, such as `Project1.Gauge`, and [`VB6ImportOptions.Classes`](../api/RDCore.Forms.Import.VB6.VB6ImportOptions.yml) gives it to the reader of the forms that place it:
+[`UserControlClasses.Of`](../api/RDCore.Forms.Model.UserControlClasses.yml) makes the class from the UserControl's definition, the project's name and the events the UserControl's code declares. Its type name is the project's name and the UserControl's, such as `Project1.Gauge`, and [`VB6ImportOptions.Classes`](../api/RDCore.Forms.Import.VB6.VB6ImportOptions.yml) gives it to the reader of the forms that place it:
 
 ```csharp
 using RDCore.Forms.Import.VB6;
-using RDCore.Forms.Model.VB;
+using RDCore.Forms.Model;
 
 var gauge = UserControlClasses.Of(VB6FormReader.ReadFile("Gauge.ctl").Form!, "Project1");
 var form = VB6FormReader.ReadFile("Form1.frm", new VB6ImportOptions { Classes = [gauge] }).Form!;
@@ -54,7 +54,7 @@ A placed control has no `Enabled`, `hWnd` or data-binding member (438 in VB6). I
 
 ## Showing a placed UserControl
 
-[`VBControls.Create`](../api/RDCore.Forms.Avalonia.Controls.VBControls.yml) makes a `VBUserControl` for a placed UserControl, and a form's window shows it at the control's place and size. Each placed control has its own copy of its UserControl ([`FormDefinition.Copy`](../api/RDCore.Forms.Model.FormDefinition.yml)), so that its controls are its own: a change to one control's copy leaves the UserControl's definition and the other placed controls as they are. A [`VBFormView`](../api/RDCore.Forms.Avalonia.Rendering.VBFormView.yml) inside it shows the copy, whose root takes the placed control's `Width` and `Height`.
+[`RDFormsControls.Create`](../api/RDCore.Forms.Avalonia.Controls.RDFormsControls.yml) makes a `RDFormsUserControl` for a placed UserControl, and a form's window shows it at the control's place and size. Each placed control has its own copy of its UserControl ([`FormDefinition.Copy`](../api/RDCore.Forms.Model.FormDefinition.yml)), so that its controls are its own: a change to one control's copy leaves the UserControl's definition and the other placed controls as they are. A [`RDFormsFormView`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormView.yml) inside it shows the copy, whose root takes the placed control's `Width` and `Height`.
 
 |Setting|Behaviour|
 |---|---|

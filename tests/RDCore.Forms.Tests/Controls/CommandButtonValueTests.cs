@@ -2,9 +2,8 @@
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Xaml;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -19,9 +18,9 @@ public sealed class CommandButtonValueTests
     {
         return UI.Run(() =>
         {
-            var instance = new ComponentInstance(VBClasses.CommandButton, "Command1");
+            var instance = new ComponentInstance(ComponentClasses.CommandButton, "Command1");
             arrange?.Invoke(instance);
-            var button = new VBCommandButton(instance);
+            var button = new RDFormsCommandButton(instance);
             var (window, sink) = ControlHost.Show(button);
             sink.Raised.Clear();
             var clicks = 0;
@@ -89,12 +88,12 @@ public sealed class CommandButtonValueTests
     {
         var raised = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d).Set(P.Enabled, formEnabled);
-            var button = new ComponentInstance(VBClasses.CommandButton, "Command1").Set(P.Width, 120d).Set(P.Height, 33d);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d).Set(P.Enabled, formEnabled);
+            var button = new ComponentInstance(ComponentClasses.CommandButton, "Command1").Set(P.Width, 120d).Set(P.Height, 33d);
             button.SetContainer(root);
-            var window = new VBFormWindow(new FormDefinition(root));
+            var window = new RDFormsFormWindow(new FormDefinition(root));
             var sink = new RecordingSink();
-            VBControl.SetEventSink(window, sink);
+            RDFormsControl.SetEventSink(window, sink);
             Dispatcher.UIThread.RunJobs();
             button.Set(P.CommandButtonValue, true);
             return (sink.Raised, button.Get(P.CommandButtonValue));
@@ -109,11 +108,11 @@ public sealed class CommandButtonValueTests
     {
         var written = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1");
-            var button = new ComponentInstance(VBClasses.CommandButton, "Command1");
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1");
+            var button = new ComponentInstance(ComponentClasses.CommandButton, "Command1");
             button.SetContainer(root);
             var form = new FormDefinition(root);
-            _ = new VBFormWindow(form);
+            _ = new RDFormsFormWindow(form);
             button.Set(P.CommandButtonValue, true);
             return FormXaml.Write(form);
         });

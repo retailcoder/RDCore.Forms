@@ -1,7 +1,6 @@
 ﻿using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -35,7 +34,7 @@ public sealed class UserControlClassesTests
     [TestMethod]
     public void AUserControlRoot_HasTheDefaultsOfVB6sPropertiesWindow()
     {
-        var root = VBClasses.UserControl;
+        var root = ComponentClasses.UserControl;
 
         Assert.AreEqual(BackStyle.Opaque, root.DefaultOf(P.BackStyle));
         Assert.AreEqual(FormColor.FromSystem(SystemColor.ButtonFace), root.DefaultOf(P.MaskColor));

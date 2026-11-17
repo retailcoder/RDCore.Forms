@@ -2,9 +2,8 @@
 using System.Xml;
 using System.Xml.Linq;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using K = RDCore.Forms.Xaml.FormXamlDiagnosticKind;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Xaml;
 
@@ -171,21 +170,28 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
         }
 
         var component = new ComponentInstance(componentClass, name);
-        var container = instance;
-        while (!CanHold(container, component))
-            container = container.Container!;
+        ComponentInstance? container = instance;
+        while (container is not null && !CanHold(container, component))
+            container = container.Container;
+        if (container is null)
+        {
+            diagnostics.Add(K.UnplaceableComponent, LineOf(child), name);
+            Keep(child, componentClass.TypeName, name, instance);
+            return null;
+        }
+
         if (!ReferenceEquals(container, instance))
             diagnostics.Add(K.MisplacedComponent, LineOf(child), name, instance.Name, container.Name);
         component.SetContainer(container);
         return component;
     }
 
-    // As ComponentInstance.SetContainer places: a menu item in a root or another menu item, a control in a container. A root holds
-    // both, so the walk out of a component ends.
+    // As ComponentInstance.SetContainer places: a menu item in a root or another menu item, a control in a container that holds its class.
+    // A root holds both but a page, so the walk out of a component ends at the root, or past it for a page outside a MultiPage.
     private static bool CanHold(ComponentInstance container, ComponentInstance component) =>
         component.Class.Kind == ComponentKind.Menu
             ? container.Class.Kind is ComponentKind.Root or ComponentKind.Menu
-            : container.Class.IsContainer;
+            : ComponentClasses.CanHold(container.Class, component.Class);
 
     private void ReadPropertyElement(XElement element, string name, ComponentInstance instance)
     {
@@ -196,6 +202,9 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
                 return;
             case "List" when instance.Class.Has(P.List):
                 ReadList(element, instance);
+                return;
+            case "Tabs" when instance.Class.Has(P.Tabs):
+                ReadTabs(element, instance);
                 return;
             case "UnmodelledProperties":
                 foreach (var property in element.Elements())
@@ -296,6 +305,45 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
             instance.Set(P.ItemIcon, [.. icons]);
     }
 
+    // One Tab for each tab, with its Name and Caption, and its ToolTipText, Enabled, Visible and Tag where it has them. A tab with no
+    // name, or with another tab's, is kept as text, and so is a value that is not one.
+    private void ReadTabs(XElement element, ComponentInstance instance)
+    {
+        var tabs = new List<Tab>();
+        foreach (var item in element.Elements())
+        {
+            var name = (string?)item.Attribute("Name");
+            if (item.Name != Ns + "Tab" || string.IsNullOrEmpty(name)
+                || tabs.Any(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase)))
+            {
+                Unmodelled(item, instance);
+                continue;
+            }
+
+            var index = tabs.Count;
+            tabs.Add(new Tab(name, (string?)item.Attribute("Caption") ?? "")
+            {
+                ToolTipText = (string?)item.Attribute("ToolTipText") ?? "",
+                Enabled = Flag(item, "Enabled", index, instance),
+                Visible = Flag(item, "Visible", index, instance),
+                Tag = (string?)item.Attribute("Tag") ?? "",
+            });
+        }
+
+        instance.Set(P.Tabs, [.. tabs]);
+    }
+
+    // A tab's flag, True where it is not written, or not one.
+    private bool Flag(XElement tab, string name, int index, ComponentInstance instance)
+    {
+        if (tab.Attribute(name) is not { } attribute)
+            return true;
+        if (bool.TryParse(attribute.Value, out var flag))
+            return flag;
+        Invalid(instance, $"Tabs({index}).{name}", attribute.Value, attribute);
+        return true;
+    }
+
     private void ReadControlLibraries(XElement element, ComponentInstance instance)
     {
         foreach (var library in element.Elements())
@@ -326,7 +374,7 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
 
     // A class of the catalog, by its name without its library, such as CommandButton.
     private static ComponentClass? ClassOf(string name) =>
-        name.Contains('.') ? null : VBClasses.ByTypeName("VB." + name) is { } found && found.ClassName == name ? found : null;
+        name.Contains('.') ? null : ComponentClasses.ByTypeName("RDForms." + name) is { } found && found.ClassName == name ? found : null;
 
     private static int LineOf(XObject element) => element is IXmlLineInfo info && info.HasLineInfo() ? info.LineNumber : 0;
 }

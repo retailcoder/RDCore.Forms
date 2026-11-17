@@ -19,7 +19,7 @@ Le serveur de langage de RDCore lit un formulaire dans le modèle et l'analyse, 
 
 ## Le modèle
 
-Un formulaire est une [`FormDefinition`](api/RDCore.Forms.Model.FormDefinition.yml) : un composant racine, le formulaire lui-même, et les composants qui y sont placés. Chaque composant est une [`ComponentInstance`](api/RDCore.Forms.Model.ComponentInstance.yml) d'une [`ComponentClass`](api/RDCore.Forms.Model.ComponentClass.yml), comme `VB.CommandButton`, avec les propriétés qui lui sont attribuées. Les classes des contrôles intrinsèques de Visual Basic 6.0 sont dans [`VBClasses`](api/RDCore.Forms.Model.VB.VBClasses.yml), et leurs propriétés dans [`VBProperties`](api/RDCore.Forms.Model.VB.VBProperties.yml).
+Un formulaire est une [`FormDefinition`](api/RDCore.Forms.Model.FormDefinition.yml) : un composant racine, le formulaire lui-même, et les composants qui y sont placés. Chaque composant est une [`ComponentInstance`](api/RDCore.Forms.Model.ComponentInstance.yml) d'une [`ComponentClass`](api/RDCore.Forms.Model.ComponentClass.yml), comme `RDForms.CommandButton`, avec les propriétés qui lui sont attribuées. Les classes vers lesquelles les contrôles intrinsèques de Visual Basic 6.0 sont portés sont dans [`ComponentClasses`](api/RDCore.Forms.Model.ComponentClasses.yml), et leurs propriétés dans [`Properties`](api/RDCore.Forms.Model.Properties.yml).
 
 Ce qu'un formulaire définit et que le modèle n'a pas est conservé tel qu'il a été écrit : une propriété, sous forme de [`UnmodelledProperty`](api/RDCore.Forms.Model.UnmodelledProperty.yml), et un composant d'une classe que le modèle n'a pas, comme un contrôle ActiveX, sous forme de [`UnmodelledComponent`](api/RDCore.Forms.Model.UnmodelledComponent.yml).
 

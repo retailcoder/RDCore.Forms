@@ -1,8 +1,8 @@
 # Menus
 
-A form's menus are its `VB.Menu` components. [`FormMenu.Of`](../api/RDCore.Forms.Menus.FormMenu.yml) gives them for a form's root, as the items of its menu bar, each holding the items of its own menu. Each item is a [`FormMenuItem`](../api/RDCore.Forms.Menus.FormMenuItem.yml): a menu component with VB's members and the rules VB6 has for them. The model has no Avalonia types.
+A form's menus are its `RDForms.Menu` components. [`FormMenu.Of`](../api/RDCore.Forms.Menus.FormMenu.yml) gives them for a form's root, as the items of its menu bar, each holding the items of its own menu. Each item is a [`FormMenuItem`](../api/RDCore.Forms.Menus.FormMenuItem.yml): a menu component with VB's members and the rules VB6 has for them. The model has no Avalonia types.
 
-A [`VBFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.VBFormWindow.yml) shows them on its [`VBMenuBar`](../api/RDCore.Forms.Avalonia.Rendering.VBMenuBar.yml), above the client area. The client area keeps the root's `Width` and `Height` whether or not the bar is shown.
+A [`RDFormsFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml) shows them on its [`RDFormsMenuBar`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsMenuBar.yml), above the client area. The client area keeps the root's `Width` and `Height` whether or not the bar is shown.
 
 ```csharp
 using RDCore.Forms.Menus;

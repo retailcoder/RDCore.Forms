@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AcceleratorAssignment" xml:space="preserve">
+    <value>Le portage ne peut pas réécrire une affectation à Accelerator : placez un &amp; devant la lettre de la touche d'accès dans Caption.</value>
+  </data>
+  <data name="ValueNotConvertible" xml:space="preserve">
+    <value>{0} n'a pas de valeur RDForms, donc le portage le laisse tel quel.</value>
+  </data>
+  <data name="ExpressionNotConvertible" xml:space="preserve">
+    <value>Le portage ne convertit une valeur de {0} que si c'est un littéral ou une constante : réécrivez cette expression avec les valeurs de {1}.</value>
+  </data>
+  <data name="ComputedProgId" xml:space="preserve">
+    <value>Le portage ne réécrit qu'un ProgID littéral : donnez à Controls.Add le nom d'une classe RDForms, comme RDForms.TextBox.</value>
+  </data>
+  <data name="UnknownProgId" xml:space="preserve">
+    <value>{0} n'est pas un ProgID que le portage associe à une classe RDForms.</value>
+  </data>
+  <data name="LateBoundMember" xml:space="preserve">
+    <value>Cet appel à liaison tardive utilise {0}, que le portage renomme ou convertit : déclarez la variable avec la classe de son contrôle pour que le portage puisse réécrire l'appel.</value>
+  </data>
+  <data name="UnresolvedDataSource" xml:space="preserve">
+    <value>Rien ne résout {0} : donnez au formulaire une source de liaison de ce nom, ou affectez la propriété par le code.</value>
+  </data>
+  <data name="ExitPortedToValidate" xml:space="preserve">
+    <value>Ce gestionnaire Exit devient Validate, qui n'est déclenché que si le contrôle qui prend le focus a CausesValidation à True.</value>
+  </data>
+  <data name="ScrollBarReference" xml:space="preserve">
+    <value>Un ScrollBar devient RDForms.HScrollBar ou RDForms.VScrollBar selon son orientation, donc le portage donne à cette référence le type RDForms.Control.</value>
+  </data>
+  <data name="UnitWrapped" xml:space="preserve">
+    <value>Le portage a placé cette expression dans {0} pour garder son unité d'origine : réécrivez-la en DIP et retirez l'appel.</value>
+  </data>
+  <data name="CoordinatesConverted" xml:space="preserve">
+    <value>Le portage reconvertit X et Y dans l'unité d'origine avec {0} sur les premières lignes de ce gestionnaire : réécrivez le gestionnaire en DIP et retirez ces lignes.</value>
+  </data>
+  <data name="ScrollBarTypeNameChanged" xml:space="preserve">
+    <value>Ce contrôle est un {0} après le portage, donc son TypeName n'est plus ScrollBar : comparez-le avec {0}.</value>
+  </data>
+  <data name="FindWindowThunderDFrame" xml:space="preserve">
+    <value>{0} cherche la fenêtre d'un UserForm par sa classe, ThunderDFrame. Un formulaire porté est une fenêtre RDForms, donc l'appel n'en trouve aucune : pour changer l'icône du formulaire, affectez sa propriété Icon.</value>
+  </data>
+</root>

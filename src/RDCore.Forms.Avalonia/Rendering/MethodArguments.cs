@@ -65,7 +65,7 @@ internal static class MethodArguments
         _ => Number(value, FormError.InvalidUseOfNull) != 0,
     };
 
-    // A String: Empty is "", Null 94. The caller gives a String parameter a String (see VBFormWindow.Invoke); another value is 13.
+    // A String: Empty is "", Null 94. The caller gives a String parameter a String (see RDFormsFormWindow.Invoke); another value is 13.
     internal static string String(FormValue value) => value.Kind switch
     {
         FormValueKind.String => value.AsString(),

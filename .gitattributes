@@ -13,7 +13,11 @@
 *.frx binary
 *.ctx binary
 *.pgx binary
+# an MSForms form's storage, as Microsoft Forms writes it.
+*.storage binary
 tests/RDCore.Forms.Tests/Import/VB6/Fixtures/*.txt -text
+# RDCore's Symbols/VB.json, embedded byte for byte.
+src/RDCore.Forms/Libraries/VB.json -text
 
 ###############################################################################
 # Set default behavior for command prompt diff.

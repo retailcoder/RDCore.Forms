@@ -23,7 +23,7 @@ public enum ComponentKind
 }
 
 /// <summary>
-/// The metadata of a component class, such as VB's <c>VB.CommandButton</c>: its type name, the properties and events it
+/// The metadata of a component class, such as <c>RDForms.CommandButton</c>: its type name, the properties and events it
 /// has, and how it sits on a form.
 /// </summary>
 /// <remarks>
@@ -41,7 +41,7 @@ public sealed class ComponentClass
     /// <summary>
     /// Creates a component class.
     /// </summary>
-    /// <param name="typeName">The class's qualified type name, such as <c>VB.CommandButton</c>.</param>
+    /// <param name="typeName">The class's qualified type name, such as <c>RDForms.CommandButton</c>.</param>
     /// <param name="defaultName">The name a designer gives the first instance it adds, less its number, such as <c>Command</c>.</param>
     /// <param name="kind">What the class is to the form that holds it.</param>
     /// <param name="properties">The class's properties, in the order a designer lists them.</param>
@@ -138,7 +138,7 @@ public sealed class ComponentClass
     }
 
     /// <summary>
-    /// The class's qualified type name, such as <c>VB.CommandButton</c>.
+    /// The class's qualified type name, such as <c>RDForms.CommandButton</c>.
     /// </summary>
     public string TypeName { get; }
 
@@ -160,8 +160,8 @@ public sealed class ComponentClass
     /// In a VB6 type library, the default member is a hidden member of its own, <c>_Default</c>, with the dispatch ID 0. The name given
     /// here is the member it reads and assigns. It may be one the class does not hold as a property, such as a DriveListBox's
     /// <c>Drive</c>, or one that takes an argument, such as a form's <c>Controls</c> (<c>Form1("Command1")</c>), which VB refuses
-    /// with error 450 without one. The model names none for <see cref="VB.VBClasses.UserControl"/> and
-    /// <see cref="VB.VBClasses.PropertyPage"/>.
+    /// with error 450 without one. The model names none for <see cref="ComponentClasses.UserControl"/> and
+    /// <see cref="ComponentClasses.PropertyPage"/>.
     /// </remarks>
     public string? DefaultMember { get; }
 

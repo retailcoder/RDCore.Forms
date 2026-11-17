@@ -4,12 +4,12 @@ Label and TextBox. The behaviour below was measured with VB6.
 
 ## Label
 
-[`VBLabel`](../api/RDCore.Forms.Avalonia.Controls.VBLabel.yml) is windowless: it takes no focus, and it is under every windowed control in its container.
+[`RDFormsLabel`](../api/RDCore.Forms.Avalonia.Controls.RDFormsLabel.yml) is windowless: it takes no focus, and it is under every windowed control in its container.
 
 |Property|Behaviour|
 |---|---|
 |`Caption`, `UseMnemonic`|Where `UseMnemonic` is set, a single `&` marks an access key; otherwise every `&` is drawn.|
-|`Alignment`, `WordWrap`|Align and wrap the caption.|
+|`Alignment`, `WordWrap`|Align the caption. It wraps at the label's width, except where `AutoSize` is set and `WordWrap` is not: that caption stays on one line.|
 |`BackStyle`|Transparent paints no background.|
 |`BorderStyle`, `Appearance`|A single border is a sunken edge when 3-D, and one pixel when flat.|
 |`Picture`, `PicturePosition`|RD-VBA addition: a picture laid out against the caption, as MSForms' Label lays it out. See [Picture](#picture).|
@@ -39,7 +39,7 @@ A Label's `Picture` and `PicturePosition` are an RD-VBA addition: VB6's Label ha
 
 ## TextBox
 
-[`VBTextBox`](../api/RDCore.Forms.Avalonia.Controls.VBTextBox.yml)
+[`RDFormsTextBox`](../api/RDCore.Forms.Avalonia.Controls.RDFormsTextBox.yml)
 
 |Case|Behaviour|
 |---|---|
@@ -74,6 +74,21 @@ A Label's `Picture` and `PicturePosition` are an RD-VBA addition: VB6's Label ha
 |Change from `SelText`|A single-line box raises one Change, even where the text does not change, and none where nothing is selected and a text other than "" does not fit at all. A multi-line box raises one Change as it deletes the selection, where there is one, and one as it inserts the text, where some of it fits.|
 |`Text` from code|A different text selects nothing, the caret before the first character. The same text keeps the selection, with no Change.|
 |A new line|`SelStart` and `SelLength` count its CR and its LF, and a selection can start or end between them. The box shows the caret at the nearest place it can.|
+
+## Converting from MSForms
+
+The names an MSForms Label and TextBox take in RDForms (see [Converting from MSForms](index.md#converting-from-msforms)):
+
+|MSForms|RDForms|
+|---|---|
+|`Accelerator` of a Label|A `&` before the access key's letter in `Caption`. An assignment of `Accelerator` from code is RDC40001.|
+|`TextAlign` of a Label or a TextBox|`Alignment`, with VB's values: `fmTextAlignLeft` (1) is 0, `fmTextAlignCenter` (2) is 2, and `fmTextAlignRight` (3) is 1.|
+|`Value` of a TextBox|`Text`.|
+|`BorderStyle`, `fmBorderStyleNone` and `fmBorderStyleSingle`|`BorderStyle`, 0 and 1.|
+|`MultiLine`, `SelStart`, `SelLength`, `SelText`, `PasswordChar` and the other members of the same name|The same.|
+
+> [!NOTE]
+> **Not implemented.** A TextBox has no `IMEMode` and no `Copy`, `Cut`, `Paste` or `CanPaste`. A Label's and a TextBox's BeforeDragOver, BeforeDropOrPaste and Error are declared and never raised.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

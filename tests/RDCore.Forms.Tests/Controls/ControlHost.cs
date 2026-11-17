@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Controls;
 
@@ -43,15 +43,15 @@ public static class ControlHost
         // Placed by their components, in pixels, as a form places them.
         foreach (var (control, bounds) in controls)
         {
-            VBControl.GetInstance(control)!
+            RDFormsControl.GetInstance(control)!
                 .Set(P.Left, bounds.X).Set(P.Top, bounds.Y).Set(P.Width, bounds.Width).Set(P.Height, bounds.Height);
             canvas.Children.Add(control);
         }
         var sink = new RecordingSink();
         var window = new Window { Width = 400, Height = 300, Content = canvas };
-        VBControl.SetEventSink(window, sink);
+        RDFormsControl.SetEventSink(window, sink);
         // A test closes the window when it is done; the focus leaving a control as it closes is not what it looks at.
-        window.Closing += (_, _) => VBControl.SetEventSink(window, null);
+        window.Closing += (_, _) => RDFormsControl.SetEventSink(window, null);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return (window, sink);

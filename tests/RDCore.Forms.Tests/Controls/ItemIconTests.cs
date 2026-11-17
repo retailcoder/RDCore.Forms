@@ -5,9 +5,8 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Model.TestPictures;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -35,26 +34,26 @@ public sealed class ItemIconTests
     }
 
     [TestMethod]
-    [DataRow("VB.ListBox")]
-    [DataRow("VB.ComboBox")]
+    [DataRow("RDForms.ListBox")]
+    [DataRow("RDForms.ComboBox")]
     public void AddItemRemoveItemAndClear_KeepItemDataAndItemIconInStepWithTheItems(string className)
     {
         byte[][] pictures = [Gif1x1, Bitmap2x2];
         var (added, removed, cleared, data, icon) = UI.Run(() =>
         {
-            var isList = className == "VB.ListBox";
-            var instance = new ComponentInstance(isList ? VBClasses.ListBox : VBClasses.ComboBox, "List1")
+            var isList = className == "RDForms.ListBox";
+            var instance = new ComponentInstance(isList ? ComponentClasses.ListBox : ComponentClasses.ComboBox, "List1")
                 .Set(P.List, ["b", "c"]).Set(P.ItemData, [7, 8]).Set(P.ItemIcon, [pictures[0], pictures[1]]);
-            Control control = isList ? new VBListBox(instance) : new VBComboBox(instance);
-            void AddItem(string item, int index) { if (control is VBListBox l) l.AddItem(item, index); else ((VBComboBox)control).AddItem(item, index); }
-            void RemoveItem(int index) { if (control is VBListBox l) l.RemoveItem(index); else ((VBComboBox)control).RemoveItem(index); }
-            void Clear() { if (control is VBListBox l) l.Clear(); else ((VBComboBox)control).Clear(); }
+            Control control = isList ? new RDFormsListBox(instance) : new RDFormsComboBox(instance);
+            void AddItem(string item, int index) { if (control is RDFormsListBox l) l.AddItem(item, index); else ((RDFormsComboBox)control).AddItem(item, index); }
+            void RemoveItem(int index) { if (control is RDFormsListBox l) l.RemoveItem(index); else ((RDFormsComboBox)control).RemoveItem(index); }
+            void Clear() { if (control is RDFormsListBox l) l.Clear(); else ((RDFormsComboBox)control).Clear(); }
             var (window, _) = ControlHost.Show(control);
             AddItem("a", 0);
             var added = Read(instance, pictures);
             RemoveItem(1);
             var removed = Read(instance, pictures);
-            var (data, icon) = control is VBListBox list ? (list.GetItemData(1), list.GetItemIcon(1)) : (((VBComboBox)control).GetItemData(1), ((VBComboBox)control).GetItemIcon(1));
+            var (data, icon) = control is RDFormsListBox list ? (list.GetItemData(1), list.GetItemIcon(1)) : (((RDFormsComboBox)control).GetItemData(1), ((RDFormsComboBox)control).GetItemIcon(1));
             Clear();
             window.Close();
             return (added, removed, Read(instance, pictures), data, icon);
@@ -77,8 +76,8 @@ public sealed class ItemIconTests
         var (data, icon, none, outside, invalid, unchanged) = UI.Run(() =>
         {
             // ItemData shorter than the items: the rest are 0.
-            var instance = new ComponentInstance(VBClasses.ListBox, "List1").Set(P.List, ["a", "b"]).Set(P.ItemData, [5]);
-            var list = new VBListBox(instance);
+            var instance = new ComponentInstance(ComponentClasses.ListBox, "List1").Set(P.List, ["a", "b"]).Set(P.ItemData, [5]);
+            var list = new RDFormsListBox(instance);
             list.SetItemData(1, -3);
             list.SetItemIcon(1, Gif1x1);
             var icon = list.GetItemIcon(1);
@@ -108,8 +107,8 @@ public sealed class ItemIconTests
     {
         var (pixel, contents, plain) = UI.Run(() =>
         {
-            var list = new VBListBox(new ComponentInstance(VBClasses.ListBox, "List1").Set(P.List, ["red", "plain"]).Set(P.ItemIcon, [RedIcon()]));
-            var bare = new VBListBox(new ComponentInstance(VBClasses.ListBox, "List2").Set(P.List, ["one"]));
+            var list = new RDFormsListBox(new ComponentInstance(ComponentClasses.ListBox, "List1").Set(P.List, ["red", "plain"]).Set(P.ItemIcon, [RedIcon()]));
+            var bare = new RDFormsListBox(new ComponentInstance(ComponentClasses.ListBox, "List2").Set(P.List, ["one"]));
             var (window, _) = ControlHost.Show((list, new Rect(10, 5, 120, 80)), (bare, new Rect(150, 5, 120, 80)));
             var pixel = IconPixel(window, list.ContainerFromIndex(0)!);
             var contents = new[] { list.ContainerFromIndex(0), list.ContainerFromIndex(1) }.Select(c => ((ContentControl)c!).Content?.GetType().Name).ToArray();
@@ -128,9 +127,9 @@ public sealed class ItemIconTests
     {
         var pixel = UI.Run(() =>
         {
-            var instance = new ComponentInstance(VBClasses.ComboBox, "Combo1").Set(P.List, ["plain", "red"])
+            var instance = new ComponentInstance(ComponentClasses.ComboBox, "Combo1").Set(P.List, ["plain", "red"])
                 .Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList).Set(P.ItemIcon, [null, RedIcon()]);
-            var combo = new VBComboBox(instance);
+            var combo = new RDFormsComboBox(instance);
             var (window, _) = ControlHost.Show(combo);
             combo.ListIndex = 1;
             Dispatcher.UIThread.RunJobs();

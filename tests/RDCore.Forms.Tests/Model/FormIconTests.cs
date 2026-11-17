@@ -1,7 +1,6 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Model.TestPictures;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -12,7 +11,7 @@ public sealed class FormIconTests
     [TestMethod]
     public void AFormsIcon_HoldsAnIconOrACursorOrNone_AndRefusesAnyOtherPicture()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1");
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1");
         var icon = Icon(1, PngHeader(2, 2));
 
         var accepted = new[] { root.TrySet(P.Icon, icon), root.TrySet(P.Icon, Icon(2, PngHeader(2, 2))), root.TrySet(P.Icon, null) };
@@ -27,7 +26,7 @@ public sealed class FormIconTests
     [TestMethod]
     public void AFormsPicture_HoldsAnyPicture()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1");
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1");
 
         var set = new[] { root.TrySet(P.Picture, Bitmap2x2), root.TrySet(P.Picture, Icon(1, PngHeader(2, 2))), root.TrySet(P.Picture, null) };
 

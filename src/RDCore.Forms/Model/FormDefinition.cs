@@ -1,8 +1,8 @@
 ﻿// Derived from HexIDE (https://github.com/hexide-io/HexIDE), commit ae17f1db.
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
+using System.Globalization;
 using RDCore.Forms.Drawing;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Model;
 
@@ -137,8 +137,8 @@ public sealed class FormDefinition
     }
 
     /// <summary>
-    /// Adds a control of a VB class to the form, as a program's <c>Controls.Add</c> does: the class named by its ProgID, such as
-    /// <c>VB.CommandButton</c>, without regard to case.
+    /// Adds a control of an RDForms class to the form, as a program's <c>Controls.Add</c> does: the class named by its ProgID, such
+    /// as <c>RDForms.CommandButton</c>, without regard to case.
     /// </summary>
     /// <param name="progId">The class's ProgID.</param>
     /// <param name="name">The control's name.</param>
@@ -146,14 +146,14 @@ public sealed class FormDefinition
     /// places it in the root.</param>
     /// <returns>The control added.</returns>
     /// <exception cref="FormErrorException">
-    /// No VB class has that ProgID: 711, Invalid class string. Otherwise as
+    /// No RDForms class has that ProgID: 711, Invalid class string. Otherwise as
     /// <see cref="AddControl(ComponentClass, string, ComponentInstance?)"/>.
     /// </exception>
     /// <exception cref="ArgumentException"><paramref name="container"/> is not a component of this form.</exception>
     public ComponentInstance AddControl(string progId, string name, ComponentInstance? container = null)
     {
         ArgumentNullException.ThrowIfNull(progId);
-        var type = VBClasses.All.FirstOrDefault(c => string.Equals(c.TypeName, progId, StringComparison.OrdinalIgnoreCase))
+        var type = ComponentClasses.All.FirstOrDefault(c => string.Equals(c.TypeName, progId, StringComparison.OrdinalIgnoreCase))
                    ?? throw new FormErrorException(FormError.InvalidClassString(progId));
         return AddControl(type, name, container);
     }
@@ -169,7 +169,8 @@ public sealed class FormDefinition
     /// <exception cref="FormErrorException">
     /// <paramref name="type"/> is a menu's or a root's class: 720, not a valid control type. <paramref name="name"/> is empty or
     /// white space: 728, not a legal control name. A component of the form other than its root has the name, compared without regard
-    /// to case: 727. <paramref name="container"/> holds no controls: 721, not a valid control container.
+    /// to case: 727. <paramref name="container"/> holds no controls, or none of the class: 721, not a valid control container. A page goes in
+    /// a MultiPage only, and a MultiPage holds pages only (<see cref="ComponentClasses.CanHold"/>).
     /// </exception>
     /// <exception cref="ArgumentException"><paramref name="container"/> is not a component of this form.</exception>
     /// <remarks>
@@ -179,10 +180,19 @@ public sealed class FormDefinition
     /// after the form's others. Its other properties have their class's defaults, so that a caption or a text is "".
     /// </para>
     /// <para>
+    /// A page is shown, as a MultiPage shows its selected page. A MultiPage starts with two pages, captioned as they are named:
+    /// <c>Page1</c> and <c>Page2</c>, or the next names no component of the form has.
+    /// </para>
+    /// <para>
     /// Any other name is accepted, even one that starts with a digit, holds a space, is a keyword, or is the form's own name.
     /// </para>
     /// </remarks>
-    public ComponentInstance AddControl(ComponentClass type, string name, ComponentInstance? container = null)
+    public ComponentInstance AddControl(ComponentClass type, string name, ComponentInstance? container = null) =>
+        AddControl(type, name, container, -1);
+
+    // AddControl, at index among the container's contents (last where it is negative). A page is shown, and a MultiPage starts with two
+    // of them, Page1 and Page2 or the next names the form has free, as MSForms gives one; they are among the controls added.
+    internal ComponentInstance AddControl(ComponentClass type, string name, ComponentInstance? container, int index)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(name);
@@ -193,20 +203,48 @@ public sealed class FormDefinition
             throw new FormErrorException(FormError.NotAValidControlType(type.ClassName));
         if (string.IsNullOrWhiteSpace(name))
             throw new FormErrorException(FormError.NotALegalControlName(name));
-        if (Root.Descendants().Any(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)))
+        if (IsNameTaken(name))
             throw new FormErrorException(FormError.ControlNameTaken(name));
-        if (!container.Class.IsContainer)
+        if (!ComponentClasses.CanHold(container.Class, type))
             throw new FormErrorException(FormError.NotAValidControlContainer(container.Class.ClassName));
-        var control = new ComponentInstance(type, name);
-        if (type.Has(VBProperties.Visible))
-            control.Set(VBProperties.Visible, false);
-        if (type.HasExtent)
-            control.Set(VBProperties.Width, 80d).Set(VBProperties.Height, 32d);
-        if (type.Has(VBProperties.TabIndex))
-            control.Set(VBProperties.TabIndex, (short)Root.Descendants().Count(c => c.Class.Has(VBProperties.TabIndex)));
-        control.SetContainer(container);
+        var control = New(type, name);
+        control.SetContainer(container, index);
         added.Add(control);
+        if (ReferenceEquals(type, ComponentClasses.MultiPage))
+        {
+            foreach (var _ in Enumerable.Range(0, 2))
+            {
+                var page = New(ComponentClasses.Page, FreeName(ComponentClasses.Page.DefaultName));
+                page.Set(Properties.Caption, page.Name).SetContainer(control);
+                added.Add(page);
+            }
+        }
+
         ControlAdded?.Invoke(this, new FormControlEventArgs(control, container));
+        return control;
+    }
+
+    // Whether a component of the form other than its root has the name, compared without regard to case.
+    internal bool IsNameTaken(string name) => Root.Descendants().Any(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
+
+    // The first of stem1, stem2, ... that no component of the form has.
+    internal string FreeName(string stem)
+    {
+        var number = 1;
+        while (IsNameTaken(stem + number.ToString(CultureInfo.InvariantCulture)))
+            number++;
+        return stem + number.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private ComponentInstance New(ComponentClass type, string name)
+    {
+        var control = new ComponentInstance(type, name);
+        if (type.Has(Properties.Visible) && !ReferenceEquals(type, ComponentClasses.Page))
+            control.Set(Properties.Visible, false);
+        if (type.HasExtent)
+            control.Set(Properties.Width, 80d).Set(Properties.Height, 32d);
+        if (type.Has(Properties.TabIndex))
+            control.Set(Properties.TabIndex, (short)Root.Descendants().Count(c => c.Class.Has(Properties.TabIndex)));
         return control;
     }
 
@@ -218,14 +256,14 @@ public sealed class FormDefinition
         var element = new ComponentInstance(source.Class, source.Name, index);
         foreach (var (property, value) in source.SetValues)
         {
-            if (property != VBProperties.Visible && property != VBProperties.TabIndex)
+            if (property != Properties.Visible && property != Properties.TabIndex)
                 element.TryRead(property, value);
         }
 
-        if (element.Class.Has(VBProperties.Visible))
-            element.Set(VBProperties.Visible, false);
-        if (element.Class.Has(VBProperties.TabIndex))
-            element.Set(VBProperties.TabIndex, (short)Root.Descendants().Count(c => c.Class.Has(VBProperties.TabIndex)));
+        if (element.Class.Has(Properties.Visible))
+            element.Set(Properties.Visible, false);
+        if (element.Class.Has(Properties.TabIndex))
+            element.Set(Properties.TabIndex, (short)Root.Descendants().Count(c => c.Class.Has(Properties.TabIndex)));
         element.SetContainer(container);
         added.Add(element);
         ControlAdded?.Invoke(this, new FormControlEventArgs(element, container));
@@ -286,15 +324,26 @@ public sealed class FormDefinition
         control.SetContainer(null);
         foreach (var component in removed)
             added.Remove(component);
-        var freed = removed.Where(c => c.Class.Has(VBProperties.TabIndex)).Select(c => c.Get(VBProperties.TabIndex)).ToList();
-        foreach (var other in Root.Descendants().Where(c => c.Class.Has(VBProperties.TabIndex)))
+        var freed = removed.Where(c => c.Class.Has(Properties.TabIndex)).Select(c => c.Get(Properties.TabIndex)).ToList();
+        foreach (var other in Root.Descendants().Where(c => c.Class.Has(Properties.TabIndex)))
         {
-            var tabIndex = other.Get(VBProperties.TabIndex);
+            var tabIndex = other.Get(Properties.TabIndex);
             var below = freed.Count(f => f < tabIndex);
             if (below > 0)
-                other.Set(VBProperties.TabIndex, (short)(tabIndex - below));
+                other.Set(Properties.TabIndex, (short)(tabIndex - below));
         }
         ControlRemoved?.Invoke(this, new FormControlEventArgs(control, container));
+    }
+
+    // Takes a page out of its MultiPage, with the controls on it, as Pages.Remove does: unlike Controls.Remove, a page placed at design
+    // time goes too, and the controls on it with it.
+    internal void RemovePage(ComponentInstance page)
+    {
+        if (!ReferenceEquals(page.Class, ComponentClasses.Page) || !Root.Descendants().Contains(page))
+            throw new FormErrorException(FormError.ControlNotFound(page.Name));
+        foreach (var component in page.Descendants().Prepend(page).Where(c => !added.Contains(c)))
+            added.Add(component);
+        RemoveControl(page);
     }
 
     /// <summary>
@@ -310,7 +359,8 @@ public sealed class FormDefinition
     /// <param name="container">The container: the root, or a control of the form that holds controls.</param>
     /// <exception cref="FormErrorException">
     /// 425, Invalid object use, and nothing changes: <paramref name="container"/> is <see langword="null"/>, is not the root or a
-    /// control of this form, holds no controls, or is <paramref name="control"/> or a control it holds.
+    /// control of this form, holds no controls or none of the control's class (<see cref="ComponentClasses.CanHold"/>: a page goes in a
+    /// MultiPage only, and a MultiPage holds pages only), or is <paramref name="control"/> or a control it holds.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// <paramref name="control"/> is not a control of this form, or its class has no <c>Container</c>.
@@ -328,25 +378,25 @@ public sealed class FormDefinition
             throw new ArgumentException($"{control.Name} is not a control of {Name}.", nameof(control));
         if (!control.Class.HasContainer)
             throw new ArgumentException($"{control.Class.ClassName} has no Container.", nameof(control));
-        if (container is null || !container.Class.IsContainer
+        if (container is null || !ComponentClasses.CanHold(container.Class, control.Class)
             || (!ReferenceEquals(container, Root) && !Root.Descendants().Contains(container))
             || ReferenceEquals(container, control) || control.Descendants().Contains(container))
             throw new FormErrorException(FormError.InvalidObjectUse);
         var previous = control.Container!;
-        (double X1, double Y1, double X2, double Y2)? line = ReferenceEquals(control.Class, VBClasses.Line) && !ReferenceEquals(previous, container)
+        (double X1, double Y1, double X2, double Y2)? line = ReferenceEquals(control.Class, ComponentClasses.Line) && !ReferenceEquals(previous, container)
             ? LineEnds(control, DrawingScale.Of(previous), DrawingScale.Of(container))
             : null;
         control.SetContainer(container);
         if (line is { } ends)
-            control.Set(VBProperties.X1, ends.X1).Set(VBProperties.Y1, ends.Y1).Set(VBProperties.X2, ends.X2).Set(VBProperties.Y2, ends.Y2);
+            control.Set(Properties.X1, ends.X1).Set(Properties.Y1, ends.Y1).Set(Properties.X2, ends.X2).Set(Properties.Y2, ends.Y2);
         ContainerChanged?.Invoke(this, new FormContainerChangedEventArgs(control, previous, container));
     }
 
     // A Line's ends at the same place, given in the new container's scale.
     private static (double X1, double Y1, double X2, double Y2) LineEnds(ComponentInstance line, DrawingScale from, DrawingScale to)
     {
-        var (x1, y1) = from.ToTwips(line.Get(VBProperties.X1), line.Get(VBProperties.Y1));
-        var (x2, y2) = from.ToTwips(line.Get(VBProperties.X2), line.Get(VBProperties.Y2));
+        var (x1, y1) = from.ToTwips(line.Get(Properties.X1), line.Get(Properties.Y1));
+        var (x2, y2) = from.ToTwips(line.Get(Properties.X2), line.Get(Properties.Y2));
         (x1, y1) = to.FromTwips(x1, y1);
         (x2, y2) = to.FromTwips(x2, y2);
         return (x1, y1, x2, y2);

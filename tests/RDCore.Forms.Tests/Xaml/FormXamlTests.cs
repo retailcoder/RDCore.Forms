@@ -1,12 +1,11 @@
 ﻿using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Xaml;
 using RDCore.SDK.Workspace.Pictures;
 using static RDCore.Forms.Tests.Model.TestPictures;
 using K = RDCore.Forms.Xaml.FormXamlDiagnosticKind;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Xaml;
 
@@ -107,14 +106,14 @@ public sealed class FormXamlTests
     [TestMethod]
     public void AForm_IsWrittenAsTheFormatHasIt()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Caption, "Hello").Set(P.Width, 320.0)
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Caption, "Hello").Set(P.Width, 320.0)
             .Set(P.BackColor, FormColor.FromSystem(SystemColor.ButtonFace)).Set(P.ForeColor, FormColor.FromRgb(0x12, 0x34, 0xAB));
         var form = new FormDefinition(root);
-        var button = new ComponentInstance(VBClasses.CommandButton, "Command1").Set(P.Caption, "&OK").Set(P.Font, new FormFont("Tahoma", 9, FormFont.BoldWeight));
+        var button = new ComponentInstance(ComponentClasses.CommandButton, "Command1").Set(P.Caption, "&OK").Set(P.Font, new FormFont("Tahoma", 9, FormFont.BoldWeight));
         button.SetContainer(root);
-        var option = new ComponentInstance(VBClasses.OptionButton, "Option1", 2).Set(P.OptionButtonValue, true);
+        var option = new ComponentInstance(ComponentClasses.OptionButton, "Option1", 2).Set(P.OptionButtonValue, true);
         option.SetContainer(root);
-        var list = new ComponentInstance(VBClasses.ListBox, "List1").Set(P.List, ["a", "b"]).Set(P.ItemData, [7]).Set(P.ItemIcon, [null, Gif1x1])
+        var list = new ComponentInstance(ComponentClasses.ListBox, "List1").Set(P.List, ["a", "b"]).Set(P.ItemData, [7]).Set(P.ItemIcon, [null, Gif1x1])
             .Set(P.MultiSelect, ListBoxMultiSelect.Extended);
         list.SetContainer(root);
         root.UnmodelledContents.Add(new UnmodelledComponent("MSComctlLib.ListViewCtrl", "ListView1", 1, "Begin MSComctlLib.ListView ListView1\r\nEnd"));
@@ -151,8 +150,8 @@ public sealed class FormXamlTests
     [DataRow("")]
     public void AStringOfAnyCharacters_ComesBackAsItWas(string text)
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Caption, text);
-        var list = new ComponentInstance(VBClasses.ListBox, "List1").Set(P.List, [text]);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Caption, text);
+        var list = new ComponentInstance(ComponentClasses.ListBox, "List1").Set(P.List, [text]);
         list.SetContainer(root);
         root.UnmodelledProperties.Add(new UnmodelledProperty("Odd", text));
         root.UnmodelledContents.Add(new UnmodelledComponent("X.Y", "Y1", 0, text));
@@ -173,7 +172,7 @@ public sealed class FormXamlTests
         var path = Path.Combine(Path.GetTempPath(), $"rdforms-{Guid.NewGuid():N}.xaml");
         try
         {
-            FormXaml.WriteFile(new FormDefinition(new ComponentInstance(VBClasses.Form, "Form1").Set(P.Caption, "é")), path);
+            FormXaml.WriteFile(new FormDefinition(new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Caption, "é")), path);
 
             var bytes = File.ReadAllBytes(path);
             var read = FormXaml.ReadFile(path);
@@ -270,7 +269,7 @@ public sealed class FormXamlTests
             button.UnmodelledProperties);
         Assert.IsNull(button.Index);
         Assert.IsFalse(button.IsSet(P.Width));
-        CollectionAssert.AreEqual(new[] { "Grid", "VB.TextBox" }, form.Root.UnmodelledContents.Select(c => c.TypeName.Replace($"{{{Ns}}}", "")).ToArray());
+        CollectionAssert.AreEqual(new[] { "Grid", "RDForms.TextBox" }, form.Root.UnmodelledContents.Select(c => c.TypeName.Replace($"{{{Ns}}}", "")).ToArray());
         Assert.AreEqual(2, form.Root.UnmodelledContents[1].Position);
         Assert.AreEqual("Font", form.Find("Text1")!.UnmodelledProperties.Single().Name);
     }
@@ -310,11 +309,11 @@ public sealed class FormXamlTests
     [TestMethod]
     public void AFormNestedToTheLimit_IsWrittenAndReadBack()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1");
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1");
         var container = root;
         for (var i = 1; i < FormXaml.MaxNestingDepth; i++)
         {
-            var frame = new ComponentInstance(VBClasses.Frame, $"Frame{i}");
+            var frame = new ComponentInstance(ComponentClasses.Frame, $"Frame{i}");
             frame.SetContainer(container);
             container = frame;
         }

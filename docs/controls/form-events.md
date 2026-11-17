@@ -1,6 +1,6 @@
 # Form events
 
-A [`VBFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.VBFormWindow.yml) raises its root's own events to the window's sink, in the order VB6 raises them (measured with VB6).
+A [`RDFormsFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml) raises its root's own events to the window's sink, in the order VB6 raises them (measured with VB6).
 
 Initialize, Load and Terminate are the program's: the window raises none of them. A program raises Initialize and Load before it shows the window.
 
@@ -26,12 +26,27 @@ Once its window has been shown, the root raises Resize for a change of size whet
 
 Each form keeps the control that last had the focus on it: that control takes the focus again, with a GotFocus, when the form is activated again. A form with no control that can take the focus raises its own GotFocus after its Activate, and its own LostFocus before its Deactivate. That LostFocus was not measured with VB6: its place before the Deactivate is RDForms' own.
 
+## Leaving a control
+
+As the focus moves from a control of the active form to another of its controls, by the keyboard or the mouse, the control it leaves raises these events in order:
+
+1. BeforeUpdate, then AfterUpdate, where the control is a TextBox whose text the user changed since the focus last left it. A change from code raises neither.
+2. Validate, where the control that takes the focus has `CausesValidation` True, the default.
+3. LostFocus, then the other control's GotFocus.
+
+A handler that sets `Cancel` to True, in BeforeUpdate or in Validate, keeps the focus on the control: nothing else is raised, and the edit stays. The next move raises the events again. A move made by `SetFocus` raises no Validate.
+
+The order of BeforeUpdate, AfterUpdate and Validate is RDForms' own: an MSForms UserForm raises BeforeUpdate and AfterUpdate before its Exit, which ports to Validate.
+
+> [!NOTE]
+> **Not implemented.** The other controls with a value (ComboBox, ListBox, CheckBox, OptionButton, the scroll bars, MultiPage and TabStrip) declare BeforeUpdate and AfterUpdate and raise neither. BeforeDragOver, BeforeDropOrPaste and Error are declared on the controls and containers MSForms gives them, with `RDForms.DataObject` and `RDForms.ReturnEffect` arguments, and never raised. A MultiPage's and a TabStrip's take the page's or the tab's `Index` first, and a MultiPage's Error does too.
+
 ## Unloading
 
 |Situation|Raised|
 |---|---|
 |The user clicks the close box|QueryUnload with an `UnloadMode` of 0, then Unload.|
-|[`Unload`](../api/RDCore.Forms.Avalonia.Rendering.VBFormWindow.yml) is called, as VB's `Unload` statement|QueryUnload with an `UnloadMode` of 1, then Unload. It returns whether the form unloaded.|
+|[`Unload`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml) is called, as VB's `Unload` statement|QueryUnload with an `UnloadMode` of 1, then Unload. It returns whether the form unloaded.|
 |`Close` is called, as VB's `End` closes a form|Nothing.|
 |`Unload` is called from the root's own QueryUnload or Unload|Nothing: it returns False and the unload goes on.|
 
@@ -98,6 +113,22 @@ A CommandButton whose `Default` is True is the form's default button, and one wh
 Where more than one CommandButton has `Default` or `Cancel` True, the first the form holds takes the key. A default or cancel button that is hidden or disabled takes no key: Enter and Esc go to the focused control as other keys do. Neither case was measured with VB6: these two rules are RDForms' own.
 
 What a character typed in a ListBox selects is on the [Lists](lists.md) page.
+
+## Converting from MSForms
+
+The handlers of an MSForms form and its controls take these names and parameters in RDForms (see [Converting from MSForms](index.md#converting-from-msforms)):
+
+|MSForms|RDForms|
+|---|---|
+|`UserForm_Initialize`, `UserForm_Activate` and the form's other handlers|`Form_Initialize`, `Form_Activate`, and so on.|
+|`UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)`|`Form_QueryUnload`, its parameters as declared.|
+|`Enter()`|`GotFocus()`.|
+|`Exit(ByVal Cancel As MSForms.ReturnBoolean)`|`Validate(Cancel As Boolean)`. Validate is raised only where the control that takes the focus has `CausesValidation` True: RDC40008 marks each Exit handler ported.|
+|`BeforeUpdate(ByVal Cancel As MSForms.ReturnBoolean)`, `AfterUpdate()`|`BeforeUpdate(Cancel As Boolean)`, `AfterUpdate()`.|
+|`DblClick(ByVal Cancel As MSForms.ReturnBoolean)`|`DblClick(Cancel As Boolean)`.|
+|`KeyPress(ByVal KeyAscii As MSForms.ReturnInteger)`, and KeyDown's and KeyUp's `KeyCode`|`KeyAscii As Integer`, `KeyCode As Integer`.|
+|MouseDown, MouseMove and MouseUp, `X` and `Y` in points|The same, `X` and `Y` in twips (20 to a point), and a form's own in its scale.|
+|BeforeDragOver, BeforeDropOrPaste and Error|The same, with `RDForms.DataObject`, `RDForms.ReturnEffect`, `RDForms.DragState` and `RDForms.Action`, and ByRef values for the Return* wrappers.|
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

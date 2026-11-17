@@ -1,5 +1,4 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -19,36 +18,40 @@ public sealed class ComponentClassTests
 
     // The member each VB class's default member stands for, as VB6 reads and assigns it through the instance.
     [TestMethod]
-    [DataRow("VB.Form", "Controls")]
-    [DataRow("VB.MDIForm", "Controls")]
-    [DataRow("VB.CommandButton", "Value")]
-    [DataRow("VB.CheckBox", "Value")]
-    [DataRow("VB.OptionButton", "Value")]
-    [DataRow("VB.HScrollBar", "Value")]
-    [DataRow("VB.VScrollBar", "Value")]
-    [DataRow("VB.TextBox", "Text")]
-    [DataRow("VB.ComboBox", "Text")]
-    [DataRow("VB.ListBox", "Text")]
-    [DataRow("VB.Label", "Caption")]
-    [DataRow("VB.Frame", "Caption")]
-    [DataRow("VB.PictureBox", "Picture")]
-    [DataRow("VB.Image", "Picture")]
-    [DataRow("VB.DriveListBox", "Drive")]
-    [DataRow("VB.DirListBox", "Path")]
-    [DataRow("VB.FileListBox", "FileName")]
-    [DataRow("VB.Shape", "Shape")]
-    [DataRow("VB.Line", "Visible")]
-    [DataRow("VB.Timer", "Enabled")]
-    [DataRow("VB.Data", "Caption")]
-    [DataRow("VB.Menu", "Enabled")]
-    [DataRow("VB.UserControl", null)]
-    [DataRow("VB.PropertyPage", null)]
+    [DataRow("RDForms.Form", "Controls")]
+    [DataRow("RDForms.MDIForm", "Controls")]
+    [DataRow("RDForms.CommandButton", "Value")]
+    [DataRow("RDForms.CheckBox", "Value")]
+    [DataRow("RDForms.OptionButton", "Value")]
+    [DataRow("RDForms.HScrollBar", "Value")]
+    [DataRow("RDForms.VScrollBar", "Value")]
+    [DataRow("RDForms.TextBox", "Text")]
+    [DataRow("RDForms.ComboBox", "Text")]
+    [DataRow("RDForms.ListBox", "Text")]
+    [DataRow("RDForms.Label", "Caption")]
+    [DataRow("RDForms.Frame", "Caption")]
+    [DataRow("RDForms.PictureBox", "Picture")]
+    [DataRow("RDForms.Image", "Picture")]
+    [DataRow("RDForms.DriveListBox", "Drive")]
+    [DataRow("RDForms.DirListBox", "Path")]
+    [DataRow("RDForms.FileListBox", "FileName")]
+    [DataRow("RDForms.Shape", "Shape")]
+    [DataRow("RDForms.Line", "Visible")]
+    [DataRow("RDForms.Timer", "Enabled")]
+    [DataRow("RDForms.Data", "Caption")]
+    [DataRow("RDForms.Menu", "Enabled")]
+    [DataRow("RDForms.UserControl", null)]
+    [DataRow("RDForms.PropertyPage", null)]
+    [DataRow("RDForms.MultiPage", "Value")]
+    [DataRow("RDForms.TabStrip", "Value")]
+    [DataRow("RDForms.Page", null)]
     public void AVBClassesDefaultMember_IsTheMemberVB6ReadsAndAssignsThroughTheInstance(string typeName, string? member) =>
-        Assert.AreEqual(member, VBClasses.ByTypeName(typeName)!.DefaultMember);
+        Assert.AreEqual(member, ComponentClasses.ByTypeName(typeName)!.DefaultMember);
 
     [TestMethod]
-    public void EveryVBClass_ButAUserControlAndAPropertyPage_HasADefaultMember() =>
-        CollectionAssert.AreEquivalent(new[] { VBClasses.UserControl, VBClasses.PropertyPage }, VBClasses.All.Where(c => c.DefaultMember is null).ToArray());
+    public void EveryClass_ButAUserControlAPropertyPageAndAPage_HasADefaultMember() =>
+        CollectionAssert.AreEquivalent(new[] { ComponentClasses.UserControl, ComponentClasses.PropertyPage, ComponentClasses.Page },
+            ComponentClasses.All.Where(c => c.DefaultMember is null).ToArray());
 
     [TestMethod]
     [DataRow("")]
@@ -79,45 +82,47 @@ public sealed class ComponentClassTests
     [TestMethod]
     public void Property_IsFoundWithoutRegardToCase_AndHasNamesTheDefinitionItself()
     {
-        Assert.AreSame(VBProperties.CheckBoxValue, VBClasses.CheckBox.Property("value"));
-        Assert.IsTrue(VBClasses.OptionButton.Has(VBProperties.OptionButtonValue));
-        Assert.IsFalse(VBClasses.OptionButton.Has(VBProperties.CheckBoxValue));
+        Assert.AreSame(Properties.CheckBoxValue, ComponentClasses.CheckBox.Property("value"));
+        Assert.IsTrue(ComponentClasses.OptionButton.Has(Properties.OptionButtonValue));
+        Assert.IsFalse(ComponentClasses.OptionButton.Has(Properties.CheckBoxValue));
     }
 
     [TestMethod]
     public void TheCatalog_FindsAClassByItsTypeName_WithoutRegardToCase()
     {
-        Assert.AreSame(VBClasses.TextBox, VBClasses.ByTypeName("vb.textbox"));
-        Assert.IsNull(VBClasses.ByTypeName("MSComctlLib.ListView"));
-        Assert.AreEqual("TextBox", VBClasses.TextBox.ClassName);
+        Assert.AreSame(ComponentClasses.TextBox, ComponentClasses.ByTypeName("rdforms.textbox"));
+        Assert.IsNull(ComponentClasses.ByTypeName("MSComctlLib.ListView"));
+        Assert.AreEqual("TextBox", ComponentClasses.TextBox.ClassName);
     }
 
     [TestMethod]
-    public void TheCatalog_GivesEachControlItsPlaceAndSize_ExceptTheLineAndTheTimer()
+    public void TheCatalog_GivesEachControlItsPlaceAndSize_ExceptTheLineTheTimerAndAPage()
     {
-        var withoutExtent = VBClasses.All.Where(c => c.Kind == ComponentKind.Control && !c.Has(VBProperties.Height)).ToArray();
+        var withoutExtent = ComponentClasses.All.Where(c => c.Kind == ComponentKind.Control && !c.Has(Properties.Height)).ToArray();
 
-        CollectionAssert.AreEquivalent(new[] { VBClasses.Timer, VBClasses.Line }, withoutExtent);
-        Assert.IsTrue(VBClasses.Timer.Has(VBProperties.Left));
-        Assert.IsFalse(VBClasses.Line.Has(VBProperties.Left));
-        Assert.IsFalse(VBClasses.Timer.HasExtent);
+        CollectionAssert.AreEquivalent(new[] { ComponentClasses.Timer, ComponentClasses.Line, ComponentClasses.Page }, withoutExtent);
+        Assert.IsTrue(ComponentClasses.Timer.Has(Properties.Left));
+        Assert.IsFalse(ComponentClasses.Line.Has(Properties.Left));
+        Assert.IsFalse(ComponentClasses.Page.Has(Properties.Left));
+        Assert.IsFalse(ComponentClasses.Timer.HasExtent);
+        Assert.IsFalse(ComponentClasses.Page.HasExtent);
     }
 
     [TestMethod]
     public void TheCatalog_GivesAComboBoxLocked_AndAListBoxNone()
     {
         // VB6.OLB's ListBox has no Locked property: its file's Locked line is kept as an unmodelled property.
-        Assert.IsTrue(VBClasses.ComboBox.Has(VBProperties.Locked));
-        Assert.IsNull(VBClasses.ListBox.Property("Locked"));
+        Assert.IsTrue(ComponentClasses.ComboBox.Has(Properties.Locked));
+        Assert.IsNull(ComponentClasses.ListBox.Property("Locked"));
     }
 
     [TestMethod]
     public void TheCatalog_DefaultsAPictureBoxToABorder_AndALabelToAnOpaqueBackground()
     {
-        Assert.AreEqual(BorderStyle.FixedSingle, VBClasses.PictureBox.DefaultOf(VBProperties.BorderStyle));
-        Assert.AreEqual(BorderStyle.None, VBClasses.Label.DefaultOf(VBProperties.BorderStyle));
-        Assert.AreEqual(BackStyle.Opaque, VBClasses.Label.DefaultOf(VBProperties.BackStyle));
-        Assert.AreEqual(BackStyle.Transparent, VBClasses.Shape.DefaultOf(VBProperties.BackStyle));
+        Assert.AreEqual(BorderStyle.FixedSingle, ComponentClasses.PictureBox.DefaultOf(Properties.BorderStyle));
+        Assert.AreEqual(BorderStyle.None, ComponentClasses.Label.DefaultOf(Properties.BorderStyle));
+        Assert.AreEqual(BackStyle.Opaque, ComponentClasses.Label.DefaultOf(Properties.BackStyle));
+        Assert.AreEqual(BackStyle.Transparent, ComponentClasses.Shape.DefaultOf(Properties.BackStyle));
     }
 
     // VB6 gives the three buttons a MaskColor of silver and UseMaskColor False, and a UserControl a MaskColor of the button face and no
@@ -125,23 +130,24 @@ public sealed class ComponentClassTests
     [TestMethod]
     public void TheCatalog_GivesTheButtonsAMaskColor_SilverAndNotUsed_AndAUserControlTheButtonFace()
     {
-        var buttons = new[] { VBClasses.CommandButton, VBClasses.CheckBox, VBClasses.OptionButton };
+        var buttons = new[] { ComponentClasses.CommandButton, ComponentClasses.CheckBox, ComponentClasses.OptionButton };
 
-        CollectionAssert.AreEquivalent(buttons.Append(VBClasses.UserControl).ToArray(), VBClasses.All.Where(c => c.Has(VBProperties.MaskColor)).ToArray());
-        Assert.AreEqual(FormColor.FromSystem(SystemColor.ButtonFace), VBClasses.UserControl.DefaultOf(VBProperties.MaskColor));
-        CollectionAssert.AreEquivalent(buttons, VBClasses.All.Where(c => c.Has(VBProperties.UseMaskColor)).ToArray());
-        Assert.IsTrue(buttons.All(c => c.DefaultOf(VBProperties.MaskColor) == FormColor.FromRgb(0xC0, 0xC0, 0xC0) && !c.DefaultOf(VBProperties.UseMaskColor)));
+        CollectionAssert.AreEquivalent(buttons.Append(ComponentClasses.UserControl).ToArray(), ComponentClasses.All.Where(c => c.Has(Properties.MaskColor)).ToArray());
+        Assert.AreEqual(FormColor.FromSystem(SystemColor.ButtonFace), ComponentClasses.UserControl.DefaultOf(Properties.MaskColor));
+        CollectionAssert.AreEquivalent(buttons, ComponentClasses.All.Where(c => c.Has(Properties.UseMaskColor)).ToArray());
+        Assert.IsTrue(buttons.All(c => c.DefaultOf(Properties.MaskColor) == FormColor.FromRgb(0xC0, 0xC0, 0xC0) && !c.DefaultOf(Properties.UseMaskColor)));
     }
 
     [TestMethod]
-    [DataRow("VB.HScrollBar")]
-    [DataRow("VB.VScrollBar")]
+    [DataRow("RDForms.HScrollBar")]
+    [DataRow("RDForms.VScrollBar")]
     public void TheCatalog_GivesAScrollBarItsKeyEvents(string typeName)
     {
-        var bar = VBClasses.ByTypeName(typeName)!;
+        var bar = ComponentClasses.ByTypeName(typeName)!;
 
-        CollectionAssert.AreEquivalent(new[] { "Change", "GotFocus", "KeyDown", "KeyPress", "KeyUp", "LostFocus", "Scroll" },
+        CollectionAssert.AreEquivalent(new[] { "Change", "GotFocus", "KeyDown", "KeyPress", "KeyUp", "LostFocus", "Scroll", "Validate", "BeforeUpdate",
+            "AfterUpdate", "BeforeDragOver", "BeforeDropOrPaste", "Error" },
             bar.Events.Select(e => e.Name).ToArray());
-        Assert.AreSame(VBEvents.KeyPress, bar.Event("keypress"));
+        Assert.AreSame(Events.KeyPress, bar.Event("keypress"));
     }
 }

@@ -3,9 +3,8 @@ using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Drawing;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Controls.PictureControlTests;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -30,10 +29,10 @@ public sealed class DrawModeTests
         })]);
 
     private static ComponentInstance Box(byte[]? picture = null) =>
-        new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Width, 100d).Set(P.Height, 100d).Set(P.BorderStyle, BorderStyle.None)
+        new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Width, 100d).Set(P.Height, 100d).Set(P.BorderStyle, BorderStyle.None)
             .Set(P.ScaleMode, ScaleMode.Pixel).Set(P.BackColor, Grey).Set(P.Picture, picture);
 
-    private static VBDrawingLayer Surface(ComponentInstance box) => new(box) { Picture = VBPicture.Decode(Quadrants(), out _) };
+    private static RDFormsDrawingLayer Surface(ComponentInstance box) => new(box) { Picture = RDFormsPicture.Decode(Quadrants(), out _) };
 
     private static string Hex(IDrawingSurface surface, params (double X, double Y)[] points) =>
         string.Join("\t", points.Select(p => surface.Point(p.X, p.Y).ToString("X")));
@@ -136,7 +135,7 @@ public sealed class DrawModeTests
         {
             var surface = Surface(Box());
             var before = Hex(surface, (0, 0), (1, 0));
-            surface.Picture = VBPicture.Decode(Png(4, 4, 0xFFFF0000u, 0u), out _);
+            surface.Picture = RDFormsPicture.Decode(Png(4, 4, 0xFFFF0000u, 0u), out _);
             return (before, Hex(surface, (0, 0), (1, 0), (10, 10)));
         });
 
@@ -182,11 +181,11 @@ public sealed class DrawModeTests
     {
         var rows = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 333d).Set(P.Height, 200d).Set(P.ScaleMode, ScaleMode.Pixel)
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 333d).Set(P.Height, 200d).Set(P.ScaleMode, ScaleMode.Pixel)
                 .Set(P.BackColor, Grey).Set(P.Picture, Quadrants());
             var box = Box(Quadrants()).Set(P.Left, 200d).Set(P.Top, 10d);
             box.SetContainer(root);
-            var window = new VBFormWindow(new FormDefinition(root));
+            var window = new RDFormsFormWindow(new FormDefinition(root));
             window.Show();
             Dispatcher.UIThread.RunJobs();
             var rows = new List<string>();

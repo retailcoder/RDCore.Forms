@@ -8,7 +8,7 @@ namespace RDCore.Forms.Avalonia;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A host that has an Avalonia application keeps it: the controls and <see cref="Rendering.VBFormWindow"/> need an application with a theme, whichever
+/// A host that has an Avalonia application keeps it: the controls and <see cref="Rendering.RDFormsFormWindow"/> need an application with a theme, whichever
 /// application it is.
 /// </para>
 /// <para>

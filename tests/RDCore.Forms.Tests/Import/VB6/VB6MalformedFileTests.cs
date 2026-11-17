@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Tests.Import.VB6;
 
@@ -135,7 +134,7 @@ public sealed class VB6MalformedFileTests
     {
         var import = VB6FormReader.Read(Form(Label("TabIndex = 32767")));
 
-        Assert.AreEqual(short.MaxValue, import.Form!.Find("Label1")!.Get(VBProperties.TabIndex));
+        Assert.AreEqual(short.MaxValue, import.Form!.Find("Label1")!.Get(Properties.TabIndex));
     }
 
     [TestMethod]
@@ -157,8 +156,8 @@ public sealed class VB6MalformedFileTests
             ""));
         var form = import.Form!;
 
-        Assert.AreSame(VBClasses.MDIForm, form.Root.Class);
-        Assert.AreEqual(("Main", 400d), (form.Root.Get(VBProperties.Caption), form.Root.Get(VBProperties.Width)));
+        Assert.AreSame(ComponentClasses.MDIForm, form.Root.Class);
+        Assert.AreEqual(("Main", 400d), (form.Root.Get(Properties.Caption), form.Root.Get(Properties.Width)));
         CollectionAssert.AreEqual(new[] { "picBar", "mnuFile" }, form.Root.Contents.Select(c => c.Name).ToArray());
         Assert.IsEmpty(import.Diagnostics);
     }

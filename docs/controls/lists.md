@@ -22,14 +22,14 @@ Both controls have the same members for their items:
 
 ## A program's calls
 
-A program's code reaches a list's members by name through the form's window, as it does a [method](methods.md): `VBFormWindow.Invoke` runs `AddItem`, `RemoveItem` and `Clear`, and reads a property; `VBFormWindow.Assign` assigns one. Each is a [`MethodDefinition`](../api/RDCore.Forms.Model.MethodDefinition.yml) of the class, shared from [`VBMethods`](../api/RDCore.Forms.Model.VB.VBMethods.yml). A property's definition has a `Value`: the type it holds.
+A program's code reaches a list's members by name through the form's window, as it does a [method](methods.md): `RDFormsFormWindow.Invoke` runs `AddItem`, `RemoveItem` and `Clear`, and reads a property; `RDFormsFormWindow.Assign` assigns one. Each is a [`MethodDefinition`](../api/RDCore.Forms.Model.MethodDefinition.yml) of the class, shared from [`Methods`](../api/RDCore.Forms.Model.Methods.yml). A property's definition has a `Value`: the type it holds.
 
 ```csharp
 // cboPlayer.AddItem "Human", then cboPlayer.ListIndex = 0 and x = cboPlayer.List(0) in VB6 code.
 var combo = form.Components.First(c => c.Name == "cboPlayer");
-window.Invoke(combo, VBMethods.AddItem, [FormValue.FromString("Human")]);
-window.Assign(combo, VBMethods.ListIndex, [], FormValue.FromInteger(0));
-var x = window.Invoke(combo, VBMethods.List, [FormValue.FromInteger(0)]).AsString();
+window.Invoke(combo, Methods.AddItem, [FormValue.FromString("Human")]);
+window.Assign(combo, Methods.ListIndex, [], FormValue.FromInteger(0));
+var x = window.Invoke(combo, Methods.List, [FormValue.FromInteger(0)]).AsString();
 ```
 
 |Member|Kind|ListBox|ComboBox|
@@ -39,6 +39,7 @@ var x = window.Invoke(combo, VBMethods.List, [FormValue.FromInteger(0)]).AsStrin
 |`Clear`|Method|yes|yes|
 |`List(Index)` As String|Property|yes|yes|
 |`ItemData(Index)` As Long|Property|yes|yes|
+|`ItemIcon(Index)`, an object|Property, RD-VBA addition|yes|yes|
 |`Selected(Index)` As Boolean|Property|yes|no|
 |`ListIndex` As Integer|Property|yes|yes|
 |`ListCount` As Integer|Read-only property|yes|yes|
@@ -52,6 +53,7 @@ var x = window.Invoke(combo, VBMethods.List, [FormValue.FromInteger(0)]).AsStrin
 |Arguments|`List` without its index is error 449, and with two arguments error 450.|
 |Read-only|An assignment is error 383, "'ListCount' property is read-only" for `ListCount`. A value of the wrong type is error 13 first.|
 |`Text`|A ListBox's and a Dropdown List's is the selected item's text, and setting it selects the first item whose whole text it is (383 on a Dropdown List where none has it). Another combo's is its edit box's: see [ComboBox](#combobox).|
+|`ItemIcon`|An object (`FormValue.FromObject`): the bytes of the item's picture file, or `Nothing` for none. Assigning anything else is error 13, and a picture that is refused error 481 (see [Item icons](#item-icons)).|
 |`Column`|Error 438: VB6's ListBox has no `Column`, which is an MSForms ListBox's.|
 
 The index and argument rules follow RDForms' own rules, as a method's do. A ListBox or ComboBox that `Controls.Add` adds takes the same members as one of the form's file.
@@ -64,14 +66,14 @@ The index and argument rules follow RDForms' own rules, as a method's do. A List
 **RD-VBA addition.** An item's icon is drawn before its text, scaled to fit a square as tall as the text. Where any item has an icon, every item's text starts after that square, so that the text lines up. An icon is any picture a [PictureBox can draw](containers.md#pictures); a metafile icon is not drawn.
 
 ```csharp
-var list = new VBListBox(new ComponentInstance(VBClasses.ListBox, "List1"));
+var list = new RDFormsListBox(new ComponentInstance(ComponentClasses.ListBox, "List1"));
 list.AddItem("Open");
 list.SetItemIcon(0, File.ReadAllBytes("open.png"));
 ```
 
 ## ListBox
 
-[`VBListBox`](../api/RDCore.Forms.Avalonia.Controls.VBListBox.yml)
+[`RDFormsListBox`](../api/RDCore.Forms.Avalonia.Controls.RDFormsListBox.yml)
 
 |Case|Behaviour|
 |---|---|
@@ -106,7 +108,7 @@ A ListBox's rows are a line of its font high, as a [Simple Combo's](#simple-comb
 
 ## ComboBox
 
-[`VBComboBox`](../api/RDCore.Forms.Avalonia.Controls.VBComboBox.yml)
+[`RDFormsComboBox`](../api/RDCore.Forms.Avalonia.Controls.RDFormsComboBox.yml)
 
 |Style|Behaviour|
 |---|---|
@@ -177,6 +179,22 @@ An item matched by its start is a better match than one matched by its humps; be
 |Dropdown Combo|Opens the list on the items the text matches, best first, and highlights the best. Up and Down move the highlight; Enter chooses the highlighted item, as a click does, and raises Click. Until then the text stays what was typed, and no item is selected. Where no item matches, the list closes.|
 |Dropdown List|The characters typed add up into a word, which selects its best match and raises Click. A character that no item matches with the word starts a new word, which selects the next item it matches after the selected one, as a ListBox's character does. The word starts again after any other change of the selection.|
 |Simple Combo|No completion: the text stays what was typed, and the list shows every item.|
+
+## Converting from MSForms
+
+The names an MSForms ListBox and ComboBox take in RDForms (see [Converting from MSForms](index.md#converting-from-msforms)):
+
+|MSForms|RDForms|
+|---|---|
+|`TextAlign`|`Alignment`, with VB's values: `fmTextAlignLeft` (1) is 0, `fmTextAlignCenter` (2) is 2, and `fmTextAlignRight` (3) is 1.|
+|`ListWidth`, in points|`ListWidth`, in pixels.|
+|`BorderStyle`, `fmBorderStyleNone` and `fmBorderStyleSingle`|`BorderStyle`, 0 and 1.|
+|A ComboBox's `Value`|`Text`.|
+|A ListBox's `Value`|None: an RDForms ListBox has no member for it.|
+|`List`, `ListIndex`, `ListCount`, `Text` and the other members of the same name|The same.|
+
+> [!NOTE]
+> **Not implemented.** A ListBox and a ComboBox have no `IMEMode`, and a ComboBox no `Copy`, `Cut`, `Paste` or `CanPaste`. Their BeforeDragOver, BeforeDropOrPaste and Error are declared and never raised.
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

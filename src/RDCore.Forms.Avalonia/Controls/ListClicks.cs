@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using RDCore.Forms.Model.VB;
+using RDCore.Forms.Model;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -51,7 +51,7 @@ internal static class ListClicks
                 if (!multi.KeyDown(e.Key, e.KeyModifiers))
                     return;
                 e.Handled = true;
-                VBControl.Raise(list, VBEvents.Click);
+                RDFormsControl.Raise(list, Events.Click);
             }
             else if (list is IMultiSelectList)
                 KeyMove(list, e);
@@ -83,7 +83,7 @@ internal static class ListClicks
             pressedOnItem.Remove(list);
             Multi(list)?.Release();
             if (click)
-                VBControl.Raise(list, VBEvents.Click);
+                RDFormsControl.Raise(list, Events.Click);
         }, handledEventsToo: true);
     }
 
@@ -94,7 +94,7 @@ internal static class ListClicks
     public static void KeyMoved(ListBox list, int before)
     {
         if (list.SelectedIndex != before)
-            VBControl.Raise(list, VBEvents.Click);
+            RDFormsControl.Raise(list, Events.Click);
     }
 
     // The item a navigation key reaches from an item, as VB6's ListBox and FileListBox move whatever their MultiSelect: Left and Up one
@@ -127,7 +127,7 @@ internal static class ListClicks
         list.SelectedIndex = target;
         Reach(list, target);
         if (moved)
-            VBControl.Raise(list, VBEvents.Click);
+            RDFormsControl.Raise(list, Events.Click);
     }
 
     // The item comes into view and takes the keyboard focus, so that the next key moves on from it.
@@ -159,7 +159,7 @@ internal static class ListClicks
             list.ScrollIntoView(index);
             // The item takes the keyboard focus, so that an arrow moves on from it.
             list.ContainerFromIndex(index)?.Focus(NavigationMethod.Unspecified);
-            VBControl.Raise(list, VBEvents.Click);
+            RDFormsControl.Raise(list, Events.Click);
         }
     }
 

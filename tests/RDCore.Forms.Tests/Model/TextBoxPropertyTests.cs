@@ -1,6 +1,5 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -8,7 +7,7 @@ namespace RDCore.Forms.Tests.Model;
 [TestClass]
 public sealed class TextBoxPropertyTests
 {
-    private static ComponentInstance Box() => new(VBClasses.TextBox, "Text1");
+    private static ComponentInstance Box() => new(ComponentClasses.TextBox, "Text1");
 
     [TestMethod]
     [DataRow(0, true)]
@@ -78,7 +77,7 @@ public sealed class TextBoxPropertyTests
     public void ATextSet_IsWholeWithNoMaxLength_AndInAComboBox()
     {
         var box = Box().Set(P.Text, "abcdef");
-        var combo = new ComponentInstance(VBClasses.ComboBox, "Combo1").Set(P.Text, "abcdef");
+        var combo = new ComponentInstance(ComponentClasses.ComboBox, "Combo1").Set(P.Text, "abcdef");
 
         Assert.AreEqual("abcdef", box.Get(P.Text));
         Assert.AreEqual("abcdef", combo.Get(P.Text));

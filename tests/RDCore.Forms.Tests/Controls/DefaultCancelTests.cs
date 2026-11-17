@@ -5,8 +5,7 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -16,7 +15,7 @@ namespace RDCore.Forms.Tests.Controls;
 public sealed class DefaultCancelTests
 {
     private static ComponentInstance Root() =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+        new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
 
     private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double top)
     {
@@ -29,19 +28,19 @@ public sealed class DefaultCancelTests
     private static (ComponentInstance Root, ComponentInstance Control) Form(string type, bool buttons)
     {
         var root = Root();
-        var control = Add(root, VBClasses.ByTypeName("VB." + type)!, type == "CommandButton" ? "Command3" : "Control1", 8);
+        var control = Add(root, ComponentClasses.ByTypeName("RDForms." + type)!, type == "CommandButton" ? "Command3" : "Control1", 8);
         if (type == "OptionButton")
             control.Set(P.OptionButtonValue, true);
-        Add(root, VBClasses.CommandButton, "Command1", 96).Set(P.Default, buttons);
-        Add(root, VBClasses.CommandButton, "Command2", 160).Set(P.Cancel, buttons);
+        Add(root, ComponentClasses.CommandButton, "Command1", 96).Set(P.Default, buttons);
+        Add(root, ComponentClasses.CommandButton, "Command2", 160).Set(P.Cancel, buttons);
         return (root, control);
     }
 
     // The window, with the control focused, where there is one, and what was raised so far forgotten.
-    private static VBFormWindow Open(ComponentInstance root, ComponentInstance? focused, RecordingSink sink)
+    private static RDFormsFormWindow Open(ComponentInstance root, ComponentInstance? focused, RecordingSink sink)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         if (focused is not null)
@@ -52,7 +51,7 @@ public sealed class DefaultCancelTests
     }
 
     // A key pressed and released. The window system types no character for Enter or Esc.
-    private static void Press(VBFormWindow window, Key key, RawInputModifiers modifiers = RawInputModifiers.None)
+    private static void Press(RDFormsFormWindow window, Key key, RawInputModifiers modifiers = RawInputModifiers.None)
     {
         var physical = key == Key.Enter ? PhysicalKey.Enter : PhysicalKey.Escape;
         window.KeyPress(key, modifiers, physical, null);
@@ -213,13 +212,13 @@ public sealed class DefaultCancelTests
         var (raised, open) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1", 8).Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1", 8).Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
                 .Set(P.List, ["alpha", "beta"]);
-            Add(root, VBClasses.CommandButton, "Command1", 96).Set(P.Default, buttons);
-            Add(root, VBClasses.CommandButton, "Command2", 160).Set(P.Cancel, buttons);
+            Add(root, ComponentClasses.CommandButton, "Command1", 96).Set(P.Default, buttons);
+            Add(root, ComponentClasses.CommandButton, "Command2", 160).Set(P.Cancel, buttons);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
-            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var combo = (RDFormsComboBox)window.View.ControlOf(combo1)!;
             combo.ListIndex = 0;
             combo.IsDropDownOpen = true;
             Dispatcher.UIThread.RunJobs();

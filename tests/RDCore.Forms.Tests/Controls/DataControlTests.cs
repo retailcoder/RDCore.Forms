@@ -7,8 +7,7 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -38,7 +37,7 @@ public sealed class DataControlTests
     private static ComponentInstance Data(ComponentInstance root, string name)
     {
         var (left, top, width, height, set) = Cases[name];
-        var data = new ComponentInstance(VBClasses.Data, name).Set(P.Left, (double)left).Set(P.Top, (double)top)
+        var data = new ComponentInstance(ComponentClasses.Data, name).Set(P.Left, (double)left).Set(P.Top, (double)top)
             .Set(P.Width, (double)width).Set(P.Height, (double)height);
         set(data);
         data.SetContainer(root);
@@ -72,7 +71,7 @@ public sealed class DataControlTests
     }
 
     // Every pixel of the form's frame.
-    private static Color[,] Frame(VBFormWindow window)
+    private static Color[,] Frame(RDFormsFormWindow window)
     {
         using var frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("no frame was rendered");
         using var buffer = frame.Lock();
@@ -91,10 +90,10 @@ public sealed class DataControlTests
 
     private static Color[,] Render(params string[] names)
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, (double)FormWidth).Set(P.Height, (double)FormHeight);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, (double)FormWidth).Set(P.Height, (double)FormHeight);
         foreach (var name in names)
             Data(root, name);
-        var window = new VBFormWindow(new FormDefinition(root));
+        var window = new RDFormsFormWindow(new FormDefinition(root));
         window.Show();
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -175,9 +174,9 @@ public sealed class DataControlTests
     {
         var numbers = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, (double)FormWidth).Set(P.Height, (double)FormHeight);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, (double)FormWidth).Set(P.Height, (double)FormHeight);
             var data = Data(root, "D2");
-            var window = new VBFormWindow(new FormDefinition(root));
+            var window = new RDFormsFormWindow(new FormDefinition(root));
             window.Show();
             Dispatcher.UIThread.RunJobs();
             int Number(MethodDefinition method)
@@ -192,7 +191,7 @@ public sealed class DataControlTests
                     return e.Error.Number;
                 }
             }
-            var result = (Number(VBMethods.UpdateRecord), Number(VBMethods.UpdateControls), Number(VBMethods.Refresh));
+            var result = (Number(Methods.UpdateRecord), Number(Methods.UpdateControls), Number(Methods.Refresh));
             window.Close();
             return result;
         });
@@ -204,7 +203,7 @@ public sealed class DataControlTests
     public void ItHasNoDatabaseNoRecordset_AndAnEditModeOf0() =>
         UI.Run(() =>
         {
-            var data = new VBData(new ComponentInstance(VBClasses.Data, "Data1"));
+            var data = new RDFormsData(new ComponentInstance(ComponentClasses.Data, "Data1"));
             Assert.IsNull(data.Database);
             Assert.IsNull(data.Recordset);
             Assert.AreEqual((short)0, data.EditMode);

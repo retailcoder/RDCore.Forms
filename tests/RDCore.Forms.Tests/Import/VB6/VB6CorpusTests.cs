@@ -1,6 +1,5 @@
 ﻿using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Tests.Import.VB6;
 
@@ -17,8 +16,8 @@ public sealed class VB6CorpusTests
         var import = Read("five", "Form1.frm");
         var form = import.Form!;
 
-        Assert.AreEqual("Saved by VB6", form.Root.Get(VBProperties.Caption));
-        Assert.AreEqual(StartUpPosition.WindowsDefault, form.Root.Get(VBProperties.StartUpPosition));
+        Assert.AreEqual("Saved by VB6", form.Root.Get(Properties.Caption));
+        Assert.AreEqual(StartUpPosition.WindowsDefault, form.Root.Get(Properties.StartUpPosition));
         Assert.IsEmpty(form.Root.Contents);
         Assert.HasCount(8, form.Root.UnmodelledContents);
         Assert.AreEqual(new ControlLibraryReference(new Guid("6B7E6392-850A-101B-AFC0-4210102A8DA7"), "1.3", "COMCTL32.OCX"),
@@ -63,7 +62,7 @@ public sealed class VB6CorpusTests
         var form = Read("updown", "Form1.frm").Form!;
 
         CollectionAssert.AreEqual(new[] { "Text1", "Text2" }, form.Root.Contents.Select(c => c.Name).ToArray());
-        Assert.AreEqual("Text2", form.Find("Text2")!.Get(VBProperties.Text));
+        Assert.AreEqual("Text2", form.Find("Text2")!.Get(Properties.Text));
         CollectionAssert.AreEqual(new[] { ("UpDown4", 0), ("UpDown1", 1), ("UpDown2", 1), ("UpDown3", 2) },
             form.Root.UnmodelledContents.Select(c => (c.Name, c.Position)).ToArray());
     }

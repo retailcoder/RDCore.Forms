@@ -1,5 +1,4 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -9,7 +8,7 @@ public sealed class FormDefinitionTests
     [TestMethod]
     public void AForm_IsDefinedByARoot_NotByAControl()
     {
-        var control = new ComponentInstance(VBClasses.CommandButton, "Command1");
+        var control = new ComponentInstance(ComponentClasses.CommandButton, "Command1");
 
         Assert.ThrowsExactly<ArgumentException>(() => new FormDefinition(control));
     }
@@ -17,10 +16,10 @@ public sealed class FormDefinitionTests
     [TestMethod]
     public void Components_AreTheRootThenItsContents_DepthFirst()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1");
-        var frame = new ComponentInstance(VBClasses.Frame, "Frame1");
-        var option = new ComponentInstance(VBClasses.OptionButton, "Option1", index: 0);
-        var command = new ComponentInstance(VBClasses.CommandButton, "Command1");
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1");
+        var frame = new ComponentInstance(ComponentClasses.Frame, "Frame1");
+        var option = new ComponentInstance(ComponentClasses.OptionButton, "Option1", index: 0);
+        var command = new ComponentInstance(ComponentClasses.CommandButton, "Command1");
         frame.SetContainer(root);
         option.SetContainer(frame);
         command.SetContainer(root);
@@ -34,9 +33,9 @@ public sealed class FormDefinitionTests
     [TestMethod]
     public void Find_TellsTheElementsOfAControlArrayApart()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1");
-        var first = new ComponentInstance(VBClasses.OptionButton, "Option1", index: 0);
-        var second = new ComponentInstance(VBClasses.OptionButton, "Option1", index: 1);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1");
+        var first = new ComponentInstance(ComponentClasses.OptionButton, "Option1", index: 0);
+        var second = new ComponentInstance(ComponentClasses.OptionButton, "Option1", index: 1);
         first.SetContainer(root);
         second.SetContainer(root);
         var form = new FormDefinition(root);

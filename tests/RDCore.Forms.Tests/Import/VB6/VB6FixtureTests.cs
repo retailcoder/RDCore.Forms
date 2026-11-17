@@ -1,7 +1,6 @@
 ﻿using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Tests.Import.VB6;
 
@@ -23,7 +22,7 @@ public sealed class VB6FixtureTests
         Intrinsics.Find(name, index) ?? throw new AssertFailedException($"{name} is not in the form.");
 
     private static (double, double, double, double) Bounds(ComponentInstance component) =>
-        (component.Get(VBProperties.Left), component.Get(VBProperties.Top), component.Get(VBProperties.Width), component.Get(VBProperties.Height));
+        (component.Get(Properties.Left), component.Get(Properties.Top), component.Get(Properties.Width), component.Get(Properties.Height));
 
     [TestMethod]
     public void TheIntrinsicsForm_IsReadWithoutADiagnostic()
@@ -46,12 +45,12 @@ public sealed class VB6FixtureTests
     {
         var root = Intrinsics.Root;
 
-        Assert.AreEqual("Intrinsic \"controls\"", root.Get(VBProperties.Caption));
-        Assert.AreEqual("&H00C0FFC0&", root.Get(VBProperties.BackColor).ToString());
-        Assert.AreEqual(new FormFont("Arial", 9.75, FormFont.BoldWeight, Italic: true), root.Get(VBProperties.Font));
-        Assert.IsTrue(root.Get(VBProperties.KeyPreview));
-        Assert.AreEqual("form tag", root.Get(VBProperties.Tag));
-        Assert.AreEqual(StartUpPosition.CenterScreen, root.Get(VBProperties.StartUpPosition));
+        Assert.AreEqual("Intrinsic \"controls\"", root.Get(Properties.Caption));
+        Assert.AreEqual("&H00C0FFC0&", root.Get(Properties.BackColor).ToString());
+        Assert.AreEqual(new FormFont("Arial", 9.75, FormFont.BoldWeight, Italic: true), root.Get(Properties.Font));
+        Assert.IsTrue(root.Get(Properties.KeyPreview));
+        Assert.AreEqual("form tag", root.Get(Properties.Tag));
+        Assert.AreEqual(StartUpPosition.CenterScreen, root.Get(Properties.StartUpPosition));
     }
 
     [TestMethod]
@@ -60,8 +59,8 @@ public sealed class VB6FixtureTests
         // the designer file's values: VB6 read a ScaleWidth of 7995, its window's client width at run time.
         // in pixels, from the file's twips.
         Assert.AreEqual((4d, 23d, 8000d / 15, 400d), Bounds(Intrinsics.Root));
-        Assert.AreEqual(ScaleMode.Twip, Intrinsics.Root.Get(VBProperties.ScaleMode));
-        Assert.AreEqual(8000d, Intrinsics.Root.Get(VBProperties.ScaleWidth));
+        Assert.AreEqual(ScaleMode.Twip, Intrinsics.Root.Get(Properties.ScaleMode));
+        Assert.AreEqual(8000d, Intrinsics.Root.Get(Properties.ScaleWidth));
     }
 
     [TestMethod]
@@ -72,17 +71,17 @@ public sealed class VB6FixtureTests
 
         Assert.AreSame(Component("fraOptions"), first.Container);
         Assert.AreEqual((8d, 24d, 2000d / 15, 17d), Bounds(first));
-        Assert.IsTrue(first.Get(VBProperties.OptionButtonValue));
-        Assert.IsFalse(second.Get(VBProperties.OptionButtonValue));
-        Assert.AreEqual(1, first.Get(VBProperties.TabIndex));
-        Assert.AreEqual("Second", second.Get(VBProperties.Caption));
+        Assert.IsTrue(first.Get(Properties.OptionButtonValue));
+        Assert.IsFalse(second.Get(Properties.OptionButtonValue));
+        Assert.AreEqual(1, first.Get(Properties.TabIndex));
+        Assert.AreEqual("Second", second.Get(Properties.Caption));
     }
 
     [TestMethod]
     public void AControlThatWritesNoFont_TakesTheFormsFont()
     {
-        Assert.AreEqual(Intrinsics.Root.Get(VBProperties.Font), Component("fraOptions").Get(VBProperties.Font));
-        Assert.AreEqual(Intrinsics.Root.Get(VBProperties.Font), Component("chkFlag").Get(VBProperties.Font));
+        Assert.AreEqual(Intrinsics.Root.Get(Properties.Font), Component("fraOptions").Get(Properties.Font));
+        Assert.AreEqual(Intrinsics.Root.Get(Properties.Font), Component("chkFlag").Get(Properties.Font));
     }
 
     [TestMethod]
@@ -90,9 +89,9 @@ public sealed class VB6FixtureTests
     {
         var button = Component("cmdOK");
 
-        Assert.AreEqual(new FormFont("Courier New", 12, Underline: true), button.Get(VBProperties.Font));
-        Assert.AreEqual("&OK", button.Get(VBProperties.Caption));
-        Assert.AreEqual("Accept", button.Get(VBProperties.ToolTipText));
+        Assert.AreEqual(new FormFont("Courier New", 12, Underline: true), button.Get(Properties.Font));
+        Assert.AreEqual("&OK", button.Get(Properties.Caption));
+        Assert.AreEqual("Accept", button.Get(Properties.ToolTipText));
     }
 
     [TestMethod]
@@ -100,8 +99,8 @@ public sealed class VB6FixtureTests
     {
         var button = Component("cmdOK");
 
-        Assert.IsTrue(button.Get(VBProperties.Default));
-        Assert.IsFalse(button.Get(VBProperties.Cancel));
+        Assert.IsTrue(button.Get(Properties.Default));
+        Assert.IsFalse(button.Get(Properties.Cancel));
         Assert.IsEmpty(button.UnmodelledProperties);
     }
 
@@ -114,15 +113,15 @@ public sealed class VB6FixtureTests
     [TestMethod]
     public void AMenusShortcut_IsReadAsItsKeyAndModifiers()
     {
-        Assert.AreEqual(new MenuShortcut(79, ShortcutModifiers.Ctrl), Component("mnuFileOpen").Get(VBProperties.Shortcut));
+        Assert.AreEqual(new MenuShortcut(79, ShortcutModifiers.Ctrl), Component("mnuFileOpen").Get(Properties.Shortcut));
         Assert.IsEmpty(Component("mnuFileOpen").UnmodelledProperties);
     }
 
     [TestMethod]
     public void ACheckBox_ReadsItsGrayedValue_AndItsEnabledFlag()
     {
-        Assert.AreEqual(CheckBoxValue.Grayed, Component("chkFlag").Get(VBProperties.CheckBoxValue));
-        Assert.IsFalse(Component("chkFlag").Get(VBProperties.Enabled));
+        Assert.AreEqual(CheckBoxValue.Grayed, Component("chkFlag").Get(Properties.CheckBoxValue));
+        Assert.IsFalse(Component("chkFlag").Get(Properties.Enabled));
     }
 
     [TestMethod]
@@ -130,11 +129,11 @@ public sealed class VB6FixtureTests
     {
         var text = Component("txtNotes");
 
-        Assert.AreEqual("First line\r\nSecond line", text.Get(VBProperties.Text));
-        Assert.AreEqual(SystemColor.InfoBackground, text.Get(VBProperties.BackColor).SystemColor);
-        Assert.AreEqual("&H000000FF&", text.Get(VBProperties.ForeColor).ToString());
-        Assert.IsTrue(text.Get(VBProperties.Locked));
-        Assert.IsTrue(text.Get(VBProperties.MultiLine));
+        Assert.AreEqual("First line\r\nSecond line", text.Get(Properties.Text));
+        Assert.AreEqual(SystemColor.InfoBackground, text.Get(Properties.BackColor).SystemColor);
+        Assert.AreEqual("&H000000FF&", text.Get(Properties.ForeColor).ToString());
+        Assert.IsTrue(text.Get(Properties.Locked));
+        Assert.IsTrue(text.Get(Properties.MultiLine));
         Assert.IsEmpty(text.UnmodelledProperties);
     }
 
@@ -143,11 +142,11 @@ public sealed class VB6FixtureTests
     {
         var label = Component("lblNote");
 
-        Assert.AreEqual("Two\r\nlines", label.Get(VBProperties.Caption));
-        Assert.AreEqual(TextAlignment.Center, label.Get(VBProperties.Alignment));
-        Assert.AreEqual(BackStyle.Transparent, label.Get(VBProperties.BackStyle));
-        Assert.AreEqual(BorderStyle.FixedSingle, label.Get(VBProperties.BorderStyle));
-        Assert.IsFalse(label.Get(VBProperties.UseMnemonic));
+        Assert.AreEqual("Two\r\nlines", label.Get(Properties.Caption));
+        Assert.AreEqual(TextAlignment.Center, label.Get(Properties.Alignment));
+        Assert.AreEqual(BackStyle.Transparent, label.Get(Properties.BackStyle));
+        Assert.AreEqual(BorderStyle.FixedSingle, label.Get(Properties.BorderStyle));
+        Assert.IsFalse(label.Get(Properties.UseMnemonic));
     }
 
     [TestMethod]
@@ -155,9 +154,9 @@ public sealed class VB6FixtureTests
     {
         var list = Component("lstItems");
 
-        CollectionAssert.AreEqual(new[] { "Alpha", "Beta", "Gamma" }, list.Get(VBProperties.List).ToArray());
-        CollectionAssert.AreEqual(new[] { 1, 20, -300 }, list.Get(VBProperties.ItemData).ToArray());
-        Assert.AreEqual(ListBoxMultiSelect.Extended, list.Get(VBProperties.MultiSelect));
+        CollectionAssert.AreEqual(new[] { "Alpha", "Beta", "Gamma" }, list.Get(Properties.List).ToArray());
+        CollectionAssert.AreEqual(new[] { 1, 20, -300 }, list.Get(Properties.ItemData).ToArray());
+        Assert.AreEqual(ListBoxMultiSelect.Extended, list.Get(Properties.MultiSelect));
     }
 
     [TestMethod]
@@ -165,21 +164,21 @@ public sealed class VB6FixtureTests
     {
         var combo = Component("cboStyle");
 
-        CollectionAssert.AreEqual(new[] { "One", "Two" }, combo.Get(VBProperties.List).ToArray());
-        CollectionAssert.AreEqual(new[] { 7, 8 }, combo.Get(VBProperties.ItemData).ToArray());
-        Assert.AreEqual(ComboBoxStyle.DropdownList, combo.Get(VBProperties.ComboBoxStyle));
+        CollectionAssert.AreEqual(new[] { "One", "Two" }, combo.Get(Properties.List).ToArray());
+        CollectionAssert.AreEqual(new[] { 7, 8 }, combo.Get(Properties.ItemData).ToArray());
+        Assert.AreEqual(ComboBoxStyle.DropdownList, combo.Get(Properties.ComboBoxStyle));
     }
 
     [TestMethod]
     public void APicture_IsTheImageFileItsRecordHolds()
     {
-        var picture = Component("picLogo").Get(VBProperties.Picture);
+        var picture = Component("picLogo").Get(Properties.Picture);
 
         Assert.IsNotNull(picture);
         Assert.HasCount(70, picture);
         Assert.AreEqual((byte)'B', picture[0]);
         Assert.AreEqual((byte)'M', picture[1]);
-        Assert.AreEqual(Appearance.Flat, Component("picLogo").Get(VBProperties.Appearance));
+        Assert.AreEqual(Appearance.Flat, Component("picLogo").Get(Properties.Appearance));
     }
 
     [TestMethod]
@@ -187,9 +186,9 @@ public sealed class VB6FixtureTests
     {
         var image = Component("imgEmpty");
 
-        Assert.IsTrue(image.IsSet(VBProperties.Picture));
-        Assert.IsNull(image.Get(VBProperties.Picture));
-        Assert.IsTrue(image.Get(VBProperties.Stretch));
+        Assert.IsTrue(image.IsSet(Properties.Picture));
+        Assert.IsNull(image.Get(Properties.Picture));
+        Assert.IsTrue(image.Get(Properties.Stretch));
     }
 
     [TestMethod]
@@ -199,7 +198,7 @@ public sealed class VB6FixtureTests
 
         Assert.AreSame(Component("picLogo"), inside.Container);
         Assert.AreEqual((8d, 8d, 41d, 25d), Bounds(inside));
-        Assert.AreEqual(1425d, Component("picLogo").Get(VBProperties.ScaleWidth));
+        Assert.AreEqual(1425d, Component("picLogo").Get(Properties.ScaleWidth));
     }
 
     [TestMethod]
@@ -207,9 +206,9 @@ public sealed class VB6FixtureTests
     {
         var timer = Component("tmrTick");
 
-        Assert.AreEqual(500, timer.Get(VBProperties.Interval));
-        Assert.IsFalse(timer.Get(VBProperties.Enabled));
-        Assert.AreEqual(496d, timer.Get(VBProperties.Left));
+        Assert.AreEqual(500, timer.Get(Properties.Interval));
+        Assert.IsFalse(timer.Get(Properties.Enabled));
+        Assert.AreEqual(496d, timer.Get(Properties.Left));
     }
 
     [TestMethod]
@@ -218,10 +217,10 @@ public sealed class VB6FixtureTests
         var horizontal = Component("hsbValue");
         var vertical = Component("vsbValue");
 
-        Assert.AreEqual((1, 10, 5, 3, 1), (horizontal.Get(VBProperties.Min), horizontal.Get(VBProperties.Max),
-            horizontal.Get(VBProperties.ScrollBarValue), horizontal.Get(VBProperties.LargeChange), horizontal.Get(VBProperties.SmallChange)));
-        Assert.AreEqual((0, 100, 0, 1, 5), (vertical.Get(VBProperties.Min), vertical.Get(VBProperties.Max),
-            vertical.Get(VBProperties.ScrollBarValue), vertical.Get(VBProperties.LargeChange), vertical.Get(VBProperties.SmallChange)));
+        Assert.AreEqual((1, 10, 5, 3, 1), (horizontal.Get(Properties.Min), horizontal.Get(Properties.Max),
+            horizontal.Get(Properties.ScrollBarValue), horizontal.Get(Properties.LargeChange), horizontal.Get(Properties.SmallChange)));
+        Assert.AreEqual((0, 100, 0, 1, 5), (vertical.Get(Properties.Min), vertical.Get(Properties.Max),
+            vertical.Get(Properties.ScrollBarValue), vertical.Get(Properties.LargeChange), vertical.Get(Properties.SmallChange)));
     }
 
     [TestMethod]
@@ -230,15 +229,15 @@ public sealed class VB6FixtureTests
         var shape = Component("shpBox");
         var line = Component("linDiagonal");
 
-        Assert.AreEqual(ShapeType.RoundedRectangle, shape.Get(VBProperties.Shape));
-        Assert.AreEqual("&H000000FF&", shape.Get(VBProperties.BorderColor).ToString());
-        Assert.AreEqual(3, shape.Get(VBProperties.BorderWidth));
-        Assert.AreEqual("&H0000FFFF&", shape.Get(VBProperties.FillColor).ToString());
-        Assert.AreEqual(FillStyle.Solid, shape.Get(VBProperties.FillStyle));
+        Assert.AreEqual(ShapeType.RoundedRectangle, shape.Get(Properties.Shape));
+        Assert.AreEqual("&H000000FF&", shape.Get(Properties.BorderColor).ToString());
+        Assert.AreEqual(3, shape.Get(Properties.BorderWidth));
+        Assert.AreEqual("&H0000FFFF&", shape.Get(Properties.FillColor).ToString());
+        Assert.AreEqual(FillStyle.Solid, shape.Get(Properties.FillStyle));
         Assert.AreEqual((120d, 4200d, 3120d, 5400d),
-            (line.Get(VBProperties.X1), line.Get(VBProperties.Y1), line.Get(VBProperties.X2), line.Get(VBProperties.Y2)));
-        Assert.AreEqual("&H00FF0000&", line.Get(VBProperties.BorderColor).ToString());
-        Assert.AreEqual(2, line.Get(VBProperties.BorderWidth));
+            (line.Get(Properties.X1), line.Get(Properties.Y1), line.Get(Properties.X2), line.Get(Properties.Y2)));
+        Assert.AreEqual("&H00FF0000&", line.Get(Properties.BorderColor).ToString());
+        Assert.AreEqual(2, line.Get(Properties.BorderWidth));
     }
 
     [TestMethod]
@@ -248,10 +247,10 @@ public sealed class VB6FixtureTests
 
         Assert.AreSame(Intrinsics.Root, file.Container);
         CollectionAssert.AreEqual(new[] { "mnuFileOpen", "mnuFileSep", "mnuFileExit" }, file.Contents.Select(c => c.Name).ToArray());
-        Assert.AreEqual("-", Component("mnuFileSep").Get(VBProperties.Caption));
-        Assert.IsTrue(Component("mnuFileExit").Get(VBProperties.Checked));
-        Assert.IsFalse(Component("mnuWindow").Get(VBProperties.Enabled));
-        Assert.IsTrue(Component("mnuWindow").Get(VBProperties.WindowList));
+        Assert.AreEqual("-", Component("mnuFileSep").Get(Properties.Caption));
+        Assert.IsTrue(Component("mnuFileExit").Get(Properties.Checked));
+        Assert.IsFalse(Component("mnuWindow").Get(Properties.Enabled));
+        Assert.IsTrue(Component("mnuWindow").Get(Properties.WindowList));
     }
 
     [TestMethod]
@@ -260,11 +259,11 @@ public sealed class VB6FixtureTests
         var form = Read("UserScale.frm").Form!;
         var line = form.Find("linAcross")!;
 
-        Assert.AreEqual((ScaleMode.User, -10d, -10d, 200d, 100d), (form.Root.Get(VBProperties.ScaleMode), form.Root.Get(VBProperties.ScaleLeft),
-            form.Root.Get(VBProperties.ScaleTop), form.Root.Get(VBProperties.ScaleWidth), form.Root.Get(VBProperties.ScaleHeight)));
+        Assert.AreEqual((ScaleMode.User, -10d, -10d, 200d, 100d), (form.Root.Get(Properties.ScaleMode), form.Root.Get(Properties.ScaleLeft),
+            form.Root.Get(Properties.ScaleTop), form.Root.Get(Properties.ScaleWidth), form.Root.Get(Properties.ScaleHeight)));
         // the designer file's ends, which the model keeps as written: VB6 read -0.0124842 0 100.0125 50.
-        Assert.AreEqual((0d, 0d, 100d, 50d), (line.Get(VBProperties.X1), line.Get(VBProperties.Y1), line.Get(VBProperties.X2), line.Get(VBProperties.Y2)));
-        Assert.AreEqual((4000d / 15, 200d), (form.Root.Get(VBProperties.Width), form.Root.Get(VBProperties.Height)));
+        Assert.AreEqual((0d, 0d, 100d, 50d), (line.Get(Properties.X1), line.Get(Properties.Y1), line.Get(Properties.X2), line.Get(Properties.Y2)));
+        Assert.AreEqual((4000d / 15, 200d), (form.Root.Get(Properties.Width), form.Root.Get(Properties.Height)));
     }
 
     [TestMethod]

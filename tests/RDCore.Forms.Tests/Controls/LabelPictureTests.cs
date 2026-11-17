@@ -6,11 +6,10 @@ using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Controls.PictureControlTests;
 using static RDCore.Forms.Tests.Model.TestPictures;
-using P = RDCore.Forms.Model.VB.VBProperties;
-using TextAlignment = RDCore.Forms.Model.VB.TextAlignment;
+using P = RDCore.Forms.Model.Properties;
+using TextAlignment = RDCore.Forms.Model.TextAlignment;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -65,14 +64,14 @@ public sealed class LabelPictureTests
 
     private static ComponentInstance Label(double width, double height, byte[]? picture, string caption = "")
     {
-        var label = new ComponentInstance(VBClasses.Label, "Label1").Set(P.Width, width).Set(P.Height, height).Set(P.Caption, caption)
+        var label = new ComponentInstance(ComponentClasses.Label, "Label1").Set(P.Width, width).Set(P.Height, height).Set(P.Caption, caption)
             .Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
         return picture is null ? label : label.Set(P.Picture, picture);
     }
 
     private static (Rect Picture, Rect Text) Laid(ComponentInstance label)
     {
-        var control = new VBLabel(label);
+        var control = new RDFormsLabel(label);
         var (window, _) = ControlHost.Show((control, new Rect(0, 0, label.Get(P.Width), label.Get(P.Height))));
         Dispatcher.UIThread.RunJobs();
         var text = control.GetVisualDescendants().OfType<TextBlock>().Single();
@@ -127,7 +126,7 @@ public sealed class LabelPictureTests
         var (before, after, refused) = UI.Run(() =>
         {
             var label = Label(200, 93, Bitmap(16, 12, Red, Green), "Ab").Set(P.PicturePosition, PicturePosition.LeftCenter);
-            var control = new VBLabel(label);
+            var control = new RDFormsLabel(label);
             var (window, _) = ControlHost.Show((control, new Rect(0, 0, 200, 93)));
             Dispatcher.UIThread.RunJobs();
             var before = control.PictureBounds!.Value;
@@ -168,9 +167,10 @@ public sealed class LabelPictureTests
     [TestMethod]
     public void BesideTheCaption_ThePictureLeavesItRoom_AndAboveIt_ThePictureKeepsItsHeight()
     {
-        // The label is as tall as the picture, so the gap and the caption below it do not fit, whatever the font.
+        // The label is as tall as the picture, so the gap and the caption below it do not fit, whatever the font. The caption beside it is
+        // on one line (AutoSize set, WordWrap not), so it is measured whole.
         var (beside, above) = UI.Run(() => (
-            Laid(Label(73, 53, Bitmap(64, 48, Blue, Green), "Abcdefgh").Set(P.PicturePosition, PicturePosition.LeftCenter)),
+            Laid(Label(73, 53, Bitmap(64, 48, Blue, Green), "Abcdefgh").Set(P.PicturePosition, PicturePosition.LeftCenter).Set(P.AutoSize, true)),
             Laid(Label(73, 48, Bitmap(64, 48, Blue, Green), "Ab").Set(P.PicturePosition, PicturePosition.AboveCenter))));
 
         Assert.IsGreaterThan(9d, beside.Text.Width);
@@ -183,8 +183,9 @@ public sealed class LabelPictureTests
     [TestMethod]
     public void ACaptionWiderThanTheLabel_StartsTheBlockAtItsLeftEdge()
     {
+        // a caption on one line (AutoSize set, WordWrap not): one that wraps is no wider than its label.
         var (picture, text) = UI.Run(() =>
-            Laid(Label(73, 60, Bitmap(16, 12, Red, Green), new string('W', 120)).Set(P.PicturePosition, PicturePosition.AboveLeft)));
+            Laid(Label(73, 60, Bitmap(16, 12, Red, Green), new string('W', 120)).Set(P.PicturePosition, PicturePosition.AboveLeft).Set(P.AutoSize, true)));
 
         Assert.IsGreaterThan(73d, text.Width);
         Assert.AreEqual((0d, 0d), (picture.X, text.X));
@@ -197,7 +198,7 @@ public sealed class LabelPictureTests
         {
             Color[] Drawn(byte[] picture)
             {
-                var control = new VBLabel(Label(40, 40, picture).Set(P.PicturePosition, PicturePosition.Center));
+                var control = new RDFormsLabel(Label(40, 40, picture).Set(P.PicturePosition, PicturePosition.Center));
                 var (window, _) = ControlHost.Show((control, new Rect(0, 0, 40, 40)));
                 var at = control.PictureBounds!.Value;
                 var (x, y) = ((int)at.X, (int)at.Y);
@@ -219,7 +220,7 @@ public sealed class LabelPictureTests
     {
         var drawn = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 200d).Set(P.Height, 60d).Set(P.ScaleMode, ScaleMode.Pixel)
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 200d).Set(P.Height, 60d).Set(P.ScaleMode, ScaleMode.Pixel)
                 .Set(P.Picture, Bitmap(200, 60, Red, Red));
             var yellow = FormColor.FromRgb(255, 255, 0);
             ComponentInstance Add(ComponentClass type, string name, double left)
@@ -229,18 +230,18 @@ public sealed class LabelPictureTests
                 control.SetContainer(root);
                 return control;
             }
-            Add(VBClasses.Image, "Image1", 10);
-            Add(VBClasses.PictureBox, "Picture1", 50).Set(P.BackColor, yellow).Set(P.BorderStyle, BorderStyle.None);
-            Add(VBClasses.Label, "Clear", 90).Set(P.BackStyle, BackStyle.Transparent).Set(P.PicturePosition, PicturePosition.AboveLeft);
-            Add(VBClasses.Label, "Opaque", 130).Set(P.BackColor, yellow).Set(P.PicturePosition, PicturePosition.AboveLeft);
-            var window = new VBFormWindow(new FormDefinition(root));
+            Add(ComponentClasses.Image, "Image1", 10);
+            Add(ComponentClasses.PictureBox, "Picture1", 50).Set(P.BackColor, yellow).Set(P.BorderStyle, BorderStyle.None);
+            Add(ComponentClasses.Label, "Clear", 90).Set(P.BackStyle, BackStyle.Transparent).Set(P.PicturePosition, PicturePosition.AboveLeft);
+            Add(ComponentClasses.Label, "Opaque", 130).Set(P.BackColor, yellow).Set(P.PicturePosition, PicturePosition.AboveLeft);
+            var window = new RDFormsFormWindow(new FormDefinition(root));
             window.Show();
             Dispatcher.UIThread.RunJobs();
             var origin = window.View.TranslatePoint(default, window)!.Value;
             var pixels = new[] { 10, 50, 90, 130 }.Select(left =>
             {
                 var control = window.View.ControlOf(root.Contents.Single(c => c.Get(P.Left) == left))!;
-                var inside = control is VBLabel label ? label.PictureBounds!.Value.Position : default;
+                var inside = control is RDFormsLabel label ? label.PictureBounds!.Value.Position : default;
                 var (x, y) = ((int)(origin.X + left + inside.X), (int)(origin.Y + 10 + inside.Y));
                 return PixelsAt(window, new(x, y), new(x + 1, y), new(x, y + 1));
             }).ToArray();
@@ -263,14 +264,14 @@ public sealed class LabelPictureTests
         {
             var picture = Bitmap(8, 8, Red, Green);
             var labels = Enumerable.Range(0, 100).Select(_ => Label(20, 20, null)).ToArray();
-            var controls = labels.Select(label => new VBLabel(label)).ToArray();
+            var controls = labels.Select(label => new RDFormsLabel(label)).ToArray();
             var (window, _) = ControlHost.Show([.. controls.Select((control, i) => ((Control)control, new Rect(i % 10 * 20, i / 10 * 20, 20, 20)))]);
-            var before = VBPicture.DecodesOnThisThread;
+            var before = RDFormsPicture.DecodesOnThisThread;
             foreach (var label in labels)
                 label.Set(P.Picture, picture);
-            var shared = VBPicture.DecodesOnThisThread - before;
+            var shared = RDFormsPicture.DecodesOnThisThread - before;
             labels[0].Set(P.Picture, (byte[])picture.Clone());
-            var copy = VBPicture.DecodesOnThisThread - before - shared;
+            var copy = RDFormsPicture.DecodesOnThisThread - before - shared;
             // The others still draw the picture the first one let go of.
             Dispatcher.UIThread.RunJobs();
             var at = controls[5].PictureBounds!.Value;
@@ -278,7 +279,7 @@ public sealed class LabelPictureTests
             foreach (var label in labels)
                 label.Set(P.Picture, null);
             labels[1].Set(P.Picture, picture);
-            var again = VBPicture.DecodesOnThisThread - before - shared - copy;
+            var again = RDFormsPicture.DecodesOnThisThread - before - shared - copy;
             window.Close();
             return (shared, copy, stillDrawn, again);
         });

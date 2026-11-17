@@ -1,8 +1,7 @@
 ﻿using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Drawing;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 using Item = RDCore.Forms.Drawing.PrintItem;
 
@@ -18,7 +17,7 @@ public sealed class PrintTests
     private static readonly FormFont Inter = FormFont.Default with { Name = "fonts:Inter#Inter" };
 
     private static ComponentInstance Box() =>
-        new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.BorderStyle, BorderStyle.None).Set(P.Width, 400d).Set(P.Height, 100d)
+        new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.BorderStyle, BorderStyle.None).Set(P.Width, 400d).Set(P.Height, 100d)
             .Set(P.BackColor, FormColor.FromRgb(255, 255, 255)).Set(P.Font, Inter);
 
     private static Item Text(string value) => new Item.Text(value);
@@ -29,7 +28,7 @@ public sealed class PrintTests
 
     private static List<string> Rows(Action<IDrawingSurface>? scale, params (string Label, Action<IDrawingSurface> Run)[] rows) => UI.Run(() =>
     {
-        var surface = new VBDrawingLayer(Box());
+        var surface = new RDFormsDrawingLayer(Box());
         surface.Scale();
         var lines = new List<string>();
         foreach (var (label, run) in rows)
@@ -180,7 +179,7 @@ public sealed class PrintTests
     {
         var (twips, half) = UI.Run(() =>
         {
-            var surface = new VBDrawingLayer(Box());
+            var surface = new RDFormsDrawingLayer(Box());
             surface.Scale();
             string Measure() => string.Join("\t", surface.TextWidth("abc"), surface.TextWidth("ab\r\nabcd"), surface.TextWidth("abcd\rab"),
                 surface.TextWidth(""), surface.TextHeight("a"), surface.TextHeight("a\r\nb"), surface.TextHeight("a\nb\rc"), surface.TextHeight(""));
@@ -221,7 +220,7 @@ public sealed class PrintTests
         var measured = UI.Run(() =>
         {
             var font = new FormFont("MS Sans Serif", size, bold ? FormFont.BoldWeight : FormFont.NormalWeight);
-            var surface = new VBDrawingLayer(Box().Set(P.ScaleMode, ScaleMode.Pixel).Set(P.Font, font));
+            var surface = new RDFormsDrawingLayer(Box().Set(P.ScaleMode, ScaleMode.Pixel).Set(P.Font, font));
             surface.CurrentX = 0;
             surface.CurrentY = 0;
             surface.Print([Tab(2)], false);
@@ -238,7 +237,7 @@ public sealed class PrintTests
     {
         static string Measured(FormFont font)
         {
-            var surface = new VBDrawingLayer(Box().Set(P.ScaleMode, ScaleMode.Pixel).Set(P.Font, font));
+            var surface = new RDFormsDrawingLayer(Box().Set(P.ScaleMode, ScaleMode.Pixel).Set(P.Font, font));
             surface.CurrentX = 0;
             surface.CurrentY = 0;
             surface.Print([Tab(2)], false);
@@ -262,7 +261,7 @@ public sealed class PrintTests
         var points = UI.Run(() =>
         {
             var box = Box().Set(P.ScaleMode, ScaleMode.Pixel);
-            var surface = new VBDrawingLayer(box);
+            var surface = new RDFormsDrawingLayer(box);
             surface.Line(new GraphicsPoint(0, 0), new GraphicsPoint(200, 60), FormColor.FromRgb(255, 0, 0), LineBox.FilledBox);
             box.Set(P.FontTransparent, transparent).Set(P.DrawMode, mode);
             surface.CurrentX = 0;
@@ -283,7 +282,7 @@ public sealed class PrintTests
         var (inside, outside, other) = UI.Run(() =>
         {
             var box = Box().Set(P.ScaleMode, ScaleMode.Pixel).Set(P.ForeColor, FormColor.FromRgb(0, 0, 255)).Set(P.DrawMode, mode);
-            var surface = new VBDrawingLayer(box);
+            var surface = new RDFormsDrawingLayer(box);
             surface.CurrentX = 20;
             surface.CurrentY = 10;
             surface.Print([Text("W")], false);
@@ -301,7 +300,7 @@ public sealed class PrintTests
     // The pixels a text inks over a white box, in pixels, as "x,y" pairs.
     private static string Inked(FormFont font, string text)
     {
-        var surface = new VBDrawingLayer(Box().Set(P.ScaleMode, ScaleMode.Pixel).Set(P.Font, font));
+        var surface = new RDFormsDrawingLayer(Box().Set(P.ScaleMode, ScaleMode.Pixel).Set(P.Font, font));
         surface.Print([Text(text)], false);
         return string.Join(" ", from y in Enumerable.Range(0, 30) from x in Enumerable.Range(0, 60) where surface.Point(x, y) != 0xFFFFFF select $"{x},{y}");
     }
@@ -329,8 +328,8 @@ public sealed class PrintTests
     [TestMethod]
     public void FontTransparent_IsAFormsAndAPictureBoxsProperty_TrueByDefault()
     {
-        Assert.IsTrue(new ComponentInstance(VBClasses.Form, "Form1").Get(P.FontTransparent));
-        Assert.IsTrue(new ComponentInstance(VBClasses.PictureBox, "Picture1").Get(P.FontTransparent));
-        Assert.IsFalse(VBClasses.Label.Has(P.FontTransparent));
+        Assert.IsTrue(new ComponentInstance(ComponentClasses.Form, "Form1").Get(P.FontTransparent));
+        Assert.IsTrue(new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Get(P.FontTransparent));
+        Assert.IsFalse(ComponentClasses.Label.Has(P.FontTransparent));
     }
 }

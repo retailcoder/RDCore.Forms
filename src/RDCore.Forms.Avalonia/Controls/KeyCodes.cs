@@ -7,7 +7,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 
 // The KeyCode VB gives a key in KeyDown and KeyUp, as measured with VB6, native and p-code agreeing. A key VB6 was not measured with,
 // and a chord of several modifiers, has none, and raises nothing. Enter and Esc have theirs where no button takes them
-// (VBFormWindow); Esc with Ctrl or Alt has none. Tab is not among them: it waits for the form's tab order.
+// (RDFormsFormWindow); Esc with Ctrl or Alt has none. Tab is not among them: it waits for the form's tab order.
 internal static class KeyCodes
 {
     public static short? Of(KeyEventArgs e)

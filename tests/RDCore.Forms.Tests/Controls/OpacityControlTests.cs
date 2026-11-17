@@ -6,9 +6,8 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Controls.PictureControlTests;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -24,11 +23,11 @@ public sealed class OpacityControlTests
     // A white form holding a borderless red PictureBox at 10, 10 of 100 by 60 pixels, which holds a blue Label at 50, 10 of 40 by 30.
     private static (ComponentInstance Root, ComponentInstance Picture, ComponentInstance Label) Form()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d).Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
-        var picture = new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.Left, 10d).Set(P.Top, 10d).Set(P.Width, 100d).Set(P.Height, 60d)
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d).Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
+        var picture = new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Left, 10d).Set(P.Top, 10d).Set(P.Width, 100d).Set(P.Height, 60d)
             .Set(P.BorderStyle, BorderStyle.None).Set(P.BackColor, FormColor.FromRgb(255, 0, 0));
         picture.SetContainer(root);
-        var label = new ComponentInstance(VBClasses.Label, "Label1").Set(P.Left, 50d).Set(P.Top, 10d).Set(P.Width, 40d).Set(P.Height, 30d)
+        var label = new ComponentInstance(ComponentClasses.Label, "Label1").Set(P.Left, 50d).Set(P.Top, 10d).Set(P.Width, 40d).Set(P.Height, 30d)
             .Set(P.Caption, "").Set(P.BackColor, FormColor.FromRgb(0, 0, 255));
         label.SetContainer(picture);
         return (root, picture, label);
@@ -38,7 +37,7 @@ public sealed class OpacityControlTests
     private static (Color Picture, Color Label)[] Rendered(params double[] opacities) => UI.Run(() =>
     {
         var (root, picture, _) = Form();
-        var window = new VBFormWindow(new FormDefinition(root));
+        var window = new RDFormsFormWindow(new FormDefinition(root));
         window.Show();
         var colours = opacities.Select(opacity =>
         {
@@ -80,7 +79,7 @@ public sealed class OpacityControlTests
         var (faded, held, solid) = UI.Run(() =>
         {
             var (root, picture, label) = Form();
-            var window = new VBFormWindow(new FormDefinition(root));
+            var window = new RDFormsFormWindow(new FormDefinition(root));
             window.Show();
             Dispatcher.UIThread.RunJobs();
             picture.Set(P.Opacity, 0.25);
@@ -97,14 +96,24 @@ public sealed class OpacityControlTests
         Assert.IsNull(solid);
     }
 
+    // a MultiPage's page fades the controls it holds, as a Frame does.
+    [TestMethod]
+    public void APagesOpacity_IsAMaskOverIt()
+    {
+        var masked = UI.Run(() =>
+            new RDFormsPage(new ComponentInstance(ComponentClasses.Page, "Page1").Set(P.Opacity, 0.25)).OpacityMask is ISolidColorBrush { Opacity: 0.25 });
+
+        Assert.IsTrue(masked);
+    }
+
     // Only Visible False takes a control out of the mouse's way.
     [TestMethod]
     public void AControlAtOpacity0_StillRaisesItsMouseEvents()
     {
         var raised = UI.Run(() =>
         {
-            var instance = new ComponentInstance(VBClasses.CommandButton, "Command1");
-            var (window, sink) = ControlHost.Show(new VBCommandButton(instance));
+            var instance = new ComponentInstance(ComponentClasses.CommandButton, "Command1");
+            var (window, sink) = ControlHost.Show(new RDFormsCommandButton(instance));
             instance.Set(P.Opacity, 0d);
             Dispatcher.UIThread.RunJobs();
             window.MouseDown(new Point(20, 10), MouseButton.Left);

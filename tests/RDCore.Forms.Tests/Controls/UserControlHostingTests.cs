@@ -8,9 +8,8 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Controls.PictureControlTests;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -22,11 +21,11 @@ public sealed class UserControlHostingTests
 
     // A white form of 300 by 200 pixels.
     private static ComponentInstance Form() =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d).Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
+        new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d).Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
 
     // A red UserControl of 120 by 80 pixels, with what is set on it.
     private static ComponentInstance UserControl(string name = "Gauge") =>
-        new ComponentInstance(VBClasses.UserControl, name).Set(P.Width, 120d).Set(P.Height, 80d).Set(P.BackColor, FormColor.FromRgb(255, 0, 0));
+        new ComponentInstance(ComponentClasses.UserControl, name).Set(P.Width, 120d).Set(P.Height, 80d).Set(P.BackColor, FormColor.FromRgb(255, 0, 0));
 
     // A component placed in a container, in pixels.
     private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double left, double top,
@@ -37,9 +36,9 @@ public sealed class UserControlHostingTests
         return component;
     }
 
-    private static VBFormWindow Show(ComponentInstance root)
+    private static RDFormsFormWindow Show(ComponentInstance root)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
+        var window = new RDFormsFormWindow(new FormDefinition(root));
         window.Show();
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -52,19 +51,19 @@ public sealed class UserControlHostingTests
         var (bounds, showsItsOwn, copies, ownCaptions) = UI.Run(() =>
         {
             var gauge = UserControl();
-            Add(gauge, VBClasses.CommandButton, "Command1", 10, 10, 60, 25).Set(P.Caption, "Go");
+            Add(gauge, ComponentClasses.CommandButton, "Command1", 10, 10, 60, 25).Set(P.Caption, "Go");
             var definition = new FormDefinition(gauge);
             var type = UserControlClasses.Of(definition, "Project1");
             var root = Form();
             var gauge1 = Add(root, type, "Gauge1", 20, 30, 120, 80);
             var gauge2 = Add(root, type, "Gauge2", 150, 30, 120, 80);
             var window = Show(root);
-            var shown1 = (VBUserControl)window.View.ControlOf(gauge1)!;
-            var shown2 = (VBUserControl)window.View.ControlOf(gauge2)!;
+            var shown1 = (RDFormsUserControl)window.View.ControlOf(gauge1)!;
+            var shown2 = (RDFormsUserControl)window.View.ControlOf(gauge2)!;
             var own = shown1.UserControl.Find("Command1")!;
-            var button = shown1.View!.ControlOf(own) as VBCommandButton;
+            var button = shown1.View!.ControlOf(own) as RDFormsCommandButton;
             own.Set(P.Caption, "Stop");
-            var result = (shown1.Bounds, button is not null && ReferenceEquals(VBControl.GetInstance(button), own),
+            var result = (shown1.Bounds, button is not null && ReferenceEquals(RDFormsControl.GetInstance(button), own),
                 new[] { shown1.UserControl, shown2.UserControl }.Distinct().Count() == 2 && !ReferenceEquals(shown1.UserControl, definition),
                 (shown2.UserControl.Find("Command1")!.Get(P.Caption), definition.Find("Command1")!.Get(P.Caption)));
             window.Close();
@@ -86,7 +85,7 @@ public sealed class UserControlHostingTests
             var root = Form();
             var gauge1 = Add(root, type, "Gauge1", 0, 0, 90, 50);
             var window = Show(root);
-            var shown = (VBUserControl)window.View.ControlOf(gauge1)!;
+            var shown = (RDFormsUserControl)window.View.ControlOf(gauge1)!;
             var before = (shown.UserControl.Root.Get(P.Width), shown.UserControl.Root.Get(P.Height));
             gauge1.Set(P.Width, 140d);
             Dispatcher.UIThread.RunJobs();
@@ -125,12 +124,12 @@ public sealed class UserControlHostingTests
         var enabled = UI.Run(() =>
         {
             var gauge = UserControl().Set(P.Enabled, false);
-            Add(gauge, VBClasses.TextBox, "Text1", 10, 10, 60, 19);
+            Add(gauge, ComponentClasses.TextBox, "Text1", 10, 10, 60, 19);
             var type = UserControlClasses.Of(new FormDefinition(gauge), "Project1");
             var root = Form();
             var gauge1 = Add(root, type, "Gauge1", 0, 0, 120, 80);
             var window = Show(root);
-            var shown = (VBUserControl)window.View.ControlOf(gauge1)!;
+            var shown = (RDFormsUserControl)window.View.ControlOf(gauge1)!;
             var text = shown.View!.ControlOf(shown.UserControl.Find("Text1")!)!;
             var result = text.IsEffectivelyEnabled;
             window.Close();
@@ -148,9 +147,9 @@ public sealed class UserControlHostingTests
             var type = UserControlClasses.Of(new FormDefinition(UserControl().Set(P.ControlContainer, true)), "Project1");
             var root = Form();
             var panel1 = Add(root, type, "Panel1", 40, 30, 120, 80);
-            var command = Add(panel1, VBClasses.CommandButton, "Command1", 8, 6, 60, 25);
+            var command = Add(panel1, ComponentClasses.CommandButton, "Command1", 8, 6, 60, 25);
             var window = Show(root);
-            var shown = (VBUserControl)window.View.ControlOf(panel1)!;
+            var shown = (RDFormsUserControl)window.View.ControlOf(panel1)!;
             var button = window.View.ControlOf(command)!;
             var result = (shown.ChildHost.Children.Contains(button), button.TranslatePoint(default, window.View));
             window.Close();
@@ -170,7 +169,7 @@ public sealed class UserControlHostingTests
             var root = Form();
             var timer = new ComponentInstance(type, "Ticker1");
             timer.SetContainer(root);
-            return new VBFormView(new FormDefinition(root)).ControlOf(timer) is not null;
+            return new RDFormsFormView(new FormDefinition(root)).ControlOf(timer) is not null;
         });
 
         Assert.IsFalse(shown);
@@ -182,16 +181,16 @@ public sealed class UserControlHostingTests
         var inner = UI.Run(() =>
         {
             var panel = UserControl("Panel");
-            Add(panel, VBClasses.Label, "Label1", 4, 4, 60, 15);
+            Add(panel, ComponentClasses.Label, "Label1", 4, 4, 60, 15);
             var panelType = UserControlClasses.Of(new FormDefinition(panel), "Project1");
             var gauge = UserControl();
             Add(gauge, panelType, "Panel1", 10, 10, 80, 40);
             var gaugeType = UserControlClasses.Of(new FormDefinition(gauge), "Project1");
             var root = Form();
             var gauge1 = Add(root, gaugeType, "Gauge1", 0, 0, 120, 80);
-            var shown = (VBUserControl)new VBFormView(new FormDefinition(root)).ControlOf(gauge1)!;
-            var shownPanel = (VBUserControl)shown.View!.ControlOf(shown.UserControl.Find("Panel1")!)!;
-            return shownPanel.View?.ControlOf(shownPanel.UserControl.Find("Label1")!) is VBLabel;
+            var shown = (RDFormsUserControl)new RDFormsFormView(new FormDefinition(root)).ControlOf(gauge1)!;
+            var shownPanel = (RDFormsUserControl)shown.View!.ControlOf(shown.UserControl.Find("Panel1")!)!;
+            return shownPanel.View?.ControlOf(shownPanel.UserControl.Find("Label1")!) is RDFormsLabel;
         });
 
         Assert.IsTrue(inner);
@@ -207,8 +206,8 @@ public sealed class UserControlHostingTests
             definition.AddControl(type, "Gauge2").Set(P.Visible, true);
             var root = Form();
             var gauge1 = Add(root, type, "Gauge1", 0, 0, 120, 80);
-            var shown = (VBUserControl)new VBFormView(new FormDefinition(root)).ControlOf(gauge1)!;
-            var held = (VBUserControl)shown.View!.ControlOf(shown.UserControl.Find("Gauge2")!)!;
+            var shown = (RDFormsUserControl)new RDFormsFormView(new FormDefinition(root)).ControlOf(gauge1)!;
+            var held = (RDFormsUserControl)shown.View!.ControlOf(shown.UserControl.Find("Gauge2")!)!;
             var text = held.GetLogicalDescendants().OfType<TextBlock>().Single().Text;
             return (shown.View is not null, held.View is null, text);
         });
@@ -224,20 +223,20 @@ public sealed class UserControlHostingTests
         var focused = UI.Run(() =>
         {
             var gauge = UserControl();
-            Add(gauge, VBClasses.TextBox, "Text2", 10, 10, 60, 19);
-            Add(gauge, VBClasses.TextBox, "Text3", 10, 40, 60, 19).Set(P.TabIndex, (short)1);
+            Add(gauge, ComponentClasses.TextBox, "Text2", 10, 10, 60, 19);
+            Add(gauge, ComponentClasses.TextBox, "Text3", 10, 40, 60, 19).Set(P.TabIndex, (short)1);
             var type = UserControlClasses.Of(new FormDefinition(gauge), "Project1");
             var root = Form();
-            Add(root, VBClasses.TextBox, "Text1", 0, 0, 80, 19).Set(P.TabIndex, (short)0);
+            Add(root, ComponentClasses.TextBox, "Text1", 0, 0, 80, 19).Set(P.TabIndex, (short)0);
             var gauge1 = Add(root, type, "Gauge1", 0, 40, 120, 80).Set(P.TabIndex, (short)1);
-            Add(root, VBClasses.TextBox, "Text4", 0, 140, 80, 19).Set(P.TabIndex, (short)2);
+            Add(root, ComponentClasses.TextBox, "Text4", 0, 140, 80, 19).Set(P.TabIndex, (short)2);
             var window = Show(root);
-            var shown = (VBUserControl)window.View.ControlOf(gauge1)!;
+            var shown = (RDFormsUserControl)window.View.ControlOf(gauge1)!;
             shown.View!.ControlOf(shown.UserControl.Find("Text2")!)!.Focus();
             window.KeyPress(Key.Tab, RawInputModifiers.None, PhysicalKey.Tab, null);
             window.KeyRelease(Key.Tab, RawInputModifiers.None, PhysicalKey.Tab, null);
             var at = window.FocusManager?.GetFocusedElement() as Control;
-            var name = at is null ? "none" : VBControl.GetInstance(at)?.Name ?? at.GetType().Name;
+            var name = at is null ? "none" : RDFormsControl.GetInstance(at)?.Name ?? at.GetType().Name;
             window.Close();
             return name;
         });

@@ -1,8 +1,7 @@
 ﻿using RDCore.Forms.Import.VB6;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -141,8 +140,8 @@ public sealed class FormMenuTests
     [TestMethod]
     public void AComponentThatIsNotAMenu_IsRefused()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => FormMenuItem.Of(new ComponentInstance(VBClasses.Label, "Label1")));
-        Assert.ThrowsExactly<ArgumentException>(() => FormMenu.Of(new ComponentInstance(VBClasses.Menu, "mnu1")));
-        Assert.IsFalse(new ComponentInstance(VBClasses.Menu, "mnu1").Get(P.CheckOnClick));
+        Assert.ThrowsExactly<ArgumentException>(() => FormMenuItem.Of(new ComponentInstance(ComponentClasses.Label, "Label1")));
+        Assert.ThrowsExactly<ArgumentException>(() => FormMenu.Of(new ComponentInstance(ComponentClasses.Menu, "mnu1")));
+        Assert.IsFalse(new ComponentInstance(ComponentClasses.Menu, "mnu1").Get(P.CheckOnClick));
     }
 }

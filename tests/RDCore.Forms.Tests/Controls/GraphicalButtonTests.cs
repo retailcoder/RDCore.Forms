@@ -9,9 +9,8 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Model;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -35,9 +34,9 @@ public sealed class GraphicalButtonTests
 
     private static Control Make(ComponentInstance instance) => instance.Class.TypeName switch
     {
-        "VB.CommandButton" => new VBCommandButton(instance),
-        "VB.CheckBox" => new VBCheckBox(instance),
-        _ => new VBOptionButton(instance),
+        "RDForms.CommandButton" => new RDFormsCommandButton(instance),
+        "RDForms.CheckBox" => new RDFormsCheckBox(instance),
+        _ => new RDFormsOptionButton(instance),
     };
 
     // The pixels of a colour in a control, or in an area of it, as their bounding box from the control's top left corner, or null where
@@ -82,14 +81,14 @@ public sealed class GraphicalButtonTests
     private static readonly Rect Cell = new(10, 10, 100, 60);
 
     [TestMethod]
-    [DataRow("VB.CommandButton")]
-    [DataRow("VB.CheckBox")]
-    [DataRow("VB.OptionButton")]
+    [DataRow("RDForms.CommandButton")]
+    [DataRow("RDForms.CheckBox")]
+    [DataRow("RDForms.OptionButton")]
     public void AStandardButton_DrawsNoPicture(string type)
     {
         var red = UI.Run(() =>
         {
-            var control = Make(Button(VBClasses.All.Single(c => c.TypeName == type), ButtonStyle.Standard));
+            var control = Make(Button(ComponentClasses.All.Single(c => c.TypeName == type), ButtonStyle.Standard));
             var (window, _) = ControlHost.Show((control, Cell));
             var result = Box(window, control, Red);
             window.Close();
@@ -104,8 +103,8 @@ public sealed class GraphicalButtonTests
     {
         var (standard, graphical) = UI.Run(() =>
         {
-            var plain = new VBCommandButton(Button(VBClasses.CommandButton, ButtonStyle.Standard).Set(P.BackColor, Yellow));
-            var drawn = new VBCommandButton(Button(VBClasses.CommandButton, ButtonStyle.Graphical).Set(P.BackColor, Yellow));
+            var plain = new RDFormsCommandButton(Button(ComponentClasses.CommandButton, ButtonStyle.Standard).Set(P.BackColor, Yellow));
+            var drawn = new RDFormsCommandButton(Button(ComponentClasses.CommandButton, ButtonStyle.Graphical).Set(P.BackColor, Yellow));
             var (window, _) = ControlHost.Show((plain, Cell), (drawn, Cell.Translate(new Vector(120, 0))));
             var yellow = Color.FromRgb(255, 255, 0);
             var result = (Box(window, plain, yellow), Box(window, drawn, yellow));
@@ -118,14 +117,14 @@ public sealed class GraphicalButtonTests
     }
 
     [TestMethod]
-    [DataRow("VB.CommandButton")]
-    [DataRow("VB.CheckBox")]
-    [DataRow("VB.OptionButton")]
+    [DataRow("RDForms.CommandButton")]
+    [DataRow("RDForms.CheckBox")]
+    [DataRow("RDForms.OptionButton")]
     public void AGraphicalButton_CentresItsPictureAcross_AboveItsCaption_AtTheBottom(string type)
     {
         var (red, caption) = UI.Run(() =>
         {
-            var control = Make(Button(VBClasses.All.Single(c => c.TypeName == type), ButtonStyle.Graphical));
+            var control = Make(Button(ComponentClasses.All.Single(c => c.TypeName == type), ButtonStyle.Graphical));
             var (window, _) = ControlHost.Show((control, Cell));
             var result = (Box(window, control, Red), CaptionBounds(control));
             window.Close();
@@ -143,7 +142,7 @@ public sealed class GraphicalButtonTests
     {
         var red = UI.Run(() =>
         {
-            var control = new VBCommandButton(Button(VBClasses.CommandButton, ButtonStyle.Graphical, caption: ""));
+            var control = new RDFormsCommandButton(Button(ComponentClasses.CommandButton, ButtonStyle.Graphical, caption: ""));
             var (window, _) = ControlHost.Show((control, Cell));
             var result = Box(window, control, Red);
             window.Close();
@@ -158,9 +157,9 @@ public sealed class GraphicalButtonTests
     {
         var (up, held, heldDown, released) = UI.Run(() =>
         {
-            var instance = Button(VBClasses.CommandButton, ButtonStyle.Graphical);
-            var plain = new VBCommandButton(instance);
-            var withDown = new VBCommandButton(Button(VBClasses.CommandButton, ButtonStyle.Graphical).Set(P.DownPicture, BluePicture));
+            var instance = Button(ComponentClasses.CommandButton, ButtonStyle.Graphical);
+            var plain = new RDFormsCommandButton(instance);
+            var withDown = new RDFormsCommandButton(Button(ComponentClasses.CommandButton, ButtonStyle.Graphical).Set(P.DownPicture, BluePicture));
             var (window, _) = ControlHost.Show((plain, Cell), (withDown, Cell.Translate(new Vector(120, 0))));
             var up = Box(window, plain, Red);
             Down(plain, true);
@@ -184,9 +183,9 @@ public sealed class GraphicalButtonTests
     {
         var (withDisabled, greyed, (back, captionOpacity)) = UI.Run(() =>
         {
-            var one = new VBCommandButton(Button(VBClasses.CommandButton, ButtonStyle.Graphical).Set(P.DisabledPicture, GreenPicture)
+            var one = new RDFormsCommandButton(Button(ComponentClasses.CommandButton, ButtonStyle.Graphical).Set(P.DisabledPicture, GreenPicture)
                 .Set(P.Enabled, false));
-            var other = new VBCommandButton(Button(VBClasses.CommandButton, ButtonStyle.Graphical).Set(P.BackColor, Yellow)
+            var other = new RDFormsCommandButton(Button(ComponentClasses.CommandButton, ButtonStyle.Graphical).Set(P.BackColor, Yellow)
                 .Set(P.Enabled, false));
             var (window, _) = ControlHost.Show((one, Cell), (other, Cell.Translate(new Vector(120, 0))));
             var result = ((Box(window, one, Red), Box(window, one, Green)), Box(window, other, Red),
@@ -207,8 +206,8 @@ public sealed class GraphicalButtonTests
     {
         var (disabled, enabled) = UI.Run(() =>
         {
-            var instance = Button(VBClasses.CommandButton, ButtonStyle.Graphical).Set(P.Enabled, false);
-            var button = new VBCommandButton(instance);
+            var instance = Button(ComponentClasses.CommandButton, ButtonStyle.Graphical).Set(P.Enabled, false);
+            var button = new RDFormsCommandButton(instance);
             var (window, _) = ControlHost.Show((button, Cell));
             var disabled = OpacityOf(Caption(button), button);
             instance.Set(P.Enabled, true);
@@ -227,10 +226,10 @@ public sealed class GraphicalButtonTests
     {
         var (cleared, checkedBox, grayed, withDown) = UI.Run(() =>
         {
-            var instance = Button(VBClasses.CheckBox, ButtonStyle.Graphical);
-            var box = new VBCheckBox(instance);
-            var downInstance = Button(VBClasses.CheckBox, ButtonStyle.Graphical).Set(P.DownPicture, BluePicture);
-            var other = new VBCheckBox(downInstance);
+            var instance = Button(ComponentClasses.CheckBox, ButtonStyle.Graphical);
+            var box = new RDFormsCheckBox(instance);
+            var downInstance = Button(ComponentClasses.CheckBox, ButtonStyle.Graphical).Set(P.DownPicture, BluePicture);
+            var other = new RDFormsCheckBox(downInstance);
             var (window, _) = ControlHost.Show((box, Cell), (other, Cell.Translate(new Vector(120, 0))));
             var cleared = Box(window, box, Red);
             instance.Set(P.CheckBoxValue, CheckBoxValue.Checked);
@@ -253,8 +252,8 @@ public sealed class GraphicalButtonTests
     {
         var (value, raised) = UI.Run(() =>
         {
-            var instance = Button(VBClasses.CheckBox, ButtonStyle.Graphical);
-            var box = new VBCheckBox(instance);
+            var instance = Button(ComponentClasses.CheckBox, ButtonStyle.Graphical);
+            var box = new RDFormsCheckBox(instance);
             var (window, sink) = ControlHost.Show((box, Cell));
             Down(box, true);
             Down(box, false);
@@ -272,10 +271,10 @@ public sealed class GraphicalButtonTests
     {
         var (up, selected, cleared) = UI.Run(() =>
         {
-            var first = Button(VBClasses.OptionButton, ButtonStyle.Graphical);
-            var second = new ComponentInstance(VBClasses.OptionButton, "Option2");
-            var option = new VBOptionButton(first);
-            var (window, _) = ControlHost.Show((option, Cell), (new VBOptionButton(second), Cell.Translate(new Vector(120, 0))));
+            var first = Button(ComponentClasses.OptionButton, ButtonStyle.Graphical);
+            var second = new ComponentInstance(ComponentClasses.OptionButton, "Option2");
+            var option = new RDFormsOptionButton(first);
+            var (window, _) = ControlHost.Show((option, Cell), (new RDFormsOptionButton(second), Cell.Translate(new Vector(120, 0))));
             var up = Box(window, option, Red);
             first.Set(P.OptionButtonValue, true);
             var selected = Box(window, option, Red);
@@ -324,14 +323,14 @@ public sealed class GraphicalButtonTests
         Button(type, ButtonStyle.Graphical, caption: "").Set(P.BackColor, Yellow).Set(P.Picture, picture).Set(P.UseMaskColor, useMaskColor);
 
     [TestMethod]
-    [DataRow("VB.CommandButton")]
-    [DataRow("VB.CheckBox")]
-    [DataRow("VB.OptionButton")]
+    [DataRow("RDForms.CommandButton")]
+    [DataRow("RDForms.CheckBox")]
+    [DataRow("RDForms.OptionButton")]
     public void UseMaskColor_LeavesTheMaskColorOutOfThePicture_SilverByDefault(string type)
     {
         var (masked, unmasked) = UI.Run(() =>
         {
-            var kind = VBClasses.All.Single(c => c.TypeName == type);
+            var kind = ComponentClasses.All.Single(c => c.TypeName == type);
             var one = Make(Masked(kind, Bordered(Silver, Red)));
             var other = Make(Masked(kind, Bordered(Silver, Red), useMaskColor: false));
             var (window, _) = ControlHost.Show((one, Cell), (other, Cell.Translate(new Vector(120, 0))));
@@ -350,9 +349,9 @@ public sealed class GraphicalButtonTests
     {
         var (near, magenta, other) = UI.Run(() =>
         {
-            var c1c0c0 = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Silver, Red)).Set(P.MaskColor, FormColor.FromRgb(0xC1, 0xC0, 0xC0)));
-            var onMagenta = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Magenta, Red)).Set(P.MaskColor, FormColor.FromRgb(255, 0, 255)));
-            var onSilver = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Silver, Red)).Set(P.MaskColor, FormColor.FromRgb(255, 0, 255)));
+            var c1c0c0 = new RDFormsCommandButton(Masked(ComponentClasses.CommandButton, Bordered(Silver, Red)).Set(P.MaskColor, FormColor.FromRgb(0xC1, 0xC0, 0xC0)));
+            var onMagenta = new RDFormsCommandButton(Masked(ComponentClasses.CommandButton, Bordered(Magenta, Red)).Set(P.MaskColor, FormColor.FromRgb(255, 0, 255)));
+            var onSilver = new RDFormsCommandButton(Masked(ComponentClasses.CommandButton, Bordered(Silver, Red)).Set(P.MaskColor, FormColor.FromRgb(255, 0, 255)));
             var (window, _) = ControlHost.Show((c1c0c0, Cell), (onMagenta, Cell.Translate(new Vector(120, 0))), (onSilver, Cell.Translate(new Vector(240, 0))));
             var result = (Box(window, c1c0c0, Silver), Box(window, onMagenta, Magenta), Box(window, onSilver, Silver));
             window.Close();
@@ -370,7 +369,7 @@ public sealed class GraphicalButtonTests
         var face = FormPalette.ToColor(FormColor.FromSystem(SystemColor.ButtonFace));
         var border = UI.Run(() =>
         {
-            var button = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(face, Red)).Set(P.MaskColor, FormColor.FromSystem(SystemColor.ButtonFace)));
+            var button = new RDFormsCommandButton(Masked(ComponentClasses.CommandButton, Bordered(face, Red)).Set(P.MaskColor, FormColor.FromSystem(SystemColor.ButtonFace)));
             var (window, _) = ControlHost.Show((button, Cell));
             var result = Box(window, button, face, PictureArea);
             window.Close();
@@ -385,8 +384,8 @@ public sealed class GraphicalButtonTests
     {
         var (held, disabled) = UI.Run(() =>
         {
-            var one = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Silver, Red)).Set(P.DownPicture, Bordered(Silver, Blue)));
-            var other = new VBCommandButton(Masked(VBClasses.CommandButton, Bordered(Silver, Red)).Set(P.DisabledPicture, Bordered(Silver, Green))
+            var one = new RDFormsCommandButton(Masked(ComponentClasses.CommandButton, Bordered(Silver, Red)).Set(P.DownPicture, Bordered(Silver, Blue)));
+            var other = new RDFormsCommandButton(Masked(ComponentClasses.CommandButton, Bordered(Silver, Red)).Set(P.DisabledPicture, Bordered(Silver, Green))
                 .Set(P.Enabled, false));
             var (window, _) = ControlHost.Show((one, Cell), (other, Cell.Translate(new Vector(120, 0))));
             Down(one, true);
@@ -406,8 +405,8 @@ public sealed class GraphicalButtonTests
     {
         var (before, masked, remasked) = UI.Run(() =>
         {
-            var instance = Masked(VBClasses.CommandButton, Bordered(Silver, Red), useMaskColor: false);
-            var button = new VBCommandButton(instance);
+            var instance = Masked(ComponentClasses.CommandButton, Bordered(Silver, Red), useMaskColor: false);
+            var button = new RDFormsCommandButton(instance);
             var (window, _) = ControlHost.Show((button, Cell));
             var before = Box(window, button, Silver);
             instance.Set(P.UseMaskColor, true);
@@ -430,7 +429,7 @@ public sealed class GraphicalButtonTests
     {
         var silver = UI.Run(() =>
         {
-            var button = new VBCommandButton(Masked(VBClasses.CommandButton, BorderedIcon(type, Silver, Red)));
+            var button = new RDFormsCommandButton(Masked(ComponentClasses.CommandButton, BorderedIcon(type, Silver, Red)));
             var (window, _) = ControlHost.Show((button, Cell));
             var result = Box(window, button, Silver);
             window.Close();
@@ -449,7 +448,7 @@ public sealed class GraphicalButtonTests
         {
             // An opaque silver border around a centre of silver at half its alpha, premultiplied.
             var png = PictureControlTests.Png(16, 16, [.. Enumerable.Range(0, 256).Select(i => IsCentre(i) ? 0x80606060u : 0xFFC0C0C0u)]);
-            var button = new VBCommandButton(Masked(VBClasses.CommandButton, png));
+            var button = new RDFormsCommandButton(Masked(ComponentClasses.CommandButton, png));
             var (window, _) = ControlHost.Show((button, Cell));
             var corner = new PixelPoint((int)Cell.X + PictureArea.X, (int)Cell.Y + PictureArea.Y);
             var pixels = PictureControlTests.PixelsAt(window, corner + new PixelVector(1, 1), corner + new PixelVector(8, 8));
@@ -468,8 +467,8 @@ public sealed class GraphicalButtonTests
     {
         var red = UI.Run(() =>
         {
-            var instance = Button(VBClasses.CommandButton, ButtonStyle.Standard);
-            var control = new VBCommandButton(instance);
+            var instance = Button(ComponentClasses.CommandButton, ButtonStyle.Standard);
+            var control = new RDFormsCommandButton(instance);
             var (window, _) = ControlHost.Show((control, Cell));
             instance.Set(P.ButtonStyle, ButtonStyle.Graphical);
             var result = Box(window, control, Red);

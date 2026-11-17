@@ -8,9 +8,8 @@ using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Menus;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -20,7 +19,7 @@ public sealed class MenuBarTests
 {
     private static ComponentInstance Menu(ComponentInstance container, string name, string caption, string? shortcut = null)
     {
-        var menu = new ComponentInstance(VBClasses.Menu, name).Set(P.Caption, caption);
+        var menu = new ComponentInstance(ComponentClasses.Menu, name).Set(P.Caption, caption);
         if (shortcut is not null && MenuShortcut.TryParse(shortcut, out var key))
             menu.Set(P.Shortcut, key);
         menu.SetContainer(container);
@@ -31,7 +30,7 @@ public sealed class MenuBarTests
     // is a top-level menu with no items.
     private static ComponentInstance Probe()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d);
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d);
         var top = Menu(root, "mnuTop", "&Top");
         Menu(top, "mnuA", "&Alpha", "^Q");
         var sub = Menu(top, "mnuSub", "&Sub");
@@ -41,25 +40,25 @@ public sealed class MenuBarTests
         return root;
     }
 
-    private static VBFormWindow Open(ComponentInstance root, RecordingSink sink)
+    private static RDFormsFormWindow Open(ComponentInstance root, RecordingSink sink)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         sink.Raised.Clear();
         return window;
     }
 
-    private static MenuItem Item(VBFormWindow window, string name) =>
-        window.MenuBar.GetLogicalDescendants().OfType<MenuItem>().Single(m => VBControl.GetInstance(m)?.Name == name);
+    private static MenuItem Item(RDFormsFormWindow window, string name) =>
+        window.MenuBar.GetLogicalDescendants().OfType<MenuItem>().Single(m => RDFormsControl.GetInstance(m)?.Name == name);
 
-    private static FormMenuItem Model(VBFormWindow window, string name) =>
+    private static FormMenuItem Model(RDFormsFormWindow window, string name) =>
         window.MenuBar.Menu.AllItems.Single(item => item.Component.Name == name);
 
     private static List<string> Clicks(RecordingSink sink) => [.. sink.Raised.Where(e => e.EndsWith(".Click", StringComparison.Ordinal))];
 
-    private static void Press(VBFormWindow window, Key key)
+    private static void Press(RDFormsFormWindow window, Key key)
     {
         window.KeyPress(key, RawInputModifiers.Control, PhysicalKey.A + (key - Key.A), null);
         window.KeyRelease(key, RawInputModifiers.Control, PhysicalKey.A + (key - Key.A), null);
@@ -75,8 +74,8 @@ public sealed class MenuBarTests
             Menu(FormMenuItem.Of(root.Contents[0]).Component, "mnuSep", "-");
             var window = Open(root, new RecordingSink());
             var result = (
-                window.MenuBar.Items.OfType<MenuItem>().Select(m => VBControl.GetInstance(m)!.Name).ToList(),
-                Item(window, "mnuSub").Items.OfType<MenuItem>().Select(m => VBControl.GetInstance(m)!.Name).ToList(),
+                window.MenuBar.Items.OfType<MenuItem>().Select(m => RDFormsControl.GetInstance(m)!.Name).ToList(),
+                Item(window, "mnuSub").Items.OfType<MenuItem>().Select(m => RDFormsControl.GetInstance(m)!.Name).ToList(),
                 Item(window, "mnuTop").Items.OfType<Separator>().Count(),
                 (string?)Item(window, "mnuTop").Header);
             window.Close();
@@ -113,8 +112,8 @@ public sealed class MenuBarTests
     {
         var (none, hidden, shownAgain) = UI.Run(() =>
         {
-            var plain = Open(new ComponentInstance(VBClasses.Form, "Form1"), new RecordingSink());
-            var root = new ComponentInstance(VBClasses.Form, "Form2");
+            var plain = Open(new ComponentInstance(ComponentClasses.Form, "Form1"), new RecordingSink());
+            var root = new ComponentInstance(ComponentClasses.Form, "Form2");
             var popup = Menu(root, "mnuPopup", "Popup");
             Menu(popup, "mnuCopy", "&Copy");
             popup.Set(P.Visible, false);
@@ -178,7 +177,7 @@ public sealed class MenuBarTests
             bool? seen = null;
             sink.Handler = (source, definition, _) =>
             {
-                if (source == alpha.Component && ReferenceEquals(definition, VBEvents.Click))
+                if (source == alpha.Component && ReferenceEquals(definition, Events.Click))
                     seen = alpha.Checked;
             };
             Item(window, "mnuA").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
@@ -225,7 +224,7 @@ public sealed class MenuBarTests
             var window = Open(Probe(), sink);
             sink.Handler = (source, definition, _) =>
             {
-                if (source.Name == "mnuTop" && ReferenceEquals(definition, VBEvents.Click))
+                if (source.Name == "mnuTop" && ReferenceEquals(definition, Events.Click))
                     Model(window, "mnuDis").Enabled = true;
             };
             Press(window, Key.E);
@@ -266,7 +265,7 @@ public sealed class MenuBarTests
         var raised = UI.Run(() =>
         {
             var root = Probe();
-            var text = new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.Width, 120d).Set(P.Height, 21d);
+            var text = new ComponentInstance(ComponentClasses.TextBox, "Text1").Set(P.Width, 120d).Set(P.Height, 21d);
             text.SetContainer(root);
             var sink = new RecordingSink();
             var window = Open(root, sink);
@@ -340,7 +339,7 @@ public sealed class MenuBarTests
             Dispatcher.UIThread.RunJobs();
             var inTop = Headers(Item(window, "mnuTop"));
             var onBar = Headers(window.MenuBar);
-            window.MenuBar.GetLogicalDescendants().OfType<MenuItem>().Single(m => VBControl.GetInstance(m) is { Index: 2 })
+            window.MenuBar.GetLogicalDescendants().OfType<MenuItem>().Single(m => RDFormsControl.GetInstance(m) is { Index: 2 })
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             menu.ArrayOf("mnuArr")!.Unload(2);
             menu.ArrayOf("mnuBar")!.Unload(1);
@@ -363,7 +362,7 @@ public sealed class MenuBarTests
     {
         var (before, after) = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d);
             Menu(root, "mnuBar", "B0").Index = 0;
             var window = Open(root, new RecordingSink());
             var bar = window.MenuBar.Menu.ArrayOf("mnuBar")!;

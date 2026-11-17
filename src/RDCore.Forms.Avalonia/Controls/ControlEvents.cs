@@ -6,7 +6,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -36,8 +35,16 @@ internal enum DblClick
 internal interface IFormFocus
 {
     // A control of the window took the focus, or lost it, in the window system: to no element, where toNone is true, as the window
-    // system takes the focus from the window.
-    void FocusMoved(Control control, bool got, bool toNone);
+    // system takes the focus from the window, or to the control `to`, where the element that took it is one.
+    void FocusMoved(Control control, bool got, bool toNone, Control? to = null);
+}
+
+// A control whose user edit is kept as the focus leaves it, with a BeforeUpdate and an AfterUpdate.
+internal interface IKeepsEdits
+{
+    // Raises BeforeUpdate, then AfterUpdate, where the user changed the control's value since it was last kept, and answers false
+    // where the BeforeUpdate's handler cancelled: the focus stays on the control, and the edit stays to keep.
+    bool KeepEdit();
 }
 
 // The focus, click and mouse events VB raises for a control, as measured with VB6: native and p-code builds agree.
@@ -56,32 +63,36 @@ internal static class ControlEvents
         InputElement.GotFocusEvent.AddClassHandler<T>((control, e) =>
         {
             if (e is FocusChangedEventArgs moved
-                && VBControl.Owns(control, moved.NewFocusedElement) && !VBControl.Owns(control, moved.OldFocusedElement))
+                && RDFormsControl.Owns(control, moved.NewFocusedElement) && !RDFormsControl.Owns(control, moved.OldFocusedElement))
                 FocusMoved(control, got: true);
         }, handledEventsToo: true);
         InputElement.LostFocusEvent.AddClassHandler<T>((control, e) =>
         {
             if (e is FocusChangedEventArgs moved
-                && VBControl.Owns(control, moved.OldFocusedElement) && !VBControl.Owns(control, moved.NewFocusedElement))
-                FocusMoved(control, got: false, toNone: moved.NewFocusedElement is null);
+                && RDFormsControl.Owns(control, moved.OldFocusedElement) && !RDFormsControl.Owns(control, moved.NewFocusedElement))
+                FocusMoved(control, got: false, toNone: moved.NewFocusedElement is null, to: ControlKeys.Owner(moved.NewFocusedElement));
         }, handledEventsToo: true);
     }
 
-    private static void FocusMoved(Control control, bool got, bool toNone = false)
+    // Whether an event's handler set its Cancel, the argument of the given place, to True.
+    public static bool Cancelled(FormValue[]? after, int place = 0) =>
+        after is { } arguments && arguments[place] is { Kind: FormValueKind.Boolean } cancel && cancel.AsBoolean();
+
+    private static void FocusMoved(Control control, bool got, bool toNone = false, Control? to = null)
     {
         if (TopLevel.GetTopLevel(control) is IFormFocus form)
-            form.FocusMoved(control, got, toNone);
+            form.FocusMoved(control, got, toNone, to);
         else
-            VBControl.Raise(control, got ? VBEvents.GotFocus : VBEvents.LostFocus);
+            RDFormsControl.Raise(control, got ? Events.GotFocus : Events.LostFocus);
     }
 
     // Click on a release. A Button raises its own Click; this is for the others. A double click's second release raises none.
     public static void AttachClick<T>(ClickRelease release) where T : Control =>
         InputElement.PointerReleasedEvent.AddClassHandler<T>((control, e) =>
         {
-            if (VBControl.Owns(control, e.Source) && !IsSecondPress(control)
+            if (RDFormsControl.Owns(control, e.Source) && !IsSecondPress(control)
                 && (release == ClickRelease.Anywhere || ReleasedOver(control, e)))
-                VBControl.Raise(control, VBEvents.Click);
+                RDFormsControl.Raise(control, Events.Click);
         });
 
     // MouseDown, MouseUp and MouseMove, with VB's arguments: Button, Shift, X and Y.
@@ -98,19 +109,19 @@ internal static class ControlEvents
         InputElement.PointerPressedEvent.AddClassHandler<T>((control, e) =>
         {
             var second = dblClick != DblClick.None && e.ClickCount % 2 == 0 && IsVBButton(e.GetCurrentPoint(control))
-                         && VBControl.Owns(control, e.Source);
+                         && RDFormsControl.Owns(control, e.Source);
             if (second)
                 secondPresses.AddOrUpdate(control, marker);
             else
                 secondPresses.Remove(control);
             if (!second || dblClick == DblClick.AfterMouseDown)
-                RaiseMouse(control, e, VBEvents.MouseDown, inScale);
+                RaiseMouse(control, e, Events.MouseDown, inScale);
             if (second)
-                VBControl.Raise(control, VBEvents.DblClick);
+                RDFormsControl.Raise(control, Events.DblClick);
         }, handledEventsToo: true);
-        InputElement.PointerReleasedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, VBEvents.MouseUp, inScale),
+        InputElement.PointerReleasedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, Events.MouseUp, inScale),
             handledEventsToo: true);
-        InputElement.PointerMovedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, VBEvents.MouseMove, inScale),
+        InputElement.PointerMovedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, Events.MouseMove, inScale),
             handledEventsToo: true);
     }
 
@@ -124,10 +135,16 @@ internal static class ControlEvents
 
     private static void RaiseMouse(Control control, PointerEventArgs e, EventDefinition definition, bool inScale)
     {
-        if (!VBControl.Owns(control, e.Source))
-            return;
+        if (RDFormsControl.Owns(control, e.Source) && MouseArguments(control, e, moved: ReferenceEquals(definition, Events.MouseMove), inScale) is { } arguments)
+            RDFormsControl.Raise(control, definition, arguments);
+    }
+
+    // The Button, Shift, X and Y of a mouse event over the control, as AttachMouse raises them: none for a press or a release of a
+    // button VB has no event for. A MultiPage and a TabStrip raise theirs with the tab's index before them.
+    public static FormValue[]? MouseArguments(Control control, PointerEventArgs e, bool moved, bool inScale = false)
+    {
         var point = e.GetCurrentPoint(control);
-        var button = ReferenceEquals(definition, VBEvents.MouseMove)
+        var button = moved
             ? (point.Properties.IsLeftButtonPressed ? 1 : 0) | (point.Properties.IsRightButtonPressed ? 2 : 0)
               | (point.Properties.IsMiddleButtonPressed ? 4 : 0)
             : point.Properties.PointerUpdateKind switch
@@ -138,13 +155,13 @@ internal static class ControlEvents
                 _ => 0,
             };
         // VB has no event for the other buttons.
-        if (button == 0 && !ReferenceEquals(definition, VBEvents.MouseMove))
-            return;
+        if (button == 0 && !moved)
+            return null;
         double x = Twips(point.Position.X), y = Twips(point.Position.Y);
         if (inScale)
-            (x, y) = VBDrawingLayer.ScaleOf(VBControl.GetInstance(control)).FromTwips(x, y);
-        VBControl.Raise(control, definition, FormValue.FromInteger((short)button), FormValue.FromInteger(ShiftOf(e.KeyModifiers)),
-            FormValue.FromSingle((float)x), FormValue.FromSingle((float)y));
+            (x, y) = RDFormsDrawingLayer.ScaleOf(RDFormsControl.GetInstance(control)).FromTwips(x, y);
+        return [FormValue.FromInteger((short)button), FormValue.FromInteger(ShiftOf(e.KeyModifiers)), FormValue.FromSingle((float)x),
+            FormValue.FromSingle((float)y)];
     }
 
     private static float Twips(double pixels) => (float)(Math.Floor(pixels) * ScaleModeExtensions.TwipsPerPixel);
@@ -155,5 +172,5 @@ internal static class ControlEvents
     // Whether a release is over the control whose press it ends: hit-tested where it is, since the pressed control has the pointer,
     // and through the window, so that a control drawn over this one has the point.
     private static bool ReleasedOver(Control control, PointerEventArgs e) =>
-        TopLevel.GetTopLevel(control) is { } window && VBControl.Owns(control, window.InputHitTest(e.GetPosition(window)));
+        TopLevel.GetTopLevel(control) is { } window && RDFormsControl.Owns(control, window.InputHitTest(e.GetPosition(window)));
 }

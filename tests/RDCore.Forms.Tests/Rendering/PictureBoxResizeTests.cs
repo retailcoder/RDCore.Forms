@@ -2,10 +2,9 @@
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using M = RDCore.Forms.Model.VB.VBMethods;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using M = RDCore.Forms.Model.Methods;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -19,7 +18,7 @@ public sealed class PictureBoxResizeTests
 
     private static ComponentInstance Box(ComponentInstance root, string name, double left, double top)
     {
-        var box = new ComponentInstance(VBClasses.PictureBox, name).Set(P.Left, left / TwipsPerPixel).Set(P.Top, top / TwipsPerPixel)
+        var box = new ComponentInstance(ComponentClasses.PictureBox, name).Set(P.Left, left / TwipsPerPixel).Set(P.Top, top / TwipsPerPixel)
             .Set(P.Width, 1500 / TwipsPerPixel).Set(P.Height, 900 / TwipsPerPixel);
         box.SetContainer(root);
         return box;
@@ -35,7 +34,7 @@ public sealed class PictureBoxResizeTests
         var log = UI.Run(() =>
         {
             byte[] red = PictureControlTests.Png(24, 20), blue = PictureControlTests.Png(40, 20);
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d).Set(P.ScaleMode, ScaleMode.Twip);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d).Set(P.ScaleMode, ScaleMode.Twip);
             var one = Box(root, "Picture1", 1000, 700);
             var two = Box(root, "Picture2", 2700, 700).Set(P.AutoSize, true).Set(P.Picture, red);
             var four = Box(root, "Picture4", 1000, 2000).Set(P.Visible, false);
@@ -45,13 +44,13 @@ public sealed class PictureBoxResizeTests
             {
                 Handler = (source, raised, _) =>
                 {
-                    if (source.Class == VBClasses.PictureBox && raised.Name == "Resize")
+                    if (source.Class == ComponentClasses.PictureBox && raised.Name == "Resize")
                         log.Add($"  {source.Name}.Resize {Twips(source.Get(P.Width))}x{Twips(source.Get(P.Height))}");
                 },
             };
             log.Add("> Load Form1");
-            var window = new VBFormWindow(new FormDefinition(root));
-            VBControl.SetEventSink(window, sink);
+            var window = new RDFormsFormWindow(new FormDefinition(root));
+            RDFormsControl.SetEventSink(window, sink);
             void Step(string statement, Action change)
             {
                 log.Add($"> {statement}");
@@ -152,7 +151,7 @@ public sealed class PictureBoxResizeTests
     {
         var log = UI.Run(() =>
         {
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d).Set(P.ScaleMode, ScaleMode.Twip);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d).Set(P.ScaleMode, ScaleMode.Twip);
             var three = Box(root, "Picture3", 0, 0).Set(P.Align, Align.Top).Set(P.Height, 600 / TwipsPerPixel);
             var five = Box(root, "Picture5", 0, 600).Set(P.Align, Align.Left).Set(P.Width, 900 / TwipsPerPixel);
 
@@ -166,8 +165,8 @@ public sealed class PictureBoxResizeTests
                 },
             };
             log.Add("> Load Form1");
-            var window = new VBFormWindow(new FormDefinition(root));
-            VBControl.SetEventSink(window, sink);
+            var window = new RDFormsFormWindow(new FormDefinition(root));
+            RDFormsControl.SetEventSink(window, sink);
             void Step(string statement, Action change)
             {
                 log.Add($"> {statement}");
@@ -183,16 +182,16 @@ public sealed class PictureBoxResizeTests
             }
 
             Step("Form1.Show", window.Show);
-            Step("Picture3.Height = 900", () => VBRunTime.Assign(three, P.Height, 900 / TwipsPerPixel));
-            Step("Picture3.Width = 1000", () => VBRunTime.Assign(three, P.Width, 1000 / TwipsPerPixel));
+            Step("Picture3.Height = 900", () => RunTime.Assign(three, P.Height, 900 / TwipsPerPixel));
+            Step("Picture3.Width = 1000", () => RunTime.Assign(three, P.Width, 1000 / TwipsPerPixel));
             Step("Picture3.Move 0, 0, 1000, 700", () => window.Invoke(three, M.Move, [S(0), S(0), S(1000), S(700)], CodeUnit.VB6));
-            Step("Picture5.Width = 1200", () => VBRunTime.Assign(five, P.Width, 1200 / TwipsPerPixel));
+            Step("Picture5.Width = 1200", () => RunTime.Assign(five, P.Width, 1200 / TwipsPerPixel));
             Step("Form1.Width = Form1.Width + 1500", () => root.Set(P.Width, root.Get(P.Width) + 100));
             Step("Form1.Height = Form1.Height + 1500", () => root.Set(P.Height, root.Get(P.Height) + 100));
             Step("Form1.Move Form1.Left, Form1.Top, Form1.Width - 1500, Form1.Height - 1500", () => window.Invoke(root, M.Move,
                 [S(root.Get(P.Left) * TwipsPerPixel), S(root.Get(P.Top) * TwipsPerPixel), S(6000), S(4500)], CodeUnit.VB6));
-            Step("Picture3.Align = 0", () => VBRunTime.Assign(three, P.Align, Align.None));
-            Step("Picture3.Align = 2", () => VBRunTime.Assign(three, P.Align, Align.Bottom));
+            Step("Picture3.Align = 0", () => RunTime.Assign(three, P.Align, Align.None));
+            Step("Picture3.Align = 2", () => RunTime.Assign(three, P.Align, Align.Bottom));
             window.Close();
             return log;
         });
@@ -238,10 +237,10 @@ public sealed class PictureBoxResizeTests
     {
         var log = UI.Run(() =>
         {
-            var gauge = UserControlClasses.Of(new FormDefinition(new ComponentInstance(VBClasses.UserControl, "Gauge").Set(P.Alignable, true)),
+            var gauge = UserControlClasses.Of(new FormDefinition(new ComponentInstance(ComponentClasses.UserControl, "Gauge").Set(P.Alignable, true)),
                 "Project1", [new EventDefinition("Resize")]);
-            var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d).Set(P.ScaleMode, ScaleMode.Twip);
-            new ComponentInstance(VBClasses.Data, "Data1").Set(P.Height, 20d).Set(P.Width, 100d).Set(P.Align, Align.Top).SetContainer(root);
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 400d).Set(P.Height, 300d).Set(P.ScaleMode, ScaleMode.Twip);
+            new ComponentInstance(ComponentClasses.Data, "Data1").Set(P.Height, 20d).Set(P.Width, 100d).Set(P.Align, Align.Top).SetContainer(root);
             new ComponentInstance(gauge, "Gauge1").Set(P.Height, 40d).Set(P.Width, 60d).Set(P.Align, Align.Left).SetContainer(root);
 
             var log = new List<string>();
@@ -253,8 +252,8 @@ public sealed class PictureBoxResizeTests
                         log.Add($"{source.Name}.Resize {Twips(source.Get(P.Width))}x{Twips(source.Get(P.Height))}");
                 },
             };
-            var window = new VBFormWindow(new FormDefinition(root));
-            VBControl.SetEventSink(window, sink);
+            var window = new RDFormsFormWindow(new FormDefinition(root));
+            RDFormsControl.SetEventSink(window, sink);
             window.Show();
             Dispatcher.UIThread.RunJobs();
             window.Close();
@@ -266,5 +265,5 @@ public sealed class PictureBoxResizeTests
 
     [TestMethod]
     public void APictureBox_DeclaresResize() =>
-        Assert.IsNotNull(VBClasses.PictureBox.Event("Resize"));
+        Assert.IsNotNull(ComponentClasses.PictureBox.Event("Resize"));
 }

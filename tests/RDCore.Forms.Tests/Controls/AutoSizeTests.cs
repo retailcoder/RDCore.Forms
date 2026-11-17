@@ -3,8 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -47,13 +46,13 @@ public sealed class AutoSizeTests
 
     private static (double, double, double, double) Is(double left, double top, double width, double height) => (left, top, width, height);
 
-    private static ComponentInstance Image() => new(VBClasses.Image, "Image1");
+    private static ComponentInstance Image() => new(ComponentClasses.Image, "Image1");
 
-    private static ComponentInstance PictureBox() => new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.AutoSize, true);
+    private static ComponentInstance PictureBox() => new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.AutoSize, true);
 
-    private static Control MakeImage(ComponentInstance component) => new VBImage(component);
+    private static Control MakeImage(ComponentInstance component) => new RDFormsImage(component);
 
-    private static Control MakePictureBox(ComponentInstance component) => new VBPictureBox(component);
+    private static Control MakePictureBox(ComponentInstance component) => new RDFormsPictureBox(component);
 
     [TestMethod]
     public void AnImageWithoutStretch_TakesItsPicturesSize_AndItsLeftAndTopGoToWholePixels()
@@ -127,7 +126,7 @@ public sealed class AutoSizeTests
         var extent = UI.Run(() =>
         {
             var component = Image().Set(P.Left, At).Set(P.Top, At).Set(P.Width, 100d).Set(P.Height, 60d).Set(P.Picture, Wide);
-            _ = new VBImage(component);
+            _ = new RDFormsImage(component);
             return Extent(component);
         });
 
@@ -171,7 +170,7 @@ public sealed class AutoSizeTests
         var extent = UI.Run(() =>
         {
             var component = PictureBox().Set(P.Left, At).Set(P.Top, At).Set(P.Width, 100d).Set(P.Height, 60d).Set(P.Picture, Wide);
-            _ = new VBPictureBox(component);
+            _ = new RDFormsPictureBox(component);
             return Extent(component);
         });
 

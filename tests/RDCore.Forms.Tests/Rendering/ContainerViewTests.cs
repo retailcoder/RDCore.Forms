@@ -6,9 +6,8 @@ using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -19,22 +18,22 @@ namespace RDCore.Forms.Tests.Rendering;
 public sealed class ContainerViewTests
 {
     // Frame1 at 8, 8 holding Picture1, then Command1 and Text1 on a shown form.
-    private static (VBFormWindow Window, FormDefinition Form, RecordingSink Sink) Open()
+    private static (RDFormsFormWindow Window, FormDefinition Form, RecordingSink Sink) Open()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
-        var frame = new ComponentInstance(VBClasses.Frame, "Frame1").Set(P.TabIndex, (short)0).Set(P.Left, 8d).Set(P.Top, 8d)
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+        var frame = new ComponentInstance(ComponentClasses.Frame, "Frame1").Set(P.TabIndex, (short)0).Set(P.Left, 8d).Set(P.Top, 8d)
             .Set(P.Width, 200d).Set(P.Height, 150d);
         frame.SetContainer(root);
-        new ComponentInstance(VBClasses.PictureBox, "Picture1").Set(P.TabIndex, (short)1).Set(P.Left, 8d).Set(P.Top, 16d)
+        new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.TabIndex, (short)1).Set(P.Left, 8d).Set(P.Top, 16d)
             .Set(P.Width, 100d).Set(P.Height, 100d).SetContainer(frame);
-        new ComponentInstance(VBClasses.CommandButton, "Command1").Set(P.TabIndex, (short)2).Set(P.Left, 20d).Set(P.Top, 30d)
+        new ComponentInstance(ComponentClasses.CommandButton, "Command1").Set(P.TabIndex, (short)2).Set(P.Left, 20d).Set(P.Top, 30d)
             .Set(P.Width, 80d).Set(P.Height, 30d).SetContainer(root);
-        new ComponentInstance(VBClasses.TextBox, "Text1").Set(P.TabIndex, (short)3).Set(P.Left, 8d).Set(P.Top, 180d)
+        new ComponentInstance(ComponentClasses.TextBox, "Text1").Set(P.TabIndex, (short)3).Set(P.Left, 8d).Set(P.Top, 180d)
             .Set(P.Width, 100d).Set(P.Height, 24d).SetContainer(root);
         var form = new FormDefinition(root);
-        var window = new VBFormWindow(form);
+        var window = new RDFormsFormWindow(form);
         var sink = new RecordingSink();
-        VBControl.SetEventSink(window, sink);
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -49,13 +48,13 @@ public sealed class ContainerViewTests
             var (window, form, _) = Open();
             var view = window.View;
             var button = form.Find("Command1")!;
-            var frameHost = ((IVBContainer)view.ControlOf(form.Find("Frame1")!)!).ChildHost;
+            var frameHost = ((IRDFormsContainer)view.ControlOf(form.Find("Frame1")!)!).ChildHost;
             form.SetContainer(button, form.Find("Frame1")!);
             Dispatcher.UIThread.RunJobs();
             var shown = view.ControlOf(button)!;
             var picture = view.ControlOf(form.Find("Picture1")!)!;
             var result = (ReferenceEquals(shown.Parent, frameHost), shown.ZIndex > picture.ZIndex, (Canvas.GetLeft(shown), Canvas.GetTop(shown)));
-            window.Invoke(button, VBMethods.ZOrder, [FormValue.FromInteger(1)]);
+            window.Invoke(button, Methods.ZOrder, [FormValue.FromInteger(1)]);
             var sentBack = shown.ZIndex < picture.ZIndex;
             form.SetContainer(button, form.Find("Frame1")!);
             Dispatcher.UIThread.RunJobs();

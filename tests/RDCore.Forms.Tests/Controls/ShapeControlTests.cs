@@ -5,9 +5,8 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Controls.PictureControlTests;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -19,12 +18,12 @@ public sealed class ShapeControlTests
 
     // A white form of 300 by 200 pixels, in its scale.
     private static ComponentInstance Root(ScaleMode scale = ScaleMode.Twip) =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d).Set(P.ScaleMode, scale)
+        new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 300d).Set(P.Height, 200d).Set(P.ScaleMode, scale)
             .Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
 
     private static ComponentInstance Shape(ComponentInstance container, ShapeType figure, double left, double top, double width, double height)
     {
-        var shape = new ComponentInstance(VBClasses.Shape, "Shape1").Set(P.Shape, figure)
+        var shape = new ComponentInstance(ComponentClasses.Shape, "Shape1").Set(P.Shape, figure)
             .Set(P.Left, left).Set(P.Top, top).Set(P.Width, width).Set(P.Height, height)
             .Set(P.BorderColor, FormColor.FromRgb(0, 0, 255)).Set(P.FillColor, FormColor.FromRgb(255, 0, 0));
         shape.SetContainer(container);
@@ -33,7 +32,7 @@ public sealed class ShapeControlTests
 
     private static ComponentInstance Line(ComponentInstance container, double x1, double y1, double x2, double y2)
     {
-        var line = new ComponentInstance(VBClasses.Line, "Line1").Set(P.X1, x1).Set(P.Y1, y1).Set(P.X2, x2).Set(P.Y2, y2)
+        var line = new ComponentInstance(ComponentClasses.Line, "Line1").Set(P.X1, x1).Set(P.Y1, y1).Set(P.X2, x2).Set(P.Y2, y2)
             .Set(P.BorderColor, FormColor.FromRgb(0, 0, 255));
         line.SetContainer(container);
         return line;
@@ -42,7 +41,7 @@ public sealed class ShapeControlTests
     // The colours of the form's pixels.
     private static Color[] Render(ComponentInstance root, params PixelPoint[] points)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
+        var window = new RDFormsFormWindow(new FormDefinition(root));
         window.Show();
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -112,7 +111,7 @@ public sealed class ShapeControlTests
     [TestMethod]
     public void AShape_TakesNoInput()
     {
-        var hit = UI.Run(() => new VBShape(new ComponentInstance(VBClasses.Shape, "Shape1")).IsHitTestVisible);
+        var hit = UI.Run(() => new RDFormsShape(new ComponentInstance(ComponentClasses.Shape, "Shape1")).IsHitTestVisible);
 
         Assert.IsFalse(hit);
     }
@@ -172,17 +171,17 @@ public sealed class ShapeControlTests
             // 4500 twips across over 100 units is 45 twips a unit, and 3000 down over -50 is -60, from a top of 50.
             var userRoot = Root(ScaleMode.User).Set(P.ScaleWidth, 100d).Set(P.ScaleHeight, -50d).Set(P.ScaleTop, 50d);
             var inUser = Line(userRoot, 10, 50, 20, 0);
-            var frameInPixels = new ComponentInstance(VBClasses.Frame, "Frame1").Set(P.Width, 100d).Set(P.Height, 100d);
+            var frameInPixels = new ComponentInstance(ComponentClasses.Frame, "Frame1").Set(P.Width, 100d).Set(P.Height, 100d);
             frameInPixels.SetContainer(pixelRoot);
             var inFrame = Line(frameInPixels, 10, 20, 30, 40);
-            var window = new VBFormWindow(new FormDefinition(pixelRoot));
-            var userWindow = new VBFormWindow(new FormDefinition(userRoot));
+            var window = new RDFormsFormWindow(new FormDefinition(pixelRoot));
+            var userWindow = new RDFormsFormWindow(new FormDefinition(userRoot));
             window.Show();
             userWindow.Show();
             Dispatcher.UIThread.RunJobs();
-            var control = (VBLine)window.View.ControlOf(inPixels)!;
-            var userControl = (VBLine)userWindow.View.ControlOf(inUser)!;
-            var frameControl = (VBLine)window.View.ControlOf(inFrame)!;
+            var control = (RDFormsLine)window.View.ControlOf(inPixels)!;
+            var userControl = (RDFormsLine)userWindow.View.ControlOf(inUser)!;
+            var frameControl = (RDFormsLine)window.View.ControlOf(inFrame)!;
             var before = (control.Start, control.End);
             var user = (userControl.Start, userControl.End);
             var frame = (frameControl.Start, frameControl.End);
@@ -205,7 +204,7 @@ public sealed class ShapeControlTests
     [TestMethod]
     public void ALine_TakesNoInput()
     {
-        var hit = UI.Run(() => new VBLine(new ComponentInstance(VBClasses.Line, "Line1")).IsHitTestVisible);
+        var hit = UI.Run(() => new RDFormsLine(new ComponentInstance(ComponentClasses.Line, "Line1")).IsHitTestVisible);
 
         Assert.IsFalse(hit);
     }

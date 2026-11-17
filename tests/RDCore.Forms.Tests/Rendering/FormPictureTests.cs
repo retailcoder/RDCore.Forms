@@ -8,10 +8,9 @@ using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Tests.Controls;
 using RDCore.Forms.Drawing;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using static RDCore.Forms.Tests.Controls.PictureControlTests;
 using static RDCore.Forms.Tests.Model.TestPictures;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -24,19 +23,19 @@ public sealed class FormPictureTests
         Red = Color.FromRgb(255, 0, 0), Green = Color.FromRgb(0, 255, 0);
 
     private static ComponentInstance Root() =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 120d).Set(P.Height, 80d).Set(P.ScaleMode, ScaleMode.Pixel)
+        new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 120d).Set(P.Height, 80d).Set(P.ScaleMode, ScaleMode.Pixel)
             .Set(P.BackColor, FormColor.FromRgb(255, 255, 255));
 
-    private static VBFormWindow Show(ComponentInstance root)
+    private static RDFormsFormWindow Show(ComponentInstance root)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
+        var window = new RDFormsFormWindow(new FormDefinition(root));
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return window;
     }
 
     // The colours of the form's client area at points of it, in pixels.
-    private static Color[] Client(VBFormWindow window, params (int X, int Y)[] points)
+    private static Color[] Client(RDFormsFormWindow window, params (int X, int Y)[] points)
     {
         Dispatcher.UIThread.RunJobs();
         var origin = window.View.TranslatePoint(default, window)!.Value;
@@ -119,10 +118,10 @@ public sealed class FormPictureTests
     {
         var raised = UI.Run(() =>
         {
-            var window = new VBFormWindow(new FormDefinition(Root().Set(P.Picture, Bitmap2x2)));
+            var window = new RDFormsFormWindow(new FormDefinition(Root().Set(P.Picture, Bitmap2x2)));
             var sink = new RecordingSink();
-            VBControl.SetEventSink(window, sink);
-            window.Closing += (_, _) => VBControl.SetEventSink(window, null);
+            RDFormsControl.SetEventSink(window, sink);
+            window.Closing += (_, _) => RDFormsControl.SetEventSink(window, null);
             window.Show();
             Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();

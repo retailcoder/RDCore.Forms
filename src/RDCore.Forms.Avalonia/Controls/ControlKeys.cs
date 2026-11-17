@@ -5,7 +5,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -18,7 +17,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 //    Its KeyAscii is the space typed after it, where one is.
 //  - On a button, a check box and an option button, an arrow moves the focus and raises no key event, the form's included. A button,
 //    check box or option button that takes the focus raises no KeyUp for it either; another control raises its KeyUp alone.
-//  - Enter and Esc raise KeyPress 13 and 27, and Ctrl+Enter 10, where no button takes them (VBFormWindow).
+//  - Enter and Esc raise KeyPress 13 and 27, and Ctrl+Enter 10, where no button takes them (RDFormsFormWindow).
 //  - On a scroll bar, a KeyCode of 0 that the form's KeyDown or the bar's own leaves cancels the key: it moves nothing.
 // The handlers go on the way down, so that they come before the control's own handling of the key.
 internal static class ControlKeys
@@ -34,7 +33,7 @@ internal static class ControlKeys
             if (e.Key == Key.Space)
                 spacePressed = null;
             if (Takes(control, e, arrowsMoveTheFocus) is { } code)
-                Raise(control, VBEvents.KeyUp, code, ControlEvents.ShiftOf(e.KeyModifiers));
+                Raise(control, Events.KeyUp, code, ControlEvents.ShiftOf(e.KeyModifiers));
         }, RoutingStrategies.Tunnel);
         InputElement.TextInputEvent.AddClassHandler<T>(TextInput, RoutingStrategies.Tunnel);
     }
@@ -49,21 +48,21 @@ internal static class ControlKeys
         FormValue[] arguments = shift is { } mask
             ? [FormValue.FromInteger(own), FormValue.FromInteger(mask)]
             : [FormValue.FromInteger(own)];
-        return VBControl.Raise(control, definition, arguments) is { } after && after[0].Kind == FormValueKind.Integer
+        return RDFormsControl.Raise(control, definition, arguments) is { } after && after[0].Kind == FormValueKind.Integer
             ? after[0].AsInteger()
             : own;
     }
 
     // The character a KeyPress leaves to type, the form's first: none for 0 and for a code outside a character's range.
     public static char? KeyPress(Control control, short ascii) =>
-        Raise(control, VBEvents.KeyPress, ascii) is var code and > 0 and <= 255 ? (char)code : null;
+        Raise(control, Events.KeyPress, ascii) is var code and > 0 and <= 255 ? (char)code : null;
 
     // The innermost control of a component that an element is in, or none. An open list is in its own popup, whose visual tree is
     // not the control's: its way back is through its logical parents.
     public static Control? Owner(object? element)
     {
         for (var step = element as StyledElement; step is not null; step = Up(step))
-            if (step is Control control && VBControl.GetInstance(control) is not null)
+            if (step is Control control && RDFormsControl.GetInstance(control) is not null)
                 return control;
         return null;
     }
@@ -82,7 +81,7 @@ internal static class ControlKeys
     {
         if (Takes(control, e, arrowsMoveTheFocus) is not { } code)
             return;
-        if (Raise(control, VBEvents.KeyDown, code, ControlEvents.ShiftOf(e.KeyModifiers)) == 0 && zeroCancelsTheKey)
+        if (Raise(control, Events.KeyDown, code, ControlEvents.ShiftOf(e.KeyModifiers)) == 0 && zeroCancelsTheKey)
             e.Handled = true;
         // Its 0 types no space, and leaves the key to the control.
         if (e.Key == Key.Space && e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift)

@@ -3,10 +3,9 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using M = RDCore.Forms.Model.VB.VBMethods;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using M = RDCore.Forms.Model.Methods;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -19,7 +18,7 @@ public sealed class FormMethodTests
     // A form holding a control of each class named, one under the other, each named for its class and its place (TextBox1, Label2).
     private static ComponentInstance Form(string name, params ComponentClass[] classes)
     {
-        var root = new ComponentInstance(VBClasses.Form, name).Set(P.Width, 320d).Set(P.Height, 240d);
+        var root = new ComponentInstance(ComponentClasses.Form, name).Set(P.Width, 320d).Set(P.Height, 240d);
         var top = 8d;
         foreach (var (type, index) in classes.Select((type, index) => (type, index)))
         {
@@ -31,14 +30,14 @@ public sealed class FormMethodTests
         return root;
     }
 
-    private static VBFormWindow Window(ComponentInstance root, RecordingSink sink)
+    private static RDFormsFormWindow Window(ComponentInstance root, RecordingSink sink)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         return window;
     }
 
-    private static VBFormWindow Open(ComponentInstance root, RecordingSink sink)
+    private static RDFormsFormWindow Open(ComponentInstance root, RecordingSink sink)
     {
         var window = Window(root, sink);
         window.Show();
@@ -77,7 +76,7 @@ public sealed class FormMethodTests
     {
         var extents = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox);
             var text = root.Contents[0];
             var window = Open(root, new RecordingSink());
             List<string> result = [];
@@ -100,7 +99,7 @@ public sealed class FormMethodTests
     {
         var extents = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox);
             var text = root.Contents[0];
             var window = Open(root, new RecordingSink());
             List<string> result = [];
@@ -120,7 +119,7 @@ public sealed class FormMethodTests
     {
         var (errors, extent) = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox);
             var text = root.Contents[0];
             var window = Open(root, new RecordingSink());
             var move = (FormValue?[] arguments) => ErrorOf(() => window.Invoke(text, M.Move, arguments, CodeUnit.VB6));
@@ -151,7 +150,7 @@ public sealed class FormMethodTests
     {
         var extent = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox);
             var text = root.Contents[0];
             var window = Open(root, new RecordingSink());
             window.Invoke(text, M.Move, [S(600), FormValue.FromString("900")], CodeUnit.VB6);
@@ -210,7 +209,7 @@ public sealed class FormMethodTests
     {
         var errors = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox);
             var window = Window(root, new RecordingSink());
             int[] result = [ErrorOf(() => window.Invoke(root.Contents[0], M.SetFocus, [])), ErrorOf(() => window.Invoke(root, M.SetFocus, []))];
             window.Close();
@@ -225,7 +224,7 @@ public sealed class FormMethodTests
     {
         var (errors, active, raised) = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox, VBClasses.TextBox, VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox, ComponentClasses.TextBox, ComponentClasses.TextBox);
             root.Contents[1].Set(P.Enabled, false);
             var sink = new RecordingSink();
             var window = Open(root, sink);
@@ -248,7 +247,7 @@ public sealed class FormMethodTests
     {
         var (active, during, after) = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox, VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox, ComponentClasses.TextBox);
             var sink = new RecordingSink();
             var window = Open(root, sink);
             sink.Raised.Clear();
@@ -270,7 +269,7 @@ public sealed class FormMethodTests
     {
         var raised = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox);
             var sink = new RecordingSink();
             var window = Open(root, sink);
             sink.Raised.Clear();
@@ -291,9 +290,9 @@ public sealed class FormMethodTests
         var raised = UI.Run(() =>
         {
             var sink = new RecordingSink();
-            var root = Form("Form1", VBClasses.TextBox, VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox, ComponentClasses.TextBox);
             var first = Open(root, sink);
-            var second = Open(Form("Form2", VBClasses.CheckBox), sink);
+            var second = Open(Form("Form2", ComponentClasses.CheckBox), sink);
             sink.Raised.Clear();
             first.Invoke(root.Contents[1], M.SetFocus, []);
             Dispatcher.UIThread.RunJobs();
@@ -311,7 +310,7 @@ public sealed class FormMethodTests
     {
         var (raised, value) = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox, VBClasses.OptionButton);
+            var root = Form("Form1", ComponentClasses.TextBox, ComponentClasses.OptionButton);
             var sink = new RecordingSink();
             var window = Open(root, sink);
             sink.Raised.Clear();
@@ -331,7 +330,7 @@ public sealed class FormMethodTests
     {
         var outcomes = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.CommandButton, VBClasses.CommandButton);
+            var root = Form("Form1", ComponentClasses.CommandButton, ComponentClasses.CommandButton);
             var window = Open(root, new RecordingSink());
             var first = window.View.ControlOf(root.Contents[0])!;
             var second = window.View.ControlOf(root.Contents[1])!;
@@ -362,7 +361,7 @@ public sealed class FormMethodTests
     {
         var order = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.CommandButton, VBClasses.Label, VBClasses.Label);
+            var root = Form("Form1", ComponentClasses.CommandButton, ComponentClasses.Label, ComponentClasses.Label);
             var window = Open(root, new RecordingSink());
             window.Invoke(root.Contents[2], M.ZOrder, []);
             window.Invoke(root.Contents[0], M.ZOrder, [FormValue.FromInteger(1)]);
@@ -404,10 +403,10 @@ public sealed class FormMethodTests
     {
         UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.Label);
+            var root = Form("Form1", ComponentClasses.Label);
             var window = Open(root, new RecordingSink());
             Assert.ThrowsExactly<ArgumentException>(() => window.Invoke(root.Contents[0], M.SetFocus, []));
-            Assert.ThrowsExactly<ArgumentException>(() => window.Invoke(new ComponentInstance(VBClasses.TextBox, "Text9"), M.Refresh, []));
+            Assert.ThrowsExactly<ArgumentException>(() => window.Invoke(new ComponentInstance(ComponentClasses.TextBox, "Text9"), M.Refresh, []));
             window.Close();
         });
     }

@@ -1,5 +1,5 @@
 ﻿using RDCore.Forms.Model;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Drawing;
 
@@ -72,12 +72,12 @@ public readonly record struct DrawingScale(double TwipsAcross, double TwipsDown,
         ArgumentNullException.ThrowIfNull(component);
         double width = component.Class.Has(P.Width) ? component.Get(P.Width) : 0, height = component.Class.Has(P.Height) ? component.Get(P.Height) : 0;
         if (component.Class.Kind != ComponentKind.Root && component.Class.Has(P.Appearance) && component.Class.Has(P.BorderStyle)
-            && component.Get(P.BorderStyle) != Model.VB.BorderStyle.None)
+            && component.Get(P.BorderStyle) != Model.BorderStyle.None)
         {
-            var border = component.Get(P.Appearance) == Model.VB.Appearance.Flat ? 2 : 4;
+            var border = component.Get(P.Appearance) == Model.Appearance.Flat ? 2 : 4;
             (width, height) = (Math.Max(0, width - border), Math.Max(0, height - border));
         }
-        return (width * ScaleModeExtensions.TwipsPerPixel, height * ScaleModeExtensions.TwipsPerPixel);
+        return (Units.ToTwips(width), Units.ToTwips(height));
     }
 
     /// <summary>

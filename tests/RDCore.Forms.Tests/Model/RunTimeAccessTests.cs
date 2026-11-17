@@ -1,6 +1,5 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -20,7 +19,7 @@ public sealed class RunTimeAccessTests
     private static readonly string[] NotAvailable = ["Menu.Shortcut", "Menu.NegotiatePosition", "Timer.Left", "Timer.Top", "Data.Negotiate"];
 
     private static IEnumerable<string> Where(Func<ComponentClass, PropertyDefinition, bool> flagged) =>
-        VBClasses.All.SelectMany(c => c.Properties.Where(p => flagged(c, p)).Select(p => $"{c.ClassName}.{p.Name}")).Order();
+        ComponentClasses.All.SelectMany(c => c.Properties.Where(p => flagged(c, p)).Select(p => $"{c.ClassName}.{p.Name}")).Order();
 
     [TestMethod]
     public void TheReadOnlyAtRunTimeProperties_AreTheMeasuredOnes()
@@ -33,11 +32,11 @@ public sealed class RunTimeAccessTests
     [TestMethod]
     public void ATimersLeftAndTop_AreNotAvailable_AndTheSameDefinitionsElsewhereAre()
     {
-        Assert.IsTrue(VBClasses.Timer.IsNotAvailableAtRunTime(P.Left));
-        Assert.IsTrue(VBClasses.Timer.IsReadOnlyAtRunTime(P.Top));
+        Assert.IsTrue(ComponentClasses.Timer.IsNotAvailableAtRunTime(P.Left));
+        Assert.IsTrue(ComponentClasses.Timer.IsReadOnlyAtRunTime(P.Top));
         Assert.IsFalse(P.Left.NotAvailableAtRunTime);
-        Assert.IsFalse(VBClasses.MDIForm.IsNotAvailableAtRunTime(P.Left));
-        Assert.IsFalse(VBClasses.MDIForm.IsReadOnlyAtRunTime(P.Top));
+        Assert.IsFalse(ComponentClasses.MDIForm.IsNotAvailableAtRunTime(P.Left));
+        Assert.IsFalse(ComponentClasses.MDIForm.IsReadOnlyAtRunTime(P.Top));
     }
 
     [TestMethod]

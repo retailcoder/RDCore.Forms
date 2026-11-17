@@ -1,5 +1,5 @@
 ﻿using RDCore.Forms.Drawing;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Model;
 
@@ -42,8 +42,6 @@ public enum CodeUnit
 /// </remarks>
 public static class CodeUnits
 {
-    private const double PointsPerPixel = 0.75;
-
     /// <summary>
     /// Whether a property is a position or a size the model holds in pixels: <c>Left</c>, <c>Top</c>, <c>Width</c> or <c>Height</c>.
     /// </summary>
@@ -70,9 +68,9 @@ public static class CodeUnits
         switch (unit)
         {
             case CodeUnit.Point:
-                return pixels * PointsPerPixel;
+                return Units.ToPoints(pixels);
             case CodeUnit.VB6:
-                var twips = pixels * ScaleModeExtensions.TwipsPerPixel;
+                var twips = Units.ToTwips(pixels);
                 var scale = DrawingScale.Of(component.Container);
                 if (ReferenceEquals(property, P.Left))
                     return scale.FromTwips(twips, 0).X;
@@ -102,13 +100,13 @@ public static class CodeUnits
         switch (unit)
         {
             case CodeUnit.Point:
-                return value / PointsPerPixel;
+                return Units.FromPoints(value);
             case CodeUnit.VB6:
                 var scale = DrawingScale.Of(component.Container);
                 var twips = ReferenceEquals(property, P.Left) ? scale.ToTwips(value, scale.Top).X
                     : ReferenceEquals(property, P.Top) ? scale.ToTwips(scale.Left, value).Y
                     : value * Math.Abs(ReferenceEquals(property, P.Width) ? scale.TwipsAcross : scale.TwipsDown);
-                return twips / ScaleModeExtensions.TwipsPerPixel;
+                return Units.FromTwips(twips);
             default:
                 return value;
         }

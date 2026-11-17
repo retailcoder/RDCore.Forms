@@ -1,6 +1,5 @@
 ﻿using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Tests.Model;
 
@@ -9,12 +8,12 @@ public sealed class FormDefinitionCopyTests
 {
     private static FormDefinition Form()
     {
-        var root = new ComponentInstance(VBClasses.Form, "Form1").Set(P.Caption, "Hello");
+        var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Caption, "Hello");
         root.UnmodelledProperties.Add(new UnmodelledProperty("LinkTopic", "\"Form1\""));
-        var frame = new ComponentInstance(VBClasses.Frame, "Frame1").Set(P.Left, 8d);
+        var frame = new ComponentInstance(ComponentClasses.Frame, "Frame1").Set(P.Left, 8d);
         frame.SetContainer(root);
-        new ComponentInstance(VBClasses.OptionButton, "Option1", 0).Set(P.Caption, "A").SetContainer(frame);
-        new ComponentInstance(VBClasses.OptionButton, "Option1", 1).SetContainer(frame);
+        new ComponentInstance(ComponentClasses.OptionButton, "Option1", 0).Set(P.Caption, "A").SetContainer(frame);
+        new ComponentInstance(ComponentClasses.OptionButton, "Option1", 1).SetContainer(frame);
         root.UnmodelledContents.Add(new UnmodelledComponent("MSComctlLib.ListView", "ListView1", 1, "Begin MSComctlLib.ListView ListView1\r\nEnd"));
         var form = new FormDefinition(root);
         form.ControlLibraries.Add(new ControlLibraryReference(Guid.Empty, "2.0", "MSCOMCTL.OCX"));
@@ -55,7 +54,7 @@ public sealed class FormDefinitionCopyTests
     public void ACopyOfAControlAddedAtRunTime_IsOneTheCopyAddedAtRunTime()
     {
         var form = Form();
-        form.AddControl(VBClasses.TextBox, "Text1");
+        form.AddControl(ComponentClasses.TextBox, "Text1");
 
         var copy = form.Copy();
 
@@ -68,9 +67,9 @@ public sealed class FormDefinitionCopyTests
     [TestMethod]
     public void AClassOfPlacedUserControls_GivesTheUserControlItWasMadeFrom()
     {
-        var userControl = new FormDefinition(new ComponentInstance(VBClasses.UserControl, "Gauge"));
+        var userControl = new FormDefinition(new ComponentInstance(ComponentClasses.UserControl, "Gauge"));
 
         Assert.AreSame(userControl, UserControlClasses.DefinitionOf(UserControlClasses.Of(userControl, "Project1")));
-        Assert.IsNull(UserControlClasses.DefinitionOf(VBClasses.TextBox));
+        Assert.IsNull(UserControlClasses.DefinitionOf(ComponentClasses.TextBox));
     }
 }

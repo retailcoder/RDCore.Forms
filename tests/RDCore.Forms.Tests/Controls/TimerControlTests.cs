@@ -3,8 +3,7 @@ using Avalonia.Threading;
 using Microsoft.Extensions.Time.Testing;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -13,7 +12,7 @@ namespace RDCore.Forms.Tests.Controls;
 [TestClass]
 public sealed class TimerControlTests
 {
-    private sealed record Shown(Window Window, Canvas Canvas, VBTimer Timer, ComponentInstance Instance, RecordingSink Sink, FakeTimeProvider Clock)
+    private sealed record Shown(Window Window, Canvas Canvas, RDFormsTimer Timer, ComponentInstance Instance, RecordingSink Sink, FakeTimeProvider Clock)
     {
         // Moves the clock on, and raises the ticks it brings.
         public int Advance(int milliseconds)
@@ -27,14 +26,14 @@ public sealed class TimerControlTests
 
     private static Shown Show(int interval, bool enabled = true)
     {
-        var instance = new ComponentInstance(VBClasses.Timer, "Timer1").Set(P.Interval, interval).Set(P.Enabled, enabled);
-        var timer = new VBTimer(instance);
+        var instance = new ComponentInstance(ComponentClasses.Timer, "Timer1").Set(P.Interval, interval).Set(P.Enabled, enabled);
+        var timer = new RDFormsTimer(instance);
         var canvas = new Canvas { Children = { timer } };
         var sink = new RecordingSink();
         var clock = new FakeTimeProvider();
         var window = new Window { Width = 200, Height = 100, Content = canvas };
-        VBControl.SetEventSink(window, sink);
-        VBControl.SetTimeProvider(window, clock);
+        RDFormsControl.SetEventSink(window, sink);
+        RDFormsControl.SetTimeProvider(window, clock);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return new Shown(window, canvas, timer, instance, sink, clock);

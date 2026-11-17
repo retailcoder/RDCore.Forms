@@ -4,9 +4,8 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Rendering;
@@ -20,7 +19,7 @@ public sealed class FormFocusTests
     // A form holding a control of each class named, one under the other, each named for its class and its place (TextBox1, Label2).
     private static ComponentInstance Form(string name, params ComponentClass[] classes)
     {
-        var root = new ComponentInstance(VBClasses.Form, name).Set(P.Width, 320d).Set(P.Height, 240d);
+        var root = new ComponentInstance(ComponentClasses.Form, name).Set(P.Width, 320d).Set(P.Height, 240d);
         var top = 8d;
         foreach (var (type, index) in classes.Select((type, index) => (type, index)))
         {
@@ -32,10 +31,10 @@ public sealed class FormFocusTests
         return root;
     }
 
-    private static VBFormWindow Open(ComponentInstance root, RecordingSink sink)
+    private static RDFormsFormWindow Open(ComponentInstance root, RecordingSink sink)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -49,7 +48,7 @@ public sealed class FormFocusTests
     {
         var raised = UI.Run(() =>
         {
-            var root = Form("Form1", VBClasses.TextBox, VBClasses.TextBox);
+            var root = Form("Form1", ComponentClasses.TextBox, ComponentClasses.TextBox);
             // The second box is first in the tab order.
             root.Contents[1].Set(P.TabIndex, (short)0);
             root.Contents[0].Set(P.TabIndex, (short)1);
@@ -69,7 +68,7 @@ public sealed class FormFocusTests
         var raised = UI.Run(() =>
         {
             var sink = new RecordingSink();
-            var window = Open(Form("Form1", VBClasses.Label, VBClasses.Frame), sink);
+            var window = Open(Form("Form1", ComponentClasses.Label, ComponentClasses.Frame), sink);
             var result = Raised(sink);
             window.Close();
             return result;
@@ -84,11 +83,11 @@ public sealed class FormFocusTests
         var raised = UI.Run(() =>
         {
             var sink = new RecordingSink();
-            var first = Open(Form("Form1", VBClasses.TextBox, VBClasses.TextBox), sink);
+            var first = Open(Form("Form1", ComponentClasses.TextBox, ComponentClasses.TextBox), sink);
             first.View.ControlOf(first.Root.Contents[1])!.Focus();
             Dispatcher.UIThread.RunJobs();
             sink.Raised.Clear();
-            var second = Open(Form("Form2", VBClasses.TextBox), sink);
+            var second = Open(Form("Form2", ComponentClasses.TextBox), sink);
             first.Activate();
             Dispatcher.UIThread.RunJobs();
             var result = Raised(sink);
@@ -107,7 +106,7 @@ public sealed class FormFocusTests
         var raised = UI.Run(() =>
         {
             var sink = new RecordingSink();
-            var form = Open(Form("Form1", VBClasses.TextBox), sink);
+            var form = Open(Form("Form1", ComponentClasses.TextBox), sink);
             sink.Raised.Clear();
             var other = new Window();
             other.Show();
@@ -124,12 +123,12 @@ public sealed class FormFocusTests
     }
 
     [TestMethod]
-    public void TheFocusMovedBetweenTheActiveFormsControls_RaisesLostFocusThenGotFocus()
+    public void TheFocusMovedBetweenTheActiveFormsControls_RaisesValidateThenLostFocusThenGotFocus()
     {
         var raised = UI.Run(() =>
         {
             var sink = new RecordingSink();
-            var window = Open(Form("Form1", VBClasses.TextBox, VBClasses.TextBox), sink);
+            var window = Open(Form("Form1", ComponentClasses.TextBox, ComponentClasses.TextBox), sink);
             sink.Raised.Clear();
             window.View.ControlOf(window.Root.Contents[1])!.Focus();
             Dispatcher.UIThread.RunJobs();
@@ -138,6 +137,6 @@ public sealed class FormFocusTests
             return result;
         });
 
-        Expect.Lines(["TextBox1.LostFocus", "TextBox2.GotFocus"], raised);
+        Expect.Lines(["TextBox1.Validate(Boolean False)", "TextBox1.LostFocus", "TextBox2.GotFocus"], raised);
     }
 }

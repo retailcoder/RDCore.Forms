@@ -89,7 +89,8 @@ public sealed class ComponentInstance
     /// <param name="index">Where among the container's contents to place it; a negative index, or one at or past the end, places it last.</param>
     /// <exception cref="InvalidOperationException">
     /// The placement is not one a form can hold: a root placed in anything, a menu item placed anywhere but in a root or another menu
-    /// item, a control placed in a component that holds no controls, or a component placed in itself or in its own contents.
+    /// item, a control placed in a component that holds no controls, a page placed anywhere but in a MultiPage, anything but a page placed in
+    /// a MultiPage, or a component placed in itself or in its own contents.
     /// </exception>
     public void SetContainer(ComponentInstance? container, int index = -1)
     {
@@ -99,7 +100,7 @@ public sealed class ComponentInstance
             {
                 ComponentKind.Root => false,
                 ComponentKind.Menu => container.Class.Kind is ComponentKind.Root or ComponentKind.Menu,
-                _ => container.Class.IsContainer,
+                _ => container.Class.IsContainer && ComponentClasses.CanHold(container.Class, Class),
             };
             if (!placeable)
                 throw new InvalidOperationException($"{Class.ClassName} {Name} cannot be placed in {container.Class.ClassName} {container.Name}.");

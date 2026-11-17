@@ -1,6 +1,6 @@
 # Drawing
 
-A form and a PictureBox each have a drawing surface, a [`VBDrawingLayer`](../api/RDCore.Forms.Avalonia.Controls.VBDrawingLayer.yml): the destination of VB's drawing statements, `Line`, `Circle`, `PSet` and `Scale`, and of the `Cls`, `Point`, `Print`, `TextWidth`, `TextHeight` and `PaintPicture` methods. A program reaches it through the [`IDrawingSurface`](../api/RDCore.Forms.Drawing.IDrawingSurface.yml) interface, which [`DrawingSurfaces.Of`](../api/RDCore.Forms.Drawing.DrawingSurfaces.yml) gives for a shown form's root or PictureBox. The interface is part of `RDCore.Forms` and has no Avalonia types.
+A form and a PictureBox each have a drawing surface, a [`RDFormsDrawingLayer`](../api/RDCore.Forms.Avalonia.Controls.RDFormsDrawingLayer.yml): the destination of VB's drawing statements, `Line`, `Circle`, `PSet` and `Scale`, and of the `Cls`, `Point`, `Print`, `TextWidth`, `TextHeight` and `PaintPicture` methods. A program reaches it through the [`IDrawingSurface`](../api/RDCore.Forms.Drawing.IDrawingSurface.yml) interface, which [`DrawingSurfaces.Of`](../api/RDCore.Forms.Drawing.DrawingSurfaces.yml) gives for a shown form's root or PictureBox. The interface is part of `RDCore.Forms` and has no Avalonia types.
 
 ```csharp
 using RDCore.Forms.Drawing;

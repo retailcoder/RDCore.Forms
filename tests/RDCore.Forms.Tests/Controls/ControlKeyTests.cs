@@ -5,8 +5,7 @@ using Avalonia.Threading;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -16,7 +15,7 @@ namespace RDCore.Forms.Tests.Controls;
 public sealed class ControlKeyTests
 {
     private static ComponentInstance Root() =>
-        new ComponentInstance(VBClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
+        new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, 320d).Set(P.Height, 240d);
 
     private static ComponentInstance Add(ComponentInstance container, ComponentClass type, string name, double top = 8)
     {
@@ -26,10 +25,10 @@ public sealed class ControlKeyTests
     }
 
     // The window, with the control focused and what was raised so far forgotten.
-    private static VBFormWindow Open(ComponentInstance root, ComponentInstance focused, RecordingSink sink)
+    private static RDFormsFormWindow Open(ComponentInstance root, ComponentInstance focused, RecordingSink sink)
     {
-        var window = new VBFormWindow(new FormDefinition(root));
-        VBControl.SetEventSink(window, sink);
+        var window = new RDFormsFormWindow(new FormDefinition(root));
+        RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         window.View.ControlOf(focused)!.Focus();
@@ -40,7 +39,7 @@ public sealed class ControlKeyTests
 
     // A key pressed, the character it types, and the key released. Where typed is false, the window system types no character for it,
     // as Windows does for a key a control handled as it went down.
-    private static void Type(VBFormWindow window, Key key, PhysicalKey physical, string? text, bool typed = true,
+    private static void Type(RDFormsFormWindow window, Key key, PhysicalKey physical, string? text, bool typed = true,
         RawInputModifiers modifiers = RawInputModifiers.None)
     {
         window.KeyPress(key, modifiers, physical, text);
@@ -74,7 +73,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var command1 = Add(root, VBClasses.CommandButton, "Command1");
+            var command1 = Add(root, ComponentClasses.CommandButton, "Command1");
             var sink = new RecordingSink();
             var window = Open(root, command1, sink);
             Type(window, Key.Space, PhysicalKey.Space, " ");
@@ -96,7 +95,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var button = Add(root, VBClasses.ByTypeName("VB." + type)!, "Button1");
+            var button = Add(root, ComponentClasses.ByTypeName("RDForms." + type)!, "Button1");
             if (type == "OptionButton")
                 button.Set(P.OptionButtonValue, true);
             var sink = new RecordingSink();
@@ -117,8 +116,8 @@ public sealed class ControlKeyTests
         var (raised, focused) = UI.Run(() =>
         {
             var root = Root();
-            var picture = Add(root, VBClasses.PictureBox, "Picture1");
-            Add(root, VBClasses.TextBox, "Text1", top: 100);
+            var picture = Add(root, ComponentClasses.PictureBox, "Picture1");
+            Add(root, ComponentClasses.TextBox, "Text1", top: 100);
             var sink = new RecordingSink();
             var window = Open(root, picture, sink);
             Type(window, Key.K, PhysicalKey.K, "k");
@@ -139,8 +138,8 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var picture = Add(root, VBClasses.PictureBox, "Picture1");
-            var list = Add(picture, VBClasses.ListBox, "List1");
+            var picture = Add(root, ComponentClasses.PictureBox, "Picture1");
+            var list = Add(picture, ComponentClasses.ListBox, "List1");
             var sink = new RecordingSink();
             var window = Open(root, list, sink);
             Type(window, Key.K, PhysicalKey.K, "k");
@@ -158,8 +157,8 @@ public sealed class ControlKeyTests
         var (check, option) = UI.Run(() =>
         {
             var root = Root();
-            var check1 = Add(root, VBClasses.CheckBox, "Check1");
-            var option1 = Add(root, VBClasses.OptionButton, "Option1", 100).Set(P.OptionButtonValue, true);
+            var check1 = Add(root, ComponentClasses.CheckBox, "Check1");
+            var option1 = Add(root, ComponentClasses.OptionButton, "Option1", 100).Set(P.OptionButtonValue, true);
             var sink = new RecordingSink();
             var window = Open(root, check1, sink);
             Type(window, Key.Space, PhysicalKey.Space, " ");
@@ -187,8 +186,8 @@ public sealed class ControlKeyTests
         var (raised, focused, value) = UI.Run(() =>
         {
             var root = Root().Set(P.KeyPreview, preview);
-            var button1 = Add(root, VBClasses.ByTypeName("VB." + type)!, "Button1");
-            var command2 = Add(root, VBClasses.CommandButton, "Command2", 100);
+            var button1 = Add(root, ComponentClasses.ByTypeName("RDForms." + type)!, "Button1");
+            var command2 = Add(root, ComponentClasses.CommandButton, "Command2", 100);
             var sink = new RecordingSink();
             var window = Open(root, button1, sink);
             Type(window, Key.Down, PhysicalKey.ArrowDown, null);
@@ -211,7 +210,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root().Set(P.KeyPreview, true);
-            var command1 = Add(root, VBClasses.CommandButton, "Command1");
+            var command1 = Add(root, ComponentClasses.CommandButton, "Command1");
             var sink = new RecordingSink();
             var window = Open(root, command1, sink);
             var log = Log(sink, root);
@@ -230,7 +229,7 @@ public sealed class ControlKeyTests
         var (raised, text) = UI.Run(() =>
         {
             var root = Root();
-            var text1 = Add(root, VBClasses.TextBox, "Text1").Set(P.Height, 21d);
+            var text1 = Add(root, ComponentClasses.TextBox, "Text1").Set(P.Height, 21d);
             var sink = new RecordingSink();
             var window = Open(root, text1, sink);
             var log = Log(sink, root);
@@ -250,7 +249,7 @@ public sealed class ControlKeyTests
         var (raised, text) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d);
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var log = Log(sink, root);
@@ -270,16 +269,16 @@ public sealed class ControlKeyTests
         var (raised, index) = UI.Run(() =>
         {
             var root = Root();
-            var list1 = Add(root, VBClasses.ListBox, "List1").Set(P.List, ["alpha", "beta", "gamma"]);
+            var list1 = Add(root, ComponentClasses.ListBox, "List1").Set(P.List, ["alpha", "beta", "gamma"]);
             var sink = new RecordingSink();
             var window = Open(root, list1, sink);
-            var list = (VBListBox)window.View.ControlOf(list1)!;
+            var list = (RDFormsListBox)window.View.ControlOf(list1)!;
             list.ListIndex = 0;
             sink.Raised.Clear();
             int? atClick = null;
             sink.Handler = (_, definition, _) =>
             {
-                if (ReferenceEquals(definition, VBEvents.Click))
+                if (ReferenceEquals(definition, Events.Click))
                     atClick = list.ListIndex;
             };
             Type(window, Key.Down, PhysicalKey.ArrowDown, null);
@@ -298,10 +297,10 @@ public sealed class ControlKeyTests
         var (raised, indexes) = UI.Run(() =>
         {
             var root = Root();
-            var list1 = Add(root, VBClasses.ListBox, "List1").Set(P.List, ["Kilo", "alpha", "kappa", "beta"]);
+            var list1 = Add(root, ComponentClasses.ListBox, "List1").Set(P.List, ["Kilo", "alpha", "kappa", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, list1, sink);
-            var list = (VBListBox)window.View.ControlOf(list1)!;
+            var list = (RDFormsListBox)window.View.ControlOf(list1)!;
             var seen = new List<int>();
             Type(window, Key.K, PhysicalKey.K, "k");
             var first = Raised(sink);
@@ -327,7 +326,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, style)
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, style)
                 .Set(P.List, ["alpha", "kappa"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
@@ -350,11 +349,11 @@ public sealed class ControlKeyTests
         var (picked, clicks) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
                 .Set(P.List, ["kiwi", "banana", "Kumquat", "apple"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
-            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var combo = (RDFormsComboBox)window.View.ControlOf(combo1)!;
             if (open)
             {
                 combo.IsDropDownOpen = true;
@@ -385,11 +384,11 @@ public sealed class ControlKeyTests
         var (picked, clicks) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
                 .Set(P.List, ["MultiPlayer", "banana", "Mango", "MPeg", "kiwi"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
-            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var combo = (RDFormsComboBox)window.View.ControlOf(combo1)!;
             var indexes = new List<int>();
             foreach (var (key, physical, text) in new[] { (Key.M, PhysicalKey.M, "m"), (Key.P, PhysicalKey.P, "p"), (Key.L, PhysicalKey.L, "l"),
                          (Key.X, PhysicalKey.X, "x"), (Key.B, PhysicalKey.B, "b") })
@@ -409,7 +408,7 @@ public sealed class ControlKeyTests
     }
 
     // The items a combo's open list shows, from the top.
-    private static List<int> Shown(VBComboBox combo)
+    private static List<int> Shown(RDFormsComboBox combo)
     {
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         Dispatcher.UIThread.RunJobs();
@@ -423,11 +422,11 @@ public sealed class ControlKeyTests
         var (log, shown, typed, chosen) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d)
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d)
                 .Set(P.List, ["apple", "MultiPlayer", "banana", "MPeg", "Mango"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
-            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var combo = (RDFormsComboBox)window.View.ControlOf(combo1)!;
             var log = Log(sink, root);
             Type(window, Key.M, PhysicalKey.M, "m");
             var afterM = Shown(combo);
@@ -456,10 +455,10 @@ public sealed class ControlKeyTests
         var (log, text, open) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["kiwi", "Kumquat"]);
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["kiwi", "Kumquat"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
-            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var combo = (RDFormsComboBox)window.View.ControlOf(combo1)!;
             var log = Log(sink, root);
             Type(window, Key.K, PhysicalKey.K, "k");
             Type(window, Key.X, PhysicalKey.X, "x");
@@ -480,10 +479,10 @@ public sealed class ControlKeyTests
         var (log, text, index) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
-            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var combo = (RDFormsComboBox)window.View.ControlOf(combo1)!;
             var log = Log(sink, root);
             Type(window, Key.Down, PhysicalKey.ArrowDown, null);
             Type(window, Key.B, PhysicalKey.B, "b");
@@ -506,11 +505,11 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList)
                 .Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
-            var combo = (VBComboBox)window.View.ControlOf(combo1)!;
+            var combo = (RDFormsComboBox)window.View.ControlOf(combo1)!;
             // An item selected, so that the open list puts the focus on it.
             combo.ListIndex = 0;
             if (open)
@@ -534,7 +533,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var log = Log(sink, root);
@@ -557,7 +556,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d).Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             var log = Log(sink, root);
@@ -576,12 +575,12 @@ public sealed class ControlKeyTests
         var text = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d);
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             sink.Handler = (_, definition, arguments) =>
             {
-                if (ReferenceEquals(definition, VBEvents.KeyPress))
+                if (ReferenceEquals(definition, Events.KeyPress))
                     arguments[0] = FormValue.FromInteger(75);
             };
             Type(window, Key.K, PhysicalKey.K, "k");
@@ -598,10 +597,10 @@ public sealed class ControlKeyTests
         var index = UI.Run(() =>
         {
             var root = Root();
-            var list1 = Add(root, VBClasses.ListBox, "List1").Set(P.List, ["alpha", "beta", "kappa", "omega"]);
+            var list1 = Add(root, ComponentClasses.ListBox, "List1").Set(P.List, ["alpha", "beta", "kappa", "omega"]);
             var sink = new RecordingSink();
             var window = Open(root, list1, sink);
-            var list = (VBListBox)window.View.ControlOf(list1)!;
+            var list = (RDFormsListBox)window.View.ControlOf(list1)!;
             list.ListIndex = 0;
             Type(window, Key.K, PhysicalKey.K, "k");
             Type(window, Key.Down, PhysicalKey.ArrowDown, null);
@@ -619,12 +618,12 @@ public sealed class ControlKeyTests
         var (raised, text) = UI.Run(() =>
         {
             var root = Root();
-            var combo1 = Add(root, VBClasses.ComboBox, "Combo1").Set(P.Height, 21d);
+            var combo1 = Add(root, ComponentClasses.ComboBox, "Combo1").Set(P.Height, 21d);
             var sink = new RecordingSink();
             var window = Open(root, combo1, sink);
             sink.Handler = (_, definition, arguments) =>
             {
-                if (ReferenceEquals(definition, VBEvents.KeyPress))
+                if (ReferenceEquals(definition, Events.KeyPress))
                     arguments[0] = FormValue.FromInteger(0);
             };
             Type(window, Key.K, PhysicalKey.K, "k");
@@ -645,7 +644,7 @@ public sealed class ControlKeyTests
         var raised = UI.Run(() =>
         {
             var root = Root().Set(P.KeyPreview, true);
-            var list1 = Add(root, VBClasses.ListBox, "List1").Set(P.List, ["alpha", "kappa"]);
+            var list1 = Add(root, ComponentClasses.ListBox, "List1").Set(P.List, ["alpha", "kappa"]);
             var sink = new RecordingSink();
             var window = Open(root, list1, sink);
             Type(window, Key.K, PhysicalKey.K, "k");
@@ -664,15 +663,15 @@ public sealed class ControlKeyTests
         var (raised, index) = UI.Run(() =>
         {
             var root = Root().Set(P.KeyPreview, true);
-            var list1 = Add(root, VBClasses.ListBox, "List1").Set(P.List, ["alpha", "beta"]);
+            var list1 = Add(root, ComponentClasses.ListBox, "List1").Set(P.List, ["alpha", "beta"]);
             var sink = new RecordingSink();
             var window = Open(root, list1, sink);
-            var list = (VBListBox)window.View.ControlOf(list1)!;
+            var list = (RDFormsListBox)window.View.ControlOf(list1)!;
             list.ListIndex = 0;
             sink.Raised.Clear();
             sink.Handler = (source, definition, arguments) =>
             {
-                if (ReferenceEquals(source, root) && ReferenceEquals(definition, VBEvents.KeyDown))
+                if (ReferenceEquals(source, root) && ReferenceEquals(definition, Events.KeyDown))
                     arguments[0] = FormValue.FromInteger(0);
             };
             Type(window, Key.Down, PhysicalKey.ArrowDown, null);
@@ -699,7 +698,7 @@ public sealed class ControlKeyTests
 
     // A scroll bar of the form, Value 50, SmallChange 1 and LargeChange 10, as the grid has it.
     private static ComponentInstance ScrollBar(ComponentInstance root, short min, short max) =>
-        Add(root, VBClasses.HScrollBar, "HScroll1").Set(P.Height, 17d).Set(P.Min, min).Set(P.Max, max).Set(P.ScrollBarValue, (short)50)
+        Add(root, ComponentClasses.HScrollBar, "HScroll1").Set(P.Height, 17d).Set(P.Min, min).Set(P.Max, max).Set(P.ScrollBarValue, (short)50)
             .Set(P.SmallChange, (short)1).Set(P.LargeChange, (short)10);
 
     // The bar's events as the grid logs them: a key event with its code, the form's marked F, and the bar's with its Value.
@@ -718,7 +717,7 @@ public sealed class ControlKeyTests
     }
 
     // Each key on the bar, its Value set back to a start before each, as "> key" and the events the key raised.
-    private static List<string> TypeEach(VBFormWindow window, ComponentInstance bar, List<string> log, short from = 50,
+    private static List<string> TypeEach(RDFormsFormWindow window, ComponentInstance bar, List<string> log, short from = 50,
         params (string Name, Key Key, PhysicalKey Physical, string? Text)[] keys)
     {
         var lines = new List<string>();
@@ -800,7 +799,7 @@ public sealed class ControlKeyTests
             sink.Handler = (source, definition, arguments) =>
             {
                 logging(source, definition, arguments);
-                if (ReferenceEquals(definition, VBEvents.KeyDown) && ReferenceEquals(source, byTheForm ? root : bar))
+                if (ReferenceEquals(definition, Events.KeyDown) && ReferenceEquals(source, byTheForm ? root : bar))
                     arguments[0] = FormValue.FromInteger(0);
             };
             var result = TypeEach(window, bar, log, keys: [ScrollBarKeys[1], ScrollBarKeys[5], ScrollBarKeys[7]]);

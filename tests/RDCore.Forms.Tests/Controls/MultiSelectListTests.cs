@@ -7,8 +7,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
@@ -27,14 +26,14 @@ public sealed class MultiSelectListTests
         switch (type)
         {
             case "ListBox":
-                var list = new VBListBox(new ComponentInstance(VBClasses.ListBox, "List1")
+                var list = new RDFormsListBox(new ComponentInstance(ComponentClasses.ListBox, "List1")
                     .Set(P.List, ["a", "b", "c", "d", "e"]).Set(P.MultiSelect, mode));
                 return new(list, () => list.ListIndex, list.GetSelected);
             case "FileListBox":
                 var root = OperatingSystem.IsWindows() ? @"C:\five" : "/five";
                 var files = new MockFileSystem(new[] { "a.txt", "b.txt", "c.txt", "d.txt", "e.bas" }
                     .ToDictionary(name => Path.Combine(root, name), _ => new MockFileData("")), root);
-                var fileList = new VBFileListBox(new ComponentInstance(VBClasses.FileListBox, "File1").Set(P.MultiSelect, mode),
+                var fileList = new RDFormsFileListBox(new ComponentInstance(ComponentClasses.FileListBox, "File1").Set(P.MultiSelect, mode),
                     OperatingSystem.IsWindows() ? files : new RootDrives(files));
                 return new(fileList, () => fileList.ListIndex, fileList.GetSelected);
             default:
@@ -216,7 +215,7 @@ public sealed class MultiSelectListTests
     {
         var (reached, wholeAtTheBottom, clicks) = UI.Run(() =>
         {
-            var list = new VBListBox(new ComponentInstance(VBClasses.ListBox, "List1")
+            var list = new RDFormsListBox(new ComponentInstance(ComponentClasses.ListBox, "List1")
                 .Set(P.List, [.. Enumerable.Range(0, 30).Select(i => $"item{i}")]).Set(P.MultiSelect, mode));
             var (window, sink) = ControlHost.Show((list, new Rect(10, 5, 160, 140)));
             Press(window, list, 0);

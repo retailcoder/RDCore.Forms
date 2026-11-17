@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using RDCore.Forms.Model;
-using RDCore.Forms.Model.VB;
-using P = RDCore.Forms.Model.VB.VBProperties;
+using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Menus;
 
@@ -105,7 +104,7 @@ public sealed class FormMenuArray : IEnumerable<FormMenuItem>
             throw new FormErrorException(FormError.ObjectAlreadyLoaded);
         var source = elements[0].Component;
         var container = source.Container!;
-        var copy = new ComponentInstance(VBClasses.Menu, source.Name, index);
+        var copy = new ComponentInstance(ComponentClasses.Menu, source.Name, index);
         foreach (var property in Copied)
         {
             if (source.IsSet(property))
