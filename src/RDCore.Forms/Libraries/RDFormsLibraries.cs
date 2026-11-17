@@ -96,18 +96,22 @@ public sealed class RDFormsLibraries : ILibrarySource
             foreach (var raised in modelledClass.Events.Where(raised => !events.Any(known => string.Equals(known.Name, raised.Name, StringComparison.OrdinalIgnoreCase))))
                 events.Add(new EventDescription { Name = raised.Name, IsAddition = true, Parameters = [.. raised.Parameters.Select(parameter => Parameter(parameter.Name, parameter.TypeName))] });
         }
-        members.AddRange(Added(platform.Where(member => !Declared(member.Name))));
+        // Asked of the members before any is added, so that a property's Let follows its Get.
+        members.AddRange(Added(platform.Where(member => !Declared(member.Name)).ToList()));
         return declared with { Members = [.. members], Events = [.. events] };
     }
 
     // What RD-VBA adds to a class of VB6.OLB that no model class implements: App's PlatformVersion and ComponentVersion(Name), read-only, which give the
-    // platform's version and that of one of its components ("RDCore", "RDCore.SDK", "RDCore.Forms").
+    // platform's version and that of one of its components ("RDCore", "RDCore.SDK", "RDCore.Forms"), and its KeepSystemTheme, read and written, whether
+    // the program's forms take the system's theme variant (True) or stay light (False).
     private static readonly Dictionary<string, MemberDescription[]> PlatformAdditions = new(StringComparer.OrdinalIgnoreCase)
     {
         ["App"] =
         [
             new MemberDescription { Name = "PlatformVersion", Kind = MemberKind.PropertyGet, Type = "String" },
             new MemberDescription { Name = "ComponentVersion", Kind = MemberKind.PropertyGet, Type = "String", Parameters = [Parameter("Name", "String", byVal: true)] },
+            new MemberDescription { Name = "KeepSystemTheme", Kind = MemberKind.PropertyGet, Type = "Boolean" },
+            new MemberDescription { Name = "KeepSystemTheme", Kind = MemberKind.PropertyLet, Parameters = [Parameter("Value", "Boolean", byVal: true)] },
         ],
     };
 

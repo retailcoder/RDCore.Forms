@@ -45,7 +45,7 @@ public sealed class RDFormsLibrariesTests
         "DirListBox.Opacity", "DirListBox.ContextMenu",
         "FileListBox.Opacity", "FileListBox.ContextMenu",
         "Menu.CheckOnClick", "Menu.Picture",
-        "App.PlatformVersion", "App.ComponentVersion",
+        "App.PlatformVersion", "App.ComponentVersion", "App.KeepSystemTheme",
         "Shape.Opacity",
         "Line.Opacity",
         "Image.Opacity", "Image.ContextMenu",
@@ -163,6 +163,20 @@ public sealed class RDFormsLibrariesTests
         Assert.AreEqual((MemberKind.PropertyGet, "String", true), (component.Kind, component.Type, component.IsAddition));
         var name = component.Parameters.Single();
         Assert.AreEqual(("Name", "String", true, false), (name.Name, name.Type, name.IsByVal, name.IsOptional));
+    }
+
+    [TestMethod]
+    public void AppsKeepSystemTheme_IsABooleanAProgramReadsAndWrites()
+    {
+        var app = VB().Classes.Single(declared => declared.Name == "App");
+
+        var accessors = app.Members.Where(member => member.Name == "KeepSystemTheme").ToArray();
+
+        CollectionAssert.AreEqual(new[] { MemberKind.PropertyGet, MemberKind.PropertyLet }, accessors.Select(member => member.Kind).ToArray());
+        Assert.IsTrue(accessors.All(member => member.IsAddition));
+        Assert.AreEqual("Boolean", accessors[0].Type);
+        var value = accessors[1].Parameters.Single();
+        Assert.AreEqual(("Boolean", true), (value.Type, value.IsByVal));
     }
 
     [TestMethod]
