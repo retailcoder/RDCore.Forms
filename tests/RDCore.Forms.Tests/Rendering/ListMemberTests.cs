@@ -5,6 +5,7 @@ using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Model;
 using RDCore.Forms.Model.VB;
 using RDCore.Forms.Tests.Controls;
+using static RDCore.Forms.Tests.Model.TestPictures;
 using M = RDCore.Forms.Model.VB.VBMethods;
 using P = RDCore.Forms.Model.VB.VBProperties;
 using UI = RDCore.Forms.Tests.Headless.Headless;
@@ -12,8 +13,8 @@ using UI = RDCore.Forms.Tests.Headless.Headless;
 namespace RDCore.Forms.Tests.Rendering;
 
 // A ListBox's and a ComboBox's list members, as a program's code calls them on the form's window: AddItem, RemoveItem, Clear, List,
-// ItemData, Selected, ListIndex, ListCount, NewIndex, SelCount and Text. The errors are VB6's, as lists.md gives them; List outside the
-// items and List assigned are RDForms' rules.
+// ItemData, ItemIcon, Selected, ListIndex, ListCount, NewIndex, SelCount and Text. The errors are VB6's, as lists.md gives them; List
+// outside the items and List assigned are RDForms' rules, and ItemIcon is an RD-VBA addition.
 [TestClass]
 public sealed class ListMemberTests
 {
@@ -159,6 +160,67 @@ public sealed class ListMemberTests
         });
 
         Assert.AreEqual("0, 100000", lines);
+    }
+
+    // What ItemIcon(0) to ItemIcon(ListCount - 1) read: "gif" for the picture, "-" for Nothing.
+    private static string Icons(VBFormWindow window, ComponentInstance list, byte[] gif) =>
+        string.Join(", ", Enumerable.Range(0, Get(window, list, M.ListCount).AsInteger()).Select(i => Get(window, list, M.ItemIcon, I(i)) switch
+        {
+            { Kind: FormValueKind.Object, ClrValue: null } => "-",
+            { Kind: FormValueKind.Object, ClrValue: var picture } when ReferenceEquals(picture, gif) => "gif",
+            var other => $"{other.Kind} {other.ClrValue}",
+        }));
+
+    [TestMethod]
+    [DataRow(ListBox)]
+    [DataRow(ComboBox)]
+    public void ItemIcon_IsThePictureOfEachItem_AndFollowsItsItem_ThroughAddItemRemoveItemAndClear(string type)
+    {
+        var gif = Gif1x1;
+        var lines = UI.Run(() =>
+        {
+            var (window, list, _) = Open(type, "a", "b");
+            window.Assign(list, M.ItemIcon, [I(1)], FormValue.FromObject(gif));
+            var result = new List<string> { Icons(window, list, gif) };
+            Call(window, list, M.AddItem, S("x"), I(0));
+            result.Add(Icons(window, list, gif));
+            Call(window, list, M.RemoveItem, I(1));
+            result.Add(Icons(window, list, gif));
+            window.Assign(list, M.ItemIcon, [I(1)], FormValue.Nothing);
+            result.Add(Icons(window, list, gif));
+            window.Assign(list, M.ItemIcon, [I(0)], FormValue.FromObject(gif));
+            Call(window, list, M.Clear);
+            Call(window, list, M.AddItem, S("y"));
+            result.Add(Icons(window, list, gif));
+            window.Close();
+            return result;
+        });
+
+        CollectionAssert.AreEqual(new[] { "-, gif", "-, -, gif", "-, gif", "-, -", "-" }, lines);
+    }
+
+    [TestMethod]
+    [DataRow(ListBox)]
+    [DataRow(ComboBox)]
+    public void ItemIcon_OutsideTheItemsIs381_AValueThatIsNoPictureIs13_AndAPictureTheInspectionRefusesIs481(string type)
+    {
+        var (read, assigned, text, number, refused) = UI.Run(() =>
+        {
+            var (window, list, _) = Open(type, "a");
+            var result = (ErrorOf(() => Get(window, list, M.ItemIcon, I(1))).Number,
+                ErrorOf(() => window.Assign(list, M.ItemIcon, [I(1)], FormValue.FromObject(Gif1x1))).Number,
+                ErrorOf(() => window.Assign(list, M.ItemIcon, [I(0)], S("a.gif"))).Number,
+                ErrorOf(() => window.Assign(list, M.ItemIcon, [I(0)], FormValue.FromLong(1))).Number,
+                ErrorOf(() => window.Assign(list, M.ItemIcon, [I(0)], FormValue.FromObject(Hex("89504E47")))).Number);
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual(381, read);
+        Assert.AreEqual(381, assigned);
+        Assert.AreEqual(13, text);
+        Assert.AreEqual(13, number);
+        Assert.AreEqual(481, refused);
     }
 
     [TestMethod]

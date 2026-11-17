@@ -331,10 +331,12 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// A ListBox's and a ComboBox's list members are as <see cref="VBListBox"/> and <see cref="VBComboBox"/> run them: <c>AddItem</c>,
     /// <c>RemoveItem</c> and <c>Clear</c> return none, and a property that <see cref="MethodDefinition.IsProperty"/> returns its value
     /// (<see cref="Assign"/> assigns it). An index is an Integer, rounded half to even, and Null is error 94. <c>AddItem</c> is error 5
-    /// for an index outside 0 to <c>ListCount</c>, and <c>RemoveItem</c> for one outside the items; <c>ItemData</c> and <c>Selected</c>
-    /// are error 381 for an index outside the items, and <c>List</c> is "" there; <c>ListIndex</c> is error 380 for a value outside -1
-    /// to <c>ListCount</c> - 1. <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c> and <c>SelCount</c> are Integers. Past 32767, a
-    /// count or an index is a Long: RDForms sets this rule.
+    /// for an index outside 0 to <c>ListCount</c>, and <c>RemoveItem</c> for one outside the items; <c>ItemData</c>, <c>ItemIcon</c> and
+    /// <c>Selected</c> are error 381 for an index outside the items, and <c>List</c> is "" there; <c>ListIndex</c> is error 380 for a
+    /// value outside -1 to <c>ListCount</c> - 1. <c>ItemIcon</c>, an RD-VBA addition, is an object (<see cref="FormValue.FromObject"/>):
+    /// the bytes of the item's picture file, or <c>Nothing</c>. It is assigned one too: anything else is error 13, and a picture
+    /// <see cref="FormPictures.Inspect"/> refuses is error 481. <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c> and <c>SelCount</c>
+    /// are Integers. Past 32767, a count or an index is a Long: RDForms sets this rule.
     /// </para>
     /// </remarks>
     public FormValue Invoke(ComponentInstance component, MethodDefinition method, IReadOnlyList<FormValue?> arguments, CodeUnit unit = CodeUnit.Pixel)
@@ -379,7 +381,7 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
     /// <param name="arguments">The property's arguments, as <see cref="Invoke"/> takes a method's, such as the index of <c>List(Index)</c>.</param>
     /// <param name="value">
     /// The value assigned, of the property's type (<see cref="MethodDefinition.Value"/>): a number for a number, which the window rounds
-    /// and checks as it does an argument.
+    /// and checks as it does an argument, and for <c>ItemIcon</c> an object, as <see cref="Invoke"/> gives it.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="component"/>, <paramref name="property"/> or <paramref name="arguments"/> is <see langword="null"/>.
@@ -414,6 +416,8 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
             list.SetList(Index(given[0]!.Value), MethodArguments.String(value));
         else if (ReferenceEquals(property, VBMethods.ItemData))
             list.SetItemData(Index(given[0]!.Value), MethodArguments.Long(value));
+        else if (ReferenceEquals(property, VBMethods.ItemIcon))
+            list.SetItemIcon(Index(given[0]!.Value), PictureOf(value));
         else if (ReferenceEquals(property, VBMethods.Selected) && list is VBListBox selecting)
             selecting.SetSelected(Index(given[0]!.Value), MethodArguments.Boolean(value));
         else if (ReferenceEquals(property, VBMethods.ListIndex))
@@ -437,6 +441,8 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
             return FormValue.FromString(list.GetList(Index(given[0]!.Value)));
         else if (ReferenceEquals(method, VBMethods.ItemData))
             return FormValue.FromLong(list.GetItemData(Index(given[0]!.Value)));
+        else if (ReferenceEquals(method, VBMethods.ItemIcon))
+            return FormValue.FromObject(list.GetItemIcon(Index(given[0]!.Value)));
         else if (ReferenceEquals(method, VBMethods.Selected) && list is VBListBox selected)
             return FormValue.FromBoolean(selected.GetSelected(Index(given[0]!.Value)));
         else if (ReferenceEquals(method, VBMethods.ListIndex))
@@ -453,6 +459,14 @@ public sealed class VBFormWindow : Window, IMenuHost, IFormFocus
             return null;
         return FormValue.Empty;
     }
+
+    // An item's icon, as ItemIcon is assigned it: the bytes of a picture's file, or Nothing for none. Anything else is 13.
+    private static byte[]? PictureOf(FormValue value) => value switch
+    {
+        { Kind: FormValueKind.Object, ClrValue: null } => null,
+        { Kind: FormValueKind.Object, ClrValue: byte[] picture } => picture,
+        _ => throw new FormErrorException(FormError.TypeMismatch),
+    };
 
     // An item's index, an Integer: Null is 94.
     private static short Index(FormValue index) => MethodArguments.Integer(index, ofNull: FormError.InvalidUseOfNull);
