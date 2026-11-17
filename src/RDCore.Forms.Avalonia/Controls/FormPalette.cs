@@ -67,7 +67,7 @@ public static class FormPalette
         0xFFFFFF, // HighlightText: TextOnAccentFillColorSelectedText
         0x2D2D2D, // ButtonFace: ControlFillColorDefault, #0FFFFFFF
         0x1D1D1D, // ButtonShadow: CardStrokeColorDefault, #19000000
-        0x717171, // GrayText: TextFillColorDisabled, #5DFFFFFF
+        0x969696, // GrayText: TextFillColorTertiary, #87FFFFFF (4.7:1 on ButtonFace, as the light palette's 4.5:1)
         0xFFFFFF, // ButtonText: TextFillColorPrimary
         0xCCCCCC, // InactiveCaptionText: TextFillColorSecondary, #C5FFFFFF
         0x353535, // ButtonHighlight: ControlStrokeColorSecondary, #18FFFFFF

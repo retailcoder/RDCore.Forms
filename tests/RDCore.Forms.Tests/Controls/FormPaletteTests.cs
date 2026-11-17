@@ -37,7 +37,7 @@ public sealed class FormPaletteTests
         (SystemColor.HighlightText, "TextOnAccentFillColorSelectedText", "#FFFFFF"),
         (SystemColor.ButtonFace, "ControlFillColorDefault", "#0FFFFFFF"),
         (SystemColor.ButtonShadow, "CardStrokeColorDefault", "#19000000"),
-        (SystemColor.GrayText, "TextFillColorDisabled", "#5DFFFFFF"),
+        (SystemColor.GrayText, "TextFillColorTertiary", "#87FFFFFF"),
         (SystemColor.ButtonText, "TextFillColorPrimary", "#FFFFFF"),
         (SystemColor.InactiveCaptionText, "TextFillColorSecondary", "#C5FFFFFF"),
         (SystemColor.ButtonHighlight, "ControlStrokeColorSecondary", "#18FFFFFF"),
