@@ -83,6 +83,10 @@ public sealed class RDFormsFileListBox : ListBox, IRaisesKeyEvents, IMultiSelect
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ListBox);
 
+    /// <inheritdoc/>
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) =>
+        new RDFormsListItem(GetSelected, SetSelected);
+
     MultiSelection? IMultiSelectList.Multi => multi;
 
     /// <summary>

@@ -2,6 +2,7 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
@@ -59,6 +60,9 @@ public sealed class RDFormsLabel : Control
         edge.Child = face;
         ComponentBinding.Bind(this, instance, ComponentClasses.Label, Apply);
     }
+
+    /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => new RDFormsControlAutomationPeer(this, AutomationControlType.Text);
 
     /// <summary>
     /// The text the label draws, its access key marker taken out where it has one.

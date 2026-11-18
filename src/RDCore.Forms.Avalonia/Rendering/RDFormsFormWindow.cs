@@ -45,9 +45,9 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// after it was hidden.
 /// </description></item>
 /// <item><description>
-/// Activate, as the window becomes the active one of the program's form windows, after the Resize that shows it; Deactivate on the
-/// window that was, before it. Another application taking the activation and giving it back raises nothing. A window whose root is
-/// disabled is shown without being activated.
+/// Activate, as the window becomes the active one of its <see cref="Program"/>'s form windows, after the Resize that shows it; Deactivate
+/// on the window of that program that was, before it. Another application, or another program's window, taking the activation and giving
+/// it back raises nothing. A window whose root is disabled is shown without being activated.
 /// </description></item>
 /// <item><description>
 /// The focus, as the window is activated: after the Activate, the control that last had the focus on the form takes it again, or the
@@ -74,9 +74,6 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// </remarks>
 public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
 {
-    // The window an Activate was last raised for: the program's active form.
-    private static RDFormsFormWindow? active;
-
     // Whether the window has been shown, and the root's size when Resize was last raised.
     private bool opened;
     private (double Width, double Height) resizedAt;
@@ -167,6 +164,15 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
     /// The form's client area.
     /// </summary>
     public RDFormsFormView View { get; }
+
+    /// <summary>
+    /// The program the form is one of, whose windows share one active form: Activate, Deactivate, and the GotFocus and LostFocus that come with them, follow
+    /// the activation among that program's windows only.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="RDFormsProgram.Default"/> unless it is set as the window is made: every window given none is of the one program.
+    /// </remarks>
+    public RDFormsProgram Program { get; init; } = RDFormsProgram.Default;
 
     /// <summary>
     /// The scroll viewer the client area is in: its size is the form's <c>Width</c> and <c>Height</c>, and its offset the form's
@@ -567,14 +573,14 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
             throw new FormErrorException(FormError.InvalidProcedureCall);
         if (ReferenceEquals(control, View))
         {
-            if (!ReferenceEquals(active, this))
+            if (!ReferenceEquals(Program.Active, this))
                 Dispatcher.UIThread.Post(Activate);
             return;
         }
         if (control is not { Focusable: true, IsEffectivelyEnabled: true, IsEffectivelyVisible: true })
             throw new FormErrorException(FormError.InvalidProcedureCall);
         activeControl = control;
-        if (!ReferenceEquals(active, this))
+        if (!ReferenceEquals(Program.Active, this))
             Dispatcher.UIThread.Post(Activate);
         else if (!ReferenceEquals(control, focused))
             Dispatcher.UIThread.Post(() =>
@@ -673,8 +679,8 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
             component.PropertyChanged -= OnControlChanged;
         Aligned.FollowsTheForm = true;
         MenuHosts.Unregister(this);
-        if (ReferenceEquals(active, this))
-            active = null;
+        if (ReferenceEquals(Program.Active, this))
+            Program.Active = null;
         focused = null;
         rootFocused = false;
         base.OnClosed(e);
@@ -758,10 +764,10 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
     // then the new form's control's GotFocus. A form with no control to take the focus raises its own GotFocus and LostFocus.
     private void TakeActivation()
     {
-        if (ReferenceEquals(active, this) || !Root.Get(P.Enabled))
+        if (ReferenceEquals(Program.Active, this) || !Root.Get(P.Enabled))
             return;
-        var previous = active;
-        active = this;
+        var previous = Program.Active;
+        Program.Active = this;
         if (previous is not null)
         {
             previous.LoseFocus();
@@ -805,9 +811,9 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
         }
     }
 
-    // The window system moves the focus as it activates and deactivates windows, the program's or another application's, taking it
-    // to no element and giving it back; VB raises nothing for that. Between the controls of the active form, the focus raises
-    // LostFocus and GotFocus as it moves.
+    // The window system moves the focus as it activates and deactivates windows, the program's or another application's or program's,
+    // taking it to no element or to another window's and giving it back; VB raises nothing for that. Between the controls of the active
+    // form, the focus raises LostFocus and GotFocus as it moves.
     void IFormFocus.FocusMoved(Control control, bool got, bool toNone, Control? to)
     {
         ShowTheDefault();
@@ -820,14 +826,15 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
                 return;
             }
             activeControl = control;
-            if (!ReferenceEquals(active, this) || ReferenceEquals(control, focused))
+            if (!ReferenceEquals(Program.Active, this) || ReferenceEquals(control, focused))
                 return;
             // The root, or a control that lost the window system's focus to none, as it was hidden or disabled.
             LoseFocus();
             focused = control;
             RDFormsControl.Raise(control, Events.GotFocus);
         }
-        else if (ReferenceEquals(control, focused) && !toNone && IsActive)
+        else if (ReferenceEquals(control, focused) && !toNone && IsActive
+                 && !(to is not null && TopLevel.GetTopLevel(to) is RDFormsFormWindow other && !ReferenceEquals(other, this)))
         {
             if (to is not null && !Leaves(control, to))
             {

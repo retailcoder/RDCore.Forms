@@ -21,7 +21,7 @@ Once its window has been shown, the root raises Resize for a change of size whet
 |---|---|
 |The window is shown for the first time|Activate, then GotFocus on the first control of the tab order that can take the focus.|
 |Another of the program's form windows becomes active|On the form that was active, LostFocus on its focused control, then Deactivate; then, on the new one, Activate, then GotFocus on its control.|
-|Another application takes the activation and gives it back|Nothing.|
+|Another application, or another program's form window in the same process, takes the activation and gives it back|Nothing. Each program has its own active form.|
 |A window whose root is disabled is shown|No Activate: it is shown without being activated.|
 
 Each form keeps the control that last had the focus on it: that control takes the focus again, with a GotFocus, when the form is activated again. A form with no control that can take the focus raises its own GotFocus after its Activate, and its own LostFocus before its Deactivate. That LostFocus was not measured with VB6: its place before the Deactivate is RDForms' own.

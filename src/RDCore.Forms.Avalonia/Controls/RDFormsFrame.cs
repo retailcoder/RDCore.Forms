@@ -2,6 +2,7 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
@@ -61,6 +62,9 @@ public sealed class RDFormsFrame : Control, IRDFormsContainer
         VisualChildren.Add(panel);
         LogicalChildren.Add(panel);
     }
+
+    /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => new RDFormsControlAutomationPeer(this, AutomationControlType.Group);
 
     /// <summary>
     /// The scroll viewer the controls it holds are in: its offset is the Frame's <c>ScrollLeft</c> and <c>ScrollTop</c>.

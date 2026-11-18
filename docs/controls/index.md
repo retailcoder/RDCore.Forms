@@ -229,6 +229,19 @@ The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../
 > [!NOTE]
 > **Not implemented.** The runtime does not refuse a program's read or assignment of these properties with 393 or 382.
 
+## UI Automation
+
+A screen reader or a test tool sees each control as the Win32 control VB6 draws for it, and uses it through the same patterns.
+
+|Control|UI Automation|
+|---|---|
+|Label|Text, named by its caption.|
+|Frame|Group, named by its caption.|
+|PictureBox, Image|Image.|
+|ListBox, DirListBox and FileListBox items|SelectionItem. Selecting an item raises the Click a mouse pick raises, once for each change. Selecting the item already selected raises none.|
+|ComboBox, DriveListBox|ExpandCollapse. Expanding drops the list and leaves the focus where it is: no item or control takes it, and no Validate, LostFocus or GotFocus is raised. A ComboBox raises DropDown, as it does whenever its list drops. Collapsing gives the focus to no control. A disabled one refuses both.|
+|The button of a ComboBox or a DriveListBox|Named "Open" in the user's language ("Ouvrir" in French).|
+
 ## Errors
 
 A member that refuses a value throws a [`FormErrorException`](../api/RDCore.Forms.Model.FormErrorException.yml) that holds VB's error number and description, such as 380 for a `ListIndex` outside the items.

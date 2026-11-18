@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -191,6 +192,32 @@ internal sealed class RDFormsMenuItem : MenuItem
     }
 
     protected override Type StyleKeyOverride => typeof(MenuItem);
+
+    protected override AutomationPeer OnCreateAutomationPeer() => new RDFormsMenuItemAutomationPeer(this);
+
+    // Chosen as a click chooses it: its Click, then the menus close.
+    internal void ChooseAsClicked()
+    {
+        RaiseEvent(new RoutedEventArgs(ClickEvent));
+        bar.Close();
+    }
+
+    // Its menu opened as the pointer opens it, the bar's first where it is on the bar: its Click is raised as it opens.
+    internal void OpenItsMenu()
+    {
+        if (IsTopLevel)
+            bar.Open();
+        Open();
+    }
+
+    // Its menu closed, and the bar's where it is on the bar.
+    internal void CloseItsMenu()
+    {
+        if (IsTopLevel)
+            bar.Close();
+        else
+            Close();
+    }
 
     protected override void OnClick(RoutedEventArgs e)
     {

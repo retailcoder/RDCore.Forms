@@ -2,6 +2,7 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
@@ -79,6 +80,9 @@ public sealed class RDFormsPictureBox : Control, IRDFormsContainer, IRaisesKeyEv
         ComponentBinding.Bind(this, instance, ComponentClasses.PictureBox, Apply);
         edge.Child = new Panel { Children = { layer, Drawing, ChildHost } };
     }
+
+    /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => new RDFormsControlAutomationPeer(this, AutomationControlType.Image);
 
     /// <inheritdoc/>
     public Canvas ChildHost { get; } = new();

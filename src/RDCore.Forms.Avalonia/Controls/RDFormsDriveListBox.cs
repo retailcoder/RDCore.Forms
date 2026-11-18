@@ -1,6 +1,8 @@
 ﻿using System.IO.Abstractions;
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using RDCore.Forms.Model;
 
@@ -24,6 +26,7 @@ public sealed class RDFormsDriveListBox : ComboBox, IRaisesKeyEvents
 {
     private readonly IFileSystem fileSystem;
     private readonly List<IDriveInfo> drives = [];
+    private readonly RDFormsDropDown dropDown;
     // Set while the list reads the drives, which changes no Drive.
     private bool listing;
 
@@ -44,6 +47,7 @@ public sealed class RDFormsDriveListBox : ComboBox, IRaisesKeyEvents
     {
         ArgumentNullException.ThrowIfNull(fileSystem);
         this.fileSystem = fileSystem;
+        dropDown = new RDFormsDropDown(this);
         Padding = new Thickness(2, 0);
         VerticalContentAlignment = VerticalAlignment.Center;
         ComponentBinding.Bind(this, instance!, ComponentClasses.DriveListBox, e => ComponentBinding.ApplyCommon(this, e.Property, e.After));
@@ -113,6 +117,23 @@ public sealed class RDFormsDriveListBox : ComboBox, IRaisesKeyEvents
         Relist(chosen);
         if (SelectedIndex >= 0 && drives[SelectedIndex].Name != chosen)
             RDFormsControl.Raise(this, Events.Change);
+    }
+
+    /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => dropDown.CreatePeer();
+
+    /// <inheritdoc/>
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        RDFormsDropDown.NameButton(e);
+    }
+
+    /// <inheritdoc/>
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        base.PrepareContainerForItemOverride(container, item, index);
+        dropDown.Prepare(container);
     }
 
     /// <inheritdoc/>

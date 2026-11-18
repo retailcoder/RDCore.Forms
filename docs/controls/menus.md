@@ -37,6 +37,17 @@ A shortcut chooses its item before the control that has the focus or the form se
 
 Choosing an item leaves its `Checked` as the program set it.
 
+## UI Automation
+
+Screen readers and automation tools see the menus as a Win32 program's. Each pattern does what the pointer does to the item, and raises the same Click, or none where the pointer raises none.
+
+|Item|Patterns|
+|---|---|
+|One that holds items, on the bar or in a menu|ExpandCollapse: expanding opens its menu and raises its Click; collapsing closes it and raises nothing.|
+|One that holds none|Invoke: chooses it, raises its Click and closes the menus. Toggle: chooses it the same way; its state is the item's `Checked`.|
+
+A disabled item refuses every pattern.
+
 ## Shortcuts
 
 A [`MenuShortcut`](../api/RDCore.Forms.Menus.MenuShortcut.yml) is a key, by its VB `KeyCode`, with Shift, Ctrl and Alt. Its text is VB's: `^` for Ctrl, `+` for Shift and `%` for Alt, then a letter, a digit or a key name in braces, as in `^Q`, `{F2}` and `+^{DEL}`. The key names are the ones VB's `SendKeys` statement takes. A designer file's `Shortcut` is read this way, and one that is not a shortcut is kept as written, with a diagnostic.

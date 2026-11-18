@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!-- the version of the RDCore.Forms package and of its assemblies; a release tag must equal v<VersionPrefix>[-suffix],
          the suffix passed as -p:VersionSuffix. -->
-    <VersionPrefix>0.1.2</VersionPrefix>
+    <VersionPrefix>0.1.3</VersionPrefix>
     <!-- the RDCore.SDK every project builds against; a build against a local pack passes its version as -p:RDCoreSdkVersion. -->
     <RDCoreSdkVersion>0.1.6-alpha</RDCoreSdkVersion>
   </PropertyGroup>

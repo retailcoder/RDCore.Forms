@@ -2,6 +2,7 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -96,6 +97,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     private Border? listBorder;
     private bool locked;
     private readonly ItemIcons icons = new();
+    private readonly RDFormsDropDown dropDown;
     // Set while the component's selection goes to the edit box, and the edit box's to the component.
     private bool selecting;
 
@@ -117,6 +119,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     public RDFormsComboBox(ComponentInstance instance)
     {
         this.instance = instance;
+        dropDown = new RDFormsDropDown(this);
         style = instance?.Get(P.ComboBoxStyle) ?? ComboBoxStyle.DropdownCombo;
         IsEditable = style != ComboBoxStyle.DropdownList;
         if (style == ComboBoxStyle.SimpleCombo)
@@ -544,6 +547,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        RDFormsDropDown.NameButton(e);
         if (editBox is { } old)
             old.PropertyChanged -= TakeSelection;
         // The edit box is one line, at a combo's height, too short for a TextBox's own padding.
@@ -646,7 +650,11 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             container.Height = Row;
         icons.Show(container, item, index);
         ShowNarrowing(container, index);
+        dropDown.Prepare(container);
     }
+
+    /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => dropDown.CreatePeer();
 
     // A Dropdown List's box shows the selected item's icon. A new template each time, so that the box is drawn again: two items of the
     // same text are the same box item.

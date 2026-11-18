@@ -102,6 +102,10 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ListBox);
 
+    /// <inheritdoc/>
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) =>
+        new RDFormsListItem(GetSelected, SetSelected);
+
     private bool IsMultiSelect => multi is not null;
 
     MultiSelection? IMultiSelectList.Multi => multi;

@@ -69,6 +69,15 @@ public sealed class RDFormsDirListBox : ListBox, IRaisesKeyEvents
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ListBox);
 
+    // A folder is selected as code selects it, by its ListIndex: the folders above Path come first in the items.
+    /// <inheritdoc/>
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) =>
+        new RDFormsListItem(i => i == SelectedIndex, (i, selected) =>
+        {
+            if (selected)
+                ListIndex = i - above;
+        });
+
     /// <summary>
     /// The folder shown, without a separator at its end, in the case it was given.
     /// </summary>
