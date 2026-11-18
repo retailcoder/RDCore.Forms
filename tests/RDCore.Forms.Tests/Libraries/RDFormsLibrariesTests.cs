@@ -137,6 +137,43 @@ public sealed class RDFormsLibrariesTests
         Assert.AreEqual(members, string.Join(" ", declared.Members.Select(m => m.Name).Distinct()));
     }
 
+    // The step test for MSComctlLib: a property a running program reaches on the modelled ImageList is the OCX's, of the type it declares,
+    // or the extender's; a ListImage's fields are the OCX's ListImage's. MSComctlLib has no additions, so the model gains none.
+    [TestMethod]
+    public void EveryMemberAProgramReachesOnTheImageList_IsTheOcxs()
+    {
+        var classes = CommonControls().Classes;
+        var imageList = classes.Single(declared => declared.Name == "ImageList");
+        var listImage = classes.Single(declared => declared.Name == "ListImage");
+        var extender = VB().Classes.Single(declared => declared.Name == "VBControlExtender");
+        var model = ComponentClasses.ImageList;
+        var types = new Dictionary<Type, string>
+        {
+            [typeof(short)] = "Integer", [typeof(bool)] = "Boolean", [typeof(FormColor)] = "Long", [typeof(IReadOnlyList<ListImage>)] = "ListImages",
+        };
+        static Func<MemberDescription, bool> Getter(string name) =>
+            member => member.Kind == MemberKind.PropertyGet && string.Equals(member.Name, name, StringComparison.OrdinalIgnoreCase);
+
+        foreach (var property in model.Properties.Where(property => !model.IsNotAvailableAtRunTime(property)))
+        {
+            var declared = imageList.Members.SingleOrDefault(Getter(property.Name));
+            if (declared is null)
+            {
+                Assert.IsTrue(extender.Members.Any(Getter(property.Name)), property.Name);
+                continue;
+            }
+
+            Assert.AreEqual(declared.Type, types[property.ValueType], property.Name);
+        }
+        Assert.IsEmpty(model.Methods);
+        Assert.IsEmpty(model.Events);
+        var fields = typeof(ListImage).GetProperties().Select(field => field.Name).ToArray();
+        CollectionAssert.AreEquivalent(new[] { "Picture", "Key", "Tag" }, fields);
+        foreach (var field in fields)
+            Assert.IsTrue(listImage.Members.Any(Getter(field)), $"ListImage.{field}");
+        Assert.IsFalse(classes.Any(declared => declared.IsAddition || declared.Members.Any(member => member.IsAddition)));
+    }
+
     [TestMethod]
     public void EveryMemberVB6OlbDeclares_IsKept_AndIsNoAddition()
     {
