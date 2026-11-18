@@ -19,6 +19,8 @@
   <ItemGroup>
     <!-- rdc export-library's description of VB6.OLB, as RDCore's Symbols folder has it; RDFormsLibraries adds RDForms' members to it. -->
     <EmbeddedResource Include="Libraries/VB.json" LogicalName="RDCore.Forms.Libraries.VB.json" />
+    <!-- rdc export-library's description of MSCOMCTL.OCX (the Windows Common Controls 6.0), as exported. -->
+    <EmbeddedResource Include="Libraries/MSComctlLib.json" LogicalName="RDCore.Forms.Libraries.MSComctlLib.json" />
   </ItemGroup>
 
 </Project>
