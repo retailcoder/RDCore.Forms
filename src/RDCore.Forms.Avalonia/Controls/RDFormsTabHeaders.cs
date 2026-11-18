@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using RDCore.Forms.Model;
 
 namespace RDCore.Forms.Avalonia.Controls;
@@ -15,9 +16,6 @@ internal readonly record struct TabHeader(string Caption, string ToolTipText, bo
 // strip shows nothing and takes no room. A hidden tab takes no room either, and keeps its index.
 internal sealed class RDFormsTabHeaders : Control
 {
-    private static readonly IBrush Edge = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonShadow));
-    private static readonly IBrush Pressed = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonShadow));
-
     private readonly List<Border> shown = [];
     private Panel row = new StackPanel();
 
@@ -34,8 +32,10 @@ internal sealed class RDFormsTabHeaders : Control
     public int Selected { get; private set; } = -1;
 
     public void Show(IReadOnlyList<TabHeader> tabs, int selected, TabStyle style, TabOrientation orientation, bool multiRow, double fixedWidth,
-        double fixedHeight, IBrush background)
+        double fixedHeight, IBrush background, ThemeVariant? variant)
     {
+        // The edge and a pressed button's face, in the owner's variant: the owner shows its tabs again as its variant changes.
+        var edge = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonShadow), variant);
         Tabs = tabs;
         Selected = selected;
         IsVisible = style != TabStyle.None;
@@ -64,10 +64,10 @@ internal sealed class RDFormsTabHeaders : Control
                 Tag = index,
                 Child = RDFormsCaption.Present(tab.Caption),
                 Padding = new Thickness(6, 2),
-                BorderBrush = Edge,
+                BorderBrush = edge,
                 BorderThickness = style == TabStyle.Buttons ? new Thickness(1) : OpenSide(orientation),
                 Margin = style == TabStyle.Buttons ? new Thickness(1) : isSelected ? default : Away(orientation),
-                Background = style == TabStyle.Buttons && isSelected ? Pressed : background,
+                Background = style == TabStyle.Buttons && isSelected ? edge : background,
                 // Drawn disabled and left enabled: a disabled control takes no pointer, and the press on a disabled tab is still its own
                 // control's, which refuses to select it.
                 Opacity = tab.Enabled ? 1 : 0.5,

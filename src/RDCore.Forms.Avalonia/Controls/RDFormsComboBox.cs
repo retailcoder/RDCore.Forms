@@ -140,6 +140,12 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             ItemsPanel = new FuncTemplate<Panel?>(() => panel = new CompletionPanel(this));
         // On the way down, so that the edit box does not take them first.
         AddHandler(KeyDownEvent, TakeKey, RoutingStrategies.Tunnel);
+        // The highlighted match is drawn in the highlight's colours, in the box's variant.
+        ActualThemeVariantChanged += (_, _) =>
+        {
+            if (narrowed is not null)
+                ShowNarrowing();
+        };
         ComponentBinding.Bind(this, instance!, ComponentClasses.ComboBox, Apply);
     }
 
@@ -776,8 +782,8 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             return;
         if (narrowed is { } matches && matches[highlighted] == index)
         {
-            item.Background = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.Highlight));
-            item.Foreground = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.HighlightText));
+            item.Background = ComponentBinding.Brush(this, SystemColor.Highlight);
+            item.Foreground = ComponentBinding.Brush(this, SystemColor.HighlightText);
         }
         else
         {

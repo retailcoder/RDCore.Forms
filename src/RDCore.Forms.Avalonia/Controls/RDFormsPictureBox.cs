@@ -124,11 +124,11 @@ public sealed class RDFormsPictureBox : Control, IRDFormsContainer, IRaisesKeyEv
                     FitToPicture();
                 break;
             case nameof(P.BackColor):
-                background = ComponentBinding.Brush(e.After);
+                background = ComponentBinding.Brush(this, e.After);
                 InvalidateVisual();
                 break;
             case nameof(P.ForeColor):
-                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(e.After));
+                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(this, e.After));
                 break;
             case nameof(P.Picture):
                 if (picture.Take((byte[]?)e.After))

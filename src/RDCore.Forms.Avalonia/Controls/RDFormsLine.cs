@@ -105,7 +105,7 @@ public sealed class RDFormsLine : Control
                 Place();
                 break;
             case nameof(P.BorderColor):
-                brush = ComponentBinding.Brush(e.After);
+                brush = ComponentBinding.Brush(this, e.After);
                 InvalidateVisual();
                 break;
             // A Line's BorderStyle is the ShapeBorderStyle property, named BorderStyle as in VB.

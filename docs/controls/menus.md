@@ -19,6 +19,7 @@ save.Enabled = false;
 - An item whose `Caption` is a hyphen is a separator, drawn as a line. An ampersand in a caption marks the character after it as the item's access key, and two ampersands show one.
 - Each item follows its component's `Caption`, `Enabled`, `Checked`, `Visible` and `Shortcut` as they change. A shortcut's key is shown beside its item.
 - The bar is shown while one of its items is visible. A form whose menus are all hidden, as one that keeps them only to pop up, shows none.
+- The bar is drawn in the system's `Menu` colour, and the captions on it in `MenuText`, in the palette of the form's theme variant (see [Theme](index.md#theme)).
 
 ## Click
 

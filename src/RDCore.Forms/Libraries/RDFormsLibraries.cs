@@ -8,7 +8,8 @@ using P = RDCore.Forms.Model.Properties;
 namespace RDCore.Forms.Libraries;
 
 /// <summary>
-/// The libraries RDForms describes: <c>VB</c>, the library of the VB6 forms and controls the RDForms model implements.
+/// The libraries RDForms describes: <c>VB</c>, the library of the VB6 forms and controls the RDForms model implements, and
+/// <c>MSComctlLib</c>, the library of the Windows Common Controls 6.0 (MSCOMCTL.OCX).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -23,6 +24,10 @@ namespace RDCore.Forms.Libraries;
 /// A member an addition shares its name with in VB6.OLB, such as a PictureBox's Picture for a Label's, gives the addition its type and its
 /// accessors. Another addition takes its type from the model.
 /// </para>
+/// <para>
+/// <c>MSComctlLib</c> is what <c>rdc export-library</c> reads from MSCOMCTL.OCX, as exported: it keeps the OCX's GUID and version, so
+/// a project's reference to MSCOMCTL.OCX finds it, and it has no additions.
+/// </para>
 /// </remarks>
 public sealed class RDFormsLibraries : ILibrarySource
 {
@@ -32,21 +37,30 @@ public sealed class RDFormsLibraries : ILibrarySource
     public const string VB = "VB";
 
     /// <summary>
+    /// The name of the library of the Windows Common Controls 6.0 (MSCOMCTL.OCX).
+    /// </summary>
+    public const string MSComctlLib = "MSComctlLib";
+
+    /// <summary>
     /// The libraries RDForms describes. A description is built once, the first time it is asked for.
     /// </summary>
     public static RDFormsLibraries Instance { get; } = new();
 
     private readonly Lazy<LibraryDescription> vb = new(DescribeVB);
 
+    private readonly Lazy<LibraryDescription> commonControls = new(() => Exported(MSComctlLib));
+
     private RDFormsLibraries() { }
 
     /// <inheritdoc/>
-    public IEnumerable<string> Names => [VB];
+    public IEnumerable<string> Names => [VB, MSComctlLib];
 
     /// <inheritdoc/>
     public bool TryGet(string name, [NotNullWhen(true)] out LibraryDescription? description)
     {
-        description = string.Equals(name, VB, StringComparison.OrdinalIgnoreCase) ? vb.Value : null;
+        description = string.Equals(name, VB, StringComparison.OrdinalIgnoreCase) ? vb.Value
+            : string.Equals(name, MSComctlLib, StringComparison.OrdinalIgnoreCase) ? commonControls.Value
+            : null;
         return description is not null;
     }
 
@@ -60,12 +74,18 @@ public sealed class RDFormsLibraries : ILibrarySource
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(name => $"{declared.Name}.{name}"));
 
+    // A library's description as rdc export-library wrote it, from the embedded <name>.json.
+    private static LibraryDescription Exported(string name)
+    {
+        using var stream = typeof(RDFormsLibraries).Assembly.GetManifestResourceStream($"{typeof(RDFormsLibraries).Namespace}.{name}.json")
+            ?? throw new InvalidOperationException($"RDCore.Forms holds no {name}.json.");
+        using var reader = new StreamReader(stream);
+        return LibraryJson.Read(reader.ReadToEnd());
+    }
+
     private static LibraryDescription DescribeVB()
     {
-        using var stream = typeof(RDFormsLibraries).Assembly.GetManifestResourceStream($"{typeof(RDFormsLibraries).Namespace}.VB.json")
-            ?? throw new InvalidOperationException("RDCore.Forms holds no VB.json.");
-        using var reader = new StreamReader(stream);
-        var exported = LibraryJson.Read(reader.ReadToEnd());
+        var exported = Exported(VB);
         return exported with
         {
             FormatVersion = LibraryJson.CurrentFormatVersion,
@@ -96,18 +116,22 @@ public sealed class RDFormsLibraries : ILibrarySource
             foreach (var raised in modelledClass.Events.Where(raised => !events.Any(known => string.Equals(known.Name, raised.Name, StringComparison.OrdinalIgnoreCase))))
                 events.Add(new EventDescription { Name = raised.Name, IsAddition = true, Parameters = [.. raised.Parameters.Select(parameter => Parameter(parameter.Name, parameter.TypeName))] });
         }
-        members.AddRange(Added(platform.Where(member => !Declared(member.Name))));
+        // Asked of the members before any is added, so that a property's Let follows its Get.
+        members.AddRange(Added(platform.Where(member => !Declared(member.Name)).ToList()));
         return declared with { Members = [.. members], Events = [.. events] };
     }
 
     // What RD-VBA adds to a class of VB6.OLB that no model class implements: App's PlatformVersion and ComponentVersion(Name), read-only, which give the
-    // platform's version and that of one of its components ("RDCore", "RDCore.SDK", "RDCore.Forms").
+    // platform's version and that of one of its components ("RDCore", "RDCore.SDK", "RDCore.Forms"), and its KeepSystemTheme, read and written, whether
+    // the program's forms take the system's theme variant (True) or stay light (False).
     private static readonly Dictionary<string, MemberDescription[]> PlatformAdditions = new(StringComparer.OrdinalIgnoreCase)
     {
         ["App"] =
         [
             new MemberDescription { Name = "PlatformVersion", Kind = MemberKind.PropertyGet, Type = "String" },
             new MemberDescription { Name = "ComponentVersion", Kind = MemberKind.PropertyGet, Type = "String", Parameters = [Parameter("Name", "String", byVal: true)] },
+            new MemberDescription { Name = "KeepSystemTheme", Kind = MemberKind.PropertyGet, Type = "Boolean" },
+            new MemberDescription { Name = "KeepSystemTheme", Kind = MemberKind.PropertyLet, Parameters = [Parameter("Value", "Boolean", byVal: true)] },
         ],
     };
 

@@ -75,6 +75,19 @@ A host that has an Avalonia application of its own keeps it.
 
 The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`, `MinButton` and `ShowInTaskbar`, and a user who resizes it sets the root's `Width` and `Height`. An `Icon` is an icon or a cursor; setting it to any other picture is 380. A window with no `Icon` shows the window system's own. The client area shows the root's `Picture` at its size from its top left corner, under the drawing and the controls (see [Pictures](containers.md#pictures)). A `StartUpPosition` of CenterOwner or CenterScreen centres it; Manual and Windows Default leave its place to the window system. The root raises its own events, Resize, Activate, QueryUnload, Unload and its mouse and key events among them: see [Form events](form-events.md).
 
+## Theme
+
+A form is shown in the light theme variant, whatever the application's theme, as VB6 shows a form in Windows' light colours. RD-VBA's `App.KeepSystemTheme` set to True shows it in the application's theme variant instead, and follows that variant as it changes. The host gives each window it makes its value, as [`RDFormsFormWindow.KeepSystemTheme`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml). Each window has its own value, and a change of it draws the form again in its new variant.
+
+|What is drawn|Light variant|Dark variant|
+|---|---|---|
+|A system colour: a `BackColor` or `ForeColor`, a button's face, an edge, the menu bar|Windows 11's default palette, on every platform|WinUI 3's dark theme ([`FormPalette`](../api/RDCore.Forms.Avalonia.Controls.FormPalette.yml))|
+|`Highlight`|#0078D7|#0078D7|
+|A colour set as RGB|As set|As set|
+|The theme's own parts, such as a TextBox's caret or a scroll bar|The theme's light variant|The theme's dark variant|
+
+What a drawing statement drew keeps its pixels when the variant changes. A system `MaskColor` is the light palette's under both variants: it names a colour of the picture.
+
 ## Placement
 
 |Rule|Behaviour|
@@ -130,7 +143,7 @@ A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(con
 |---|---|
 |`Visible`, `Enabled`|Hide or disable the control, and every control it holds. A disabled form takes no input in any of its controls.|
 |`Opacity`|RD-VBA addition. How solid the control is drawn: a Single from 0, not seen, to 1, solid, which is the default. See [Opacity](#opacity).|
-|`BackColor`, `ForeColor`|A system colour is drawn in Windows 11's default palette ([`FormPalette`](../api/RDCore.Forms.Avalonia.Controls.FormPalette.yml)), on every platform.|
+|`BackColor`, `ForeColor`|A system colour is drawn in the palette of the form's theme variant: Windows 11's default palette, on every platform, unless the form keeps the system's theme (see [Theme](#theme)).|
 |`Font`|The control's font, held at the size VB6 draws it at: see [Fonts](fonts.md).|
 |`ToolTipText`|Shown as the control's tooltip; an empty text shows none.|
 |`MousePointer`|The pointer over the control. Custom, drawn from `MouseIcon` in VB6, shows the arrow.|

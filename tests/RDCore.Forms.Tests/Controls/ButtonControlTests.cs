@@ -39,10 +39,10 @@ public sealed class ButtonControlTests
         }, raised);
     }
 
-    // A CommandButton has no ForeColor: its caption is in the system's ButtonText colour, whatever the theme's, and a ForeColor is not
-    // taken.
+    // A CommandButton has no ForeColor: its caption is in the system's ButtonText colour, in the button's variant, never the theme's
+    // own button text, and a ForeColor is not taken.
     [TestMethod]
-    public void ACommandButtonsCaption_IsInTheButtonTextColour_AndItTakesNoForeColor()
+    public void ACommandButtonsCaption_IsInTheButtonTextColourOfItsVariant_AndItTakesNoForeColor()
     {
         var (colour, taken) = UI.Run(() =>
         {
@@ -57,14 +57,14 @@ public sealed class ButtonControlTests
             return (colour, taken);
         });
 
-        Assert.AreEqual(((ISolidColorBrush)FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonText))).Color, colour);
+        Assert.AreEqual(FormPalette.ToColor(FormColor.FromSystem(SystemColor.ButtonText), ThemeVariant.Dark), colour);
         Assert.IsFalse(taken);
     }
 
-    // A Standard button's face and caption are both the form's system colours, ButtonFace and ButtonText, at rest and pressed: the
-    // theme's dark variant would otherwise draw the black caption on its dark face.
+    // A Standard button's face and caption are both the form's system colours, ButtonFace and ButtonText of the button's variant, at
+    // rest and pressed: the theme's own button colours would otherwise mix with the form's.
     [TestMethod]
-    public void AStandardCommandButtonsFace_IsTheButtonFaceColour_UnderTheDarkVariant_AtRestAndPressed()
+    public void AStandardCommandButtonsFace_IsTheButtonFaceColourOfItsVariant_UnderTheDarkVariant_AtRestAndPressed()
     {
         var (atRest, pressed) = UI.Run(() =>
         {
@@ -83,8 +83,8 @@ public sealed class ButtonControlTests
             return (atRest, pressed);
         });
 
-        var system = (((ISolidColorBrush)FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonFace))).Color,
-            ((ISolidColorBrush)FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonText))).Color);
+        var system = (FormPalette.ToColor(FormColor.FromSystem(SystemColor.ButtonFace), ThemeVariant.Dark),
+            FormPalette.ToColor(FormColor.FromSystem(SystemColor.ButtonText), ThemeVariant.Dark));
         Assert.AreEqual(system, atRest);
         Assert.AreEqual((true, system), pressed);
     }

@@ -91,12 +91,12 @@ public sealed class RDFormsFrame : Control, IRDFormsContainer
                 caption.IsVisible = text.Length > 0;
                 break;
             case nameof(P.BackColor):
-                background = ComponentBinding.Brush(e.After);
+                background = ComponentBinding.Brush(this, e.After);
                 caption.Background = background;
                 InvalidateVisual();
                 break;
             case nameof(P.ForeColor):
-                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(e.After));
+                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(this, e.After));
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -46,6 +47,8 @@ public sealed class RDFormsMenuBar : Menu
             Items.Add(Create(item));
         Menu.ItemLoaded += (_, e) => ShowLoaded(e);
         Menu.ItemUnloaded += (_, e) => DropUnloaded(e);
+        // The bar is drawn in the system's menu colours, in its theme variant, as the form's controls are in theirs.
+        ComponentBinding.FollowVariant(this, ShowColours);
         Follow();
     }
 
@@ -98,7 +101,19 @@ public sealed class RDFormsMenuBar : Menu
     {
         Control control = item.IsSeparator ? new RDFormsMenuSeparator(this, item) : new RDFormsMenuItem(this, item);
         shown[item.Component] = control;
+        if (item.IsTopLevel && control is TemplatedControl onTheBar)
+            onTheBar.Foreground = ComponentBinding.Brush(this, SystemColor.MenuText);
         return control;
+    }
+
+    // The bar's face is the Menu colour, and the captions on it the MenuText colour.
+    private void ShowColours()
+    {
+        Background = ComponentBinding.Brush(this, SystemColor.Menu);
+        var text = ComponentBinding.Brush(this, SystemColor.MenuText);
+        Foreground = text;
+        foreach (var onTheBar in Items.OfType<TemplatedControl>())
+            onTheBar.Foreground = text;
     }
 
     // The menu that shows a container's items: the bar for the root.
