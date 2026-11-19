@@ -38,7 +38,7 @@ public sealed class RDFormsFileListBox : ListBox, IRaisesKeyEvents, IMultiSelect
     private readonly ComponentInstance instance;
     private readonly IFileSystem fileSystem;
     // A multi-select list's selection; none where its MultiSelect is None.
-    private readonly MultiSelection? multi;
+    private MultiSelection? multi;
     private string path;
     // What the items were read with: Relist reads them again where one of these changed.
     private string? listedPattern;
@@ -62,7 +62,7 @@ public sealed class RDFormsFileListBox : ListBox, IRaisesKeyEvents, IMultiSelect
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> or <paramref name="fileSystem"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="instance"/> is not a FileListBox.</exception>
     /// <remarks>
-    /// Its <c>MultiSelect</c> is read once, here: VB sets it at design time only.
+    /// It follows its <c>MultiSelect</c> set later, from code, as a <see cref="RDFormsListBox"/> does, keeping its files.
     /// </remarks>
     public RDFormsFileListBox(ComponentInstance instance, IFileSystem fileSystem)
     {
@@ -70,12 +70,7 @@ public sealed class RDFormsFileListBox : ListBox, IRaisesKeyEvents, IMultiSelect
         this.instance = instance;
         this.fileSystem = fileSystem;
         path = fileSystem.Path.TrimEndingDirectorySeparator(fileSystem.Directory.GetCurrentDirectory());
-        var multiSelect = instance?.Get(P.MultiSelect) ?? ListBoxMultiSelect.None;
-        if (multiSelect != ListBoxMultiSelect.None)
-        {
-            SelectionMode = SelectionMode.Multiple;
-            multi = new MultiSelection(this, multiSelect);
-        }
+        multi = MultiSelection.Follow(this, null, instance?.Get(P.MultiSelect) ?? ListBoxMultiSelect.None);
         ComponentBinding.Bind(this, instance!, ComponentClasses.FileListBox, Apply);
         Relist();
     }
@@ -160,7 +155,7 @@ public sealed class RDFormsFileListBox : ListBox, IRaisesKeyEvents, IMultiSelect
             if (multi is null)
                 SelectedIndex = Items.IndexOf(file);
             if ((path, Pattern) != before)
-                RDFormsControl.Raise(this, Events.DblClick);
+                RDFormsControl.Raise(this, Events.DblClick, FormValue.FromBoolean(false));
         }
     }
 
@@ -284,6 +279,8 @@ public sealed class RDFormsFileListBox : ListBox, IRaisesKeyEvents, IMultiSelect
         }
         else if (ReferenceEquals(e.Property, P.Hidden) || ReferenceEquals(e.Property, P.SystemFiles))
             Relist();
+        else if (ReferenceEquals(e.Property, P.MultiSelect))
+            multi = MultiSelection.Follow(this, multi, (ListBoxMultiSelect)e.After!);
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
     }

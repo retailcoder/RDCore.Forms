@@ -79,7 +79,12 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     private static readonly Binding noItemMatches = new(".") { Converter = new FuncValueConverter<object?, string>(_ => noItemText) };
 
     private readonly ComponentInstance instance;
-    private readonly ComboBoxStyle style;
+    private ComboBoxStyle style;
+    // A Simple Combo's rows: VB6's are a line of text high.
+    private readonly Style simpleRows = new(x => x.OfType<ComboBoxItem>())
+    {
+        Setters = { new Setter(TemplatedControl.PaddingProperty, new Thickness(2, 0)), new Setter(MinHeightProperty, 0d) },
+    };
     // Set while the box takes the selected item's text, or the component's.
     private bool textFromSelection;
     private bool textFromComponent;
@@ -114,33 +119,18 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="instance"/> is not a ComboBox.</exception>
     /// <remarks>
-    /// Its <c>Style</c> is read once, here: VB sets it at design time only.
+    /// It follows its <c>Style</c> set later, from code, as a combo made with the new value: it keeps its items and its selection, and
+    /// its text where it has an edit box before and after. A Dropdown List's edit box, where it gains one, takes the selected item's
+    /// text, or "" with none. Changing the <c>Style</c> raises no event.
     /// </remarks>
     public RDFormsComboBox(ComponentInstance instance)
     {
         this.instance = instance;
         dropDown = new RDFormsDropDown(this);
-        style = instance?.Get(P.ComboBoxStyle) ?? ComboBoxStyle.DropdownCombo;
-        IsEditable = style != ComboBoxStyle.DropdownList;
-        if (style == ComboBoxStyle.SimpleCombo)
-        {
-            Template = SimpleTemplate;
-            // VB6's rows are a line of text high.
-            Styles.Add(new Style(x => x.OfType<ComboBoxItem>())
-            {
-                Setters = { new Setter(TemplatedControl.PaddingProperty, new Thickness(2, 0)), new Setter(MinHeightProperty, 0d) },
-            });
-            // On the way down, so that the press is the list's before an item takes it.
-            AddHandler(PointerPressedEvent, PressList, RoutingStrategies.Tunnel);
-            AddHandler(PointerReleasedEvent, ReleaseList, RoutingStrategies.Tunnel);
-        }
         // A Dropdown List shows its item in the combo's own padding, too deep for a combo's height.
         Padding = new Thickness(2, 0);
         VerticalContentAlignment = VerticalAlignment.Center;
-        if (IsEditable)
-            TextSearch.SetTextBinding(this, noItemMatches);
-        if (style == ComboBoxStyle.DropdownCombo)
-            ItemsPanel = new FuncTemplate<Panel?>(() => panel = new CompletionPanel(this));
+        ShowStyle(instance?.Get(P.ComboBoxStyle) ?? ComboBoxStyle.DropdownCombo, built: false);
         // On the way down, so that the edit box does not take them first.
         AddHandler(KeyDownEvent, TakeKey, RoutingStrategies.Tunnel);
         // The highlighted match is drawn in the highlight's colours, in the box's variant.
@@ -216,7 +206,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
         var item = source as ComboBoxItem ?? source.FindAncestorOfType<ComboBoxItem>();
         if (item is not null && e.ClickCount == 2)
         {
-            RDFormsControl.Raise(this, Events.DblClick);
+            RDFormsControl.Raise(this, Events.DblClick, FormValue.FromBoolean(false));
             return;
         }
         var index = item is null ? ItemCount - 1 : IndexFromContainer(item);
@@ -250,6 +240,92 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
 
     private bool IsInList(Visual source) =>
         listBorder is { } list && (ReferenceEquals(source, list) || list.IsVisualAncestorOf(source));
+
+    // A Style's view, as the combo is made and from code: a Simple Combo's template, rows and presses on its list, a Dropdown Combo's
+    // completion panel, and an edit box at every style except Dropdown List. Each sets up its own and undoes the others', so that the combo is as one
+    // made with the style. The items and the selection stay. An edit box gained takes the selected item's text, and once the combo is
+    // built the component's Text takes it too, quietly.
+    private void ShowStyle(ComboBoxStyle value, bool built)
+    {
+        var focused = built && IsKeyboardFocusWithin;
+        style = value;
+        if (IsDropDownOpen)
+            SetCurrentValue(IsDropDownOpenProperty, false);
+        EndNarrowing();
+        word = "";
+        var simple = value == ComboBoxStyle.SimpleCombo;
+        Styles.Remove(simpleRows);
+        RemoveHandler(PointerPressedEvent, PressList);
+        RemoveHandler(PointerReleasedEvent, ReleaseList);
+        if (simple)
+        {
+            Template = SimpleTemplate;
+            Styles.Add(simpleRows);
+            // On the way down, so that the press is the list's before an item takes it.
+            AddHandler(PointerPressedEvent, PressList, RoutingStrategies.Tunnel);
+            AddHandler(PointerReleasedEvent, ReleaseList, RoutingStrategies.Tunnel);
+        }
+        else
+            ClearValue(TemplateProperty);
+        foreach (var container in GetRealizedContainers())
+        {
+            if (simple)
+                container.Height = Row;
+            else
+                container.ClearValue(HeightProperty);
+        }
+        if (value == ComboBoxStyle.DropdownCombo)
+            ItemsPanel = new FuncTemplate<Panel?>(() => panel = new CompletionPanel(this));
+        else
+        {
+            ClearValue(ItemsPanelProperty);
+            panel = null;
+        }
+        if (value == ComboBoxStyle.DropdownList)
+        {
+            TextSearch.SetTextBinding(this, null);
+            IsEditable = false;
+        }
+        else if (!IsEditable)
+            GainEditBox(built);
+        ShowSelectedIcon();
+        // The edit box that had the focus is gone or hidden: the combo keeps it, in its new edit box where it has one, which keeps the
+        // component's selection; Avalonia's combo selects the whole text as its edit box takes the focus.
+        if (!focused)
+            return;
+        ApplyTemplate();
+        if (IsEditable && editBox is { IsKeyboardFocusWithin: false } box)
+        {
+            var (start, length) = (instance.Get(P.SelStart), instance.Get(P.SelLength));
+            box.Focus(NavigationMethod.Unspecified);
+            instance.Set(P.SelStart, start);
+            instance.Set(P.SelLength, length);
+        }
+        else if (!IsKeyboardFocusWithin)
+            Focus(NavigationMethod.Unspecified);
+    }
+
+    // Avalonia puts the selected item's text in the edit box it shows, and selects the first item of that text: the guard is off while
+    // it reads the item's own text, and the selection is put back.
+    private void GainEditBox(bool built)
+    {
+        var chosen = SelectedIndex;
+        TextSearch.SetTextBinding(this, null);
+        textFromSelection = true;
+        try
+        {
+            IsEditable = true;
+            if (SelectedIndex != chosen)
+                SelectedIndex = chosen;
+            if (built)
+                instance.Set(P.Text, base.Text ?? "");
+        }
+        finally
+        {
+            TextSearch.SetTextBinding(this, noItemMatches);
+            textFromSelection = false;
+        }
+    }
 
     /// <summary>
     /// The number of items.
@@ -926,6 +1002,17 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             icons.Take((IReadOnlyList<byte[]?>)e.After!);
             icons.ShowAll(this);
             ShowSelectedIcon();
+        }
+        else if (ReferenceEquals(e.Property, P.ComboBoxStyle))
+        {
+            if ((ComboBoxStyle)e.After! == style)
+                return;
+            ShowStyle((ComboBoxStyle)e.After!, built: true);
+            // A Simple Combo's height is snapped to its rows; another's is the component's.
+            if (style == ComboBoxStyle.SimpleCombo)
+                Snap(instance.Get(P.Height), null);
+            else
+                ComponentBinding.ApplyCommon(this, P.Height, instance.Get(P.Height));
         }
         else if (style == ComboBoxStyle.SimpleCombo && ReferenceEquals(e.Property, P.Height))
         {

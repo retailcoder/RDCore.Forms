@@ -108,6 +108,17 @@ public sealed class FormControlArrayTests
         Expect(["picCell(1) in Form1"], events);
     }
 
+    // An element keeps its array's name, even one a program loaded: assigning its Name is 382, as a control of the form's file's is.
+    [TestMethod]
+    public void AnElementLoaded_KeepsItsArraysName_382()
+    {
+        var form = Read();
+        var loaded = form.ArrayOf("picCell")!.Load(1);
+
+        Assert.AreEqual(382, Error(() => form.RenameControl(loaded, "Other")));
+        Assert.AreEqual("picCell", loaded.Name);
+    }
+
     [TestMethod]
     public void Load_CopiesTheElementOfTheLowestIndexLoaded_NotTheFilesOne()
     {

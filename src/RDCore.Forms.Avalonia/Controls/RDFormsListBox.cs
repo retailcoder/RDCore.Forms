@@ -54,7 +54,7 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
 {
     private readonly ComponentInstance instance;
     // A multi-select list's selection; none where its MultiSelect is None.
-    private readonly MultiSelection? multi;
+    private MultiSelection? multi;
     // Set while the list writes its own items to the component.
     private bool writingList;
     private int newIndex = -1;
@@ -78,17 +78,14 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="instance"/> is not a ListBox.</exception>
     /// <remarks>
-    /// Its <c>MultiSelect</c> is read once, here: VB sets it at design time only.
+    /// It follows its <c>MultiSelect</c> set later, from code, as a list made with the new value: it keeps its items, and the item at
+    /// <see cref="ListIndex"/> stays selected where it was. To None, no other item stays selected; to Simple or Extended from None,
+    /// the selected item takes the focus, the first item where none is selected.
     /// </remarks>
     public RDFormsListBox(ComponentInstance instance)
     {
         this.instance = instance;
-        var multiSelect = instance?.Get(P.MultiSelect) ?? ListBoxMultiSelect.None;
-        if (multiSelect != ListBoxMultiSelect.None)
-        {
-            SelectionMode = SelectionMode.Multiple;
-            multi = new MultiSelection(this, multiSelect);
-        }
+        multi = MultiSelection.Follow(this, null, instance?.Get(P.MultiSelect) ?? ListBoxMultiSelect.None);
         // VB6's border, so that whole rows fill it, and rows a line of text high.
         BorderThickness = new Thickness(1);
         Padding = new Thickness(1);
@@ -389,6 +386,8 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
         }
         else if (ReferenceEquals(e.Property, P.IntegralHeight))
             Snap(instance.Get(P.Height));
+        else if (ReferenceEquals(e.Property, P.MultiSelect))
+            multi = MultiSelection.Follow(this, multi, (ListBoxMultiSelect)e.After!);
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
     }

@@ -14,7 +14,8 @@ using UI = RDCore.Forms.Tests.Headless.Headless;
 
 namespace RDCore.Forms.Tests.Controls;
 
-// A Simple Combo, as measured with VB6, native and p-code agreeing; and a Locked combo, whose rules are RDForms' own.
+// A Simple Combo, as measured with VB6, native and p-code agreeing; and a Locked combo and a Style set from code, whose rules are
+// RDForms' own.
 [TestClass]
 public sealed class ComboStyleTests
 {
@@ -146,7 +147,7 @@ public sealed class ComboStyleTests
             return result;
         });
 
-        Expect.Lines(["Combo1.Click", "Combo1.DblClick"], raised);
+        Expect.Lines(["Combo1.Click", "Combo1.DblClick(Boolean False)"], raised);
     }
 
     [TestMethod]
@@ -275,6 +276,141 @@ public sealed class ComboStyleTests
         });
 
         Assert.AreEqual(("", "b"), (whileLocked, after));
+    }
+
+    // Combo1, 90 pixels high (a Simple Combo's edit box and five rows), its second item chosen, made with a Style or, where setTo is
+    // given, given that Style from code once shown, with the focus in it or, where focusedFirst is False, focused after. Each step
+    // logs what it raised, ListIndex and Text, and the component's Text where the combo has an edit box: the Style's change, F4, a
+    // character typed, and code's Text of an item and of no item. The focus, and its edit box's selection, are logged before F4.
+    private static List<string> Behaviour(ComboBoxStyle built, ComboBoxStyle? setTo = null, bool focusedFirst = false) => UI.Run(() =>
+    {
+        var (root, instance) = Form(built);
+        instance.Set(P.Height, 90d);
+        var sink = new RecordingSink();
+        var (window, combo) = Open(root, instance, sink, focused: focusedFirst ? "Combo1" : "Text1");
+        combo.ListIndex = 1;
+        var log = new List<string>();
+        void Step(string name, Action act)
+        {
+            sink.Raised.Clear();
+            act();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+            var text = combo.IsEditable ? $" '{instance.Get(P.Text)}'" : "";
+            log.Add($"{name}: [{string.Join(" ", Events(sink))}] {combo.ListIndex} '{combo.Text}'{text}");
+        }
+        Step("Style", () =>
+        {
+            if (setTo is { } style)
+                instance.Set(P.ComboBoxStyle, style);
+        });
+        log.Add($"edit box {combo.IsEditable}, list shown {combo.GetVisualDescendants().OfType<Border>().Any(border => border.Name == "PART_List")}, "
+            + $"height {instance.Get(P.Height)}/{combo.Bounds.Height}");
+        if (!focusedFirst)
+        {
+            combo.Focus();
+            Dispatcher.UIThread.RunJobs();
+        }
+        var focus = window.FocusManager?.GetFocusedElement();
+        var selected = focus is TextBox box ? $", selected {box.SelectionStart}-{box.SelectionEnd} {instance.Get(P.SelLength)}" : "";
+        log.Add($"focus in {focus?.GetType().Name}{selected}");
+        Step("F4", () => Hit(window, Key.F4, PhysicalKey.F4));
+        log.Add($"open {combo.IsDropDownOpen}");
+        combo.IsDropDownOpen = false;
+        Step("c", () => Type(window, "c"));
+        log.Add($"open {combo.IsDropDownOpen}, hidden {combo.GetRealizedContainers().Count(item => !item.IsVisible)}");
+        combo.IsDropDownOpen = false;
+        Step("Text cherry", () => combo.SetText("cherry"));
+        Step("Text kiwi", () =>
+        {
+            try
+            {
+                combo.SetText("kiwi");
+            }
+            catch (FormErrorException error)
+            {
+                log.Add($"error {error.Error.Number}");
+            }
+        });
+        window.Close();
+        return log;
+    });
+
+    [TestMethod]
+    [DataRow(ComboBoxStyle.DropdownCombo, ComboBoxStyle.DropdownList)]
+    [DataRow(ComboBoxStyle.DropdownCombo, ComboBoxStyle.SimpleCombo)]
+    [DataRow(ComboBoxStyle.SimpleCombo, ComboBoxStyle.DropdownCombo)]
+    [DataRow(ComboBoxStyle.SimpleCombo, ComboBoxStyle.DropdownList)]
+    [DataRow(ComboBoxStyle.DropdownList, ComboBoxStyle.DropdownCombo)]
+    [DataRow(ComboBoxStyle.DropdownList, ComboBoxStyle.SimpleCombo)]
+    public void AStyleFromCode_MakesTheComboOneMadeWithIt_KeepingItsItemsAndItsChoice_AndRaisesNothing(ComboBoxStyle from, ComboBoxStyle to)
+    {
+        var made = Behaviour(to);
+        var changed = Behaviour(from, to);
+
+        Expect.Lines(made, changed);
+    }
+
+    [TestMethod]
+    [DataRow(ComboBoxStyle.DropdownCombo, ComboBoxStyle.DropdownList)]
+    [DataRow(ComboBoxStyle.DropdownCombo, ComboBoxStyle.SimpleCombo)]
+    [DataRow(ComboBoxStyle.SimpleCombo, ComboBoxStyle.DropdownCombo)]
+    [DataRow(ComboBoxStyle.SimpleCombo, ComboBoxStyle.DropdownList)]
+    [DataRow(ComboBoxStyle.DropdownList, ComboBoxStyle.DropdownCombo)]
+    [DataRow(ComboBoxStyle.DropdownList, ComboBoxStyle.SimpleCombo)]
+    public void AStyleFromCode_KeepsTheFocusInTheCombo_InItsEditBoxWhereItHasOne_AndRaisesNoFocusEvent(ComboBoxStyle from, ComboBoxStyle to)
+    {
+        var made = Behaviour(to, focusedFirst: true);
+        var changed = Behaviour(from, to, focusedFirst: true);
+
+        Expect.Lines(made, changed);
+    }
+
+    [TestMethod]
+    public void AComboGivenSimpleComboFromCode_SnapsItsHeightAsOneMadeSimple()
+    {
+        var changed = UI.Run(() =>
+        {
+            var (root, instance) = Form(ComboBoxStyle.DropdownCombo);
+            var (window, combo) = Open(root, instance, new RecordingSink(), focused: "Text1");
+            instance.Set(P.ComboBoxStyle, ComboBoxStyle.SimpleCombo);
+            Dispatcher.UIThread.RunJobs();
+            var result = (instance.Get(P.Height), combo.Bounds.Height);
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual(Heights(100d, true, null)[0], changed);
+        Assert.AreEqual((90d, 90d), changed);
+    }
+
+    [TestMethod]
+    public void ADropdownComboGivenDropdownList_HasNoEditBox_AndGivenDropdownComboAgain_ItsEditBoxTakesTheSelectedItemsText()
+    {
+        var log = UI.Run(() =>
+        {
+            var (root, instance) = Form(ComboBoxStyle.DropdownCombo);
+            var sink = new RecordingSink();
+            var (window, combo) = Open(root, instance, sink, focused: "Text1");
+            combo.SetText("typed");
+            var log = new List<string>();
+            void Log(string name) => log.Add($"{name}: {combo.IsEditable} {combo.ListIndex} '{combo.Text}' '{instance.Get(P.Text)}'");
+            instance.Set(P.ComboBoxStyle, ComboBoxStyle.DropdownList);
+            Dispatcher.UIThread.RunJobs();
+            Log("DropdownList");
+            combo.ListIndex = 2;
+            Log("ListIndex 2");
+            sink.Raised.Clear();
+            instance.Set(P.ComboBoxStyle, ComboBoxStyle.DropdownCombo);
+            Dispatcher.UIThread.RunJobs();
+            Log("DropdownCombo");
+            log.Add($"raised [{string.Join(" ", Events(sink))}]");
+            window.Close();
+            return log;
+        });
+
+        Expect.Lines(["DropdownList: False -1 '' 'typed'", "ListIndex 2: False 2 'cherry' 'typed'", "DropdownCombo: True 2 'cherry' 'cherry'", "raised []"],
+            log);
     }
 
     // A Simple Combo of a height, its IntegralHeight and font, in the window: the component's Height and the height drawn, after each

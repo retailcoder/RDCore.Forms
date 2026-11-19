@@ -90,6 +90,8 @@ list.SetItemIcon(0, File.ReadAllBytes("open.png"));
 
 With a `MultiSelect` of Simple or Extended, `ListIndex` is the item with the focus, 0 from the start, and the selection is a set of items apart from it.
 
+On an RDForms form, a program can set `MultiSelect` (see [Properties set only at design time](index.md#properties-set-only-at-design-time)). The list then selects as one made with the new value, and keeps its items. The item at `ListIndex` stays selected where it was. To None, no other item stays selected. From None, the selected item takes the focus, or the first item where none is selected.
+
 |MultiSelect|Mouse|Keys|
 |---|---|---|
 |Simple|A press toggles the item, whatever the modifiers.|The navigation keys move only the focus; Space toggles.|
@@ -115,6 +117,8 @@ A ListBox's rows are a line of its font high, as a [Simple Combo's](#simple-comb
 |Dropdown Combo|The component's `Text` is the edit box's. Typing sets it; `Text` from code selects no item; choosing an item puts its text in the box. The edit box shows text only, with no icon.|
 |Simple Combo|The edit box, as a Dropdown Combo's, with its list always shown under it and no button: see [Simple Combo](#simple-combo).|
 |Dropdown List|No edit box. `Text` is the selected item's. `SetText` selects the first item whose whole text it is, without regard to case, and raises Click; it throws 383 where no item has that text. The box draws the selected item's icon. Characters typed select an item: see [Completion](#completion).|
+
+On an RDForms form, a program can set `Style` (see [Properties set only at design time](index.md#properties-set-only-at-design-time)). The combo then works as one made with the new style, keeping its items and its selection, and its text where it has an edit box before and after. An edit box it gains takes the selected item's text, or "" with none. The change raises no event.
 
 |Event|Raised|
 |---|---|

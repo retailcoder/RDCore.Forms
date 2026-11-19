@@ -35,6 +35,10 @@ Le fichier `src/RDCore.Forms/Libraries/VB.json` est la sortie de `rdc export-lib
 
 Le fichier `src/RDCore.Forms/Libraries/MSComctlLib.json` est la sortie de `rdc export-library` pour MSCOMCTL.OCX (Microsoft Windows Common Controls 6.0) : il décrit les classes, les membres, les événements et les énumérations que déclare sa bibliothèque de types. Il est distribué sous la licence MIT, comme le reste de RDCore.Forms. MSCOMCTL.OCX lui-même n'est pas inclus.
 
+## Description de FM20.DLL
+
+Le fichier `src/RDCore.Forms/Libraries/MSForms.json` est la sortie de `rdc export-library` pour FM20.DLL (Microsoft Forms 2.0 Object Library) : il décrit les classes, les membres, les événements et les énumérations que déclare sa bibliothèque de types. Il est distribué sous la licence MIT, comme le reste de RDCore.Forms. FM20.DLL lui-même n'est pas inclus.
+
 ## Marques de commerce
 
 Seul, "Rubberduck" est utilisé pour fins de référence au projet open-source legacy **utilisé publiquement ainsi depuis 2015** et sans lien ni affiliation avec tout tiers détenteur d'une marque semblable dans quelque juridiction que ce soit.  
@@ -80,6 +84,10 @@ The file `src/RDCore.Forms/Libraries/VB.json` is `rdc export-library` output fro
 ## Description of MSCOMCTL.OCX
 
 The file `src/RDCore.Forms/Libraries/MSComctlLib.json` is `rdc export-library` output from MSCOMCTL.OCX (Microsoft Windows Common Controls 6.0): it describes the classes, members, events and enumerations its type library declares. It is licensed under the MIT licence, like the rest of RDCore.Forms. MSCOMCTL.OCX itself is not included.
+
+## Description of FM20.DLL
+
+The file `src/RDCore.Forms/Libraries/MSForms.json` is `rdc export-library` output from FM20.DLL (Microsoft Forms 2.0 Object Library): it describes the classes, members, events and enumerations its type library declares. It is licensed under the MIT licence, like the rest of RDCore.Forms. FM20.DLL itself is not included.
 
 ## Trademarks
 

@@ -122,18 +122,18 @@ public sealed class FormsPortMapTests
     }
 
     [TestMethod]
-    public void EveryFmEnum_PortsToTheRDFormsEnumOfItsNameWithoutFm()
+    public void EveryFmEnum_PortsToTheRDFormsEnumOfItsName()
     {
         var enums = MSForms.Types.Where(t => t.Kind == TypePortKind.Enum).ToList();
         Assert.HasCount(42, enums);
         foreach (var port in enums)
         {
             StringAssert.StartsWith(port.LegacyName, "fm");
-            Assert.AreEqual("RDForms." + port.LegacyName[2..], port.RDFormsName);
+            Assert.AreEqual("RDForms." + port.LegacyName, port.RDFormsName);
         }
 
-        Assert.AreEqual("RDForms.TextAlign", MSForms.TypeOf("MSForms.fmTextAlign")?.RDFormsName);
-        Assert.AreEqual("RDForms.DragState", MSForms.TypeOf("fmDragState")?.RDFormsName);
+        Assert.AreEqual("RDForms.fmTextAlign", MSForms.TypeOf("MSForms.fmTextAlign")?.RDFormsName);
+        Assert.AreEqual("RDForms.fmDragState", MSForms.TypeOf("fmDragState")?.RDFormsName);
     }
 
     [TestMethod]
@@ -396,6 +396,22 @@ public sealed class FormsPortMapTests
         Assert.IsTrue(VB6.EventOf("UserControl", "HitTest")?.CoordinatesInLegacyUnit);
     }
 
+    // A VB DblClick handler takes no parameter; the port adds the Cancel the RDForms event has.
+    [TestMethod]
+    [DataRow("TextBox")]
+    [DataRow("Form")]
+    [DataRow("VB.ListBox")]
+    public void AVBDblClickHandler_GainsCancel(string legacyClass)
+    {
+        var port = VB6.EventOf(legacyClass, "DblClick");
+
+        Assert.IsNotNull(port);
+        Assert.AreEqual(new ParameterPort("Cancel", null, "Boolean", ByRef: true, UnwrapsValue: false), port.Parameters.Single());
+        Assert.IsTrue(port.Parameters.Single().IsAdded);
+        Assert.IsFalse(port.CoordinatesInLegacyUnit);
+        Assert.AreEqual("Cancel As Boolean", string.Join(", ", Events.DblClick.Parameters.Select(p => $"{p.Name} As {p.TypeName}")));
+    }
+
     [TestMethod]
     public void AnMSFormsKeyPressHandler_TakesItsKeyAsciiByRef_Unwrapped()
     {
@@ -487,11 +503,11 @@ public sealed class FormsPortMapTests
         Assert.AreEqual(new ParameterPort("Cancel", "MSForms.ReturnBoolean", "Boolean", true, true), parameters["Cancel"]);
         Assert.AreEqual("RDForms.Control", parameters["Control"].RDFormsType);
         Assert.AreEqual("RDForms.DataObject", parameters["Data"].RDFormsType);
-        Assert.AreEqual("RDForms.DragState", parameters["State"].RDFormsType);
+        Assert.AreEqual("RDForms.fmDragState", parameters["State"].RDFormsType);
         Assert.AreEqual(new ParameterPort("Effect", "MSForms.ReturnEffect", "RDForms.ReturnEffect", true, false), parameters["Effect"]);
 
         var dropOrPaste = MSForms.EventOf("TextBox", "BeforeDropOrPaste");
-        Assert.AreEqual("RDForms.Action", dropOrPaste?.Parameters[1].RDFormsType);
+        Assert.AreEqual("RDForms.fmAction", dropOrPaste?.Parameters[1].RDFormsType);
         Assert.AreEqual("DragState", MSForms.EventOf("TextBox", "BeforeDragOver")?.Parameters[4].Name);
     }
 
@@ -515,7 +531,7 @@ public sealed class FormsPortMapTests
         Assert.AreEqual("RDForms.Control", MSForms.EventOf(legacyClass, "RemoveControl")?.Parameters[^1].RDFormsType);
         var scroll = MSForms.EventOf(legacyClass, "Scroll")!.Parameters.ToDictionary(p => p.Name);
         Assert.AreEqual(new ParameterPort("ActualDx", "MSForms.ReturnSingle", "Single", true, true), scroll["ActualDx"]);
-        Assert.AreEqual("RDForms.ScrollAction", scroll["ActionX"].RDFormsType);
+        Assert.AreEqual("RDForms.fmScrollAction", scroll["ActionX"].RDFormsType);
     }
 
     [TestMethod]
@@ -577,16 +593,18 @@ public sealed class FormsPortMapTests
     // Constants
 
     [TestMethod]
-    public void EveryFmConstant_IsRewrittenAsItsValue()
+    public void EveryFmConstant_PortsUnchanged_AsRDFormsDeclaresIt()
     {
-        Assert.HasCount(191, MSForms.Constants);
-        Assert.AreEqual("1", MSForms.ConstantOf("fmBorderStyleSingle"));
-        Assert.AreEqual("-1", MSForms.ConstantOf("fmOrientationAuto"));
-        Assert.AreEqual("99", MSForms.ConstantOf("fmMousePointerCustom"));
-        Assert.IsNull(MSForms.ConstantOf("vbChecked"));
+        Assert.IsEmpty(MSForms.Constants);
+        Assert.IsNull(MSForms.ConstantOf("fmBorderStyleSingle"));
+        Assert.IsNull(MSForms.ConstantOf("fmMousePointerCustom"));
         Assert.IsEmpty(VB6.Constants);
         Assert.IsNull(VB6.ConstantOf("vbChecked"));
     }
+
+    [TestMethod]
+    public void AMembersOwnConstants_StillConvertWithItsValues()
+        => Assert.AreEqual("1", MSForms.MemberOf("TextBox", "TextAlign")?.Value?.Constants["fmTextAlignRight"]);
 
     // Names compare as VBA compares them
 
@@ -602,7 +620,7 @@ public sealed class FormsPortMapTests
         Assert.AreEqual("RDForms.TextBox", MSForms.ProgIdOf("forms.textbox.1"));
         Assert.AreEqual("RDForms.TextBox", VB6.ProgIdOf("vb.TEXTBOX"));
         Assert.AreEqual("Form", MSForms.HandlerObjectOf("userform"));
-        Assert.AreEqual("2", MSForms.ConstantOf("FMSPECIALEFFECTSUNKEN"));
+        Assert.AreEqual("RDForms.fmSpecialEffect", MSForms.TypeOf("FMSPECIALEFFECT")?.RDFormsName);
         Assert.AreEqual("2", MSForms.MemberOf("TextBox", "TextAlign")?.Value?.Constants["FMTEXTALIGNCENTER"]);
     }
 

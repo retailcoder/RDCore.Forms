@@ -173,12 +173,14 @@ A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(con
 |Stacking|Under the controls already in its container, windowed or windowless.|
 |Order|`FormDefinition.Controls` holds the controls of the form's file depth first, then those added, in the order added, whatever their container.|
 |Events|An added control raises its events to the window's sink as the form's other controls do. Adding one raises no event of the form.|
+|Renaming|On an RDForms form, a program's assignment of `Name` renames a control it added ([`FormDefinition.RenameControl`](../api/RDCore.Forms.Model.FormDefinition.yml)), as Microsoft Forms 2.0 does: to any name, one taken, one that is not a legal name, or "". The control is then found by its new name only. A control of the form's file, or an element of a control array, keeps its name.|
 |Removal|Only a control added at run time, with the controls it holds, and not an element of a control array. The other `TabIndex` values close up. A control that had the focus gives it to the first control of the tab order that takes it (RDForms' own).|
 
 |Error|When|
 |---|---|
 |711|No VB class has the ProgID.|
 |720|The class is a menu's or a form's.|
+|382|The `Name` assigned is that of a control of the form's file, or of an element of a control array: *Could not set the Name property. Can not set property at runtime.*|
 |721|The container holds no controls, such as a CommandButton, or not that class: a page outside a MultiPage, or another control in one.|
 |727|The name is taken.|
 |728|The name is empty, or white space only.|
@@ -224,10 +226,9 @@ Some properties are set only by a designer and a form's file. A running VB6 prog
 |Read only|Form and MDIForm: `StartUpPosition`. Form: `ShowInTaskbar`, `MaxButton`, `MinButton`. CommandButton, CheckBox, OptionButton and ComboBox: `Style`. TextBox: `MultiLine`, `ScrollBars`. ListBox and FileListBox: `MultiSelect`. ListBox and ComboBox: `IntegralHeight`. Menu: `WindowList`.|
 |Neither read nor set|Menu: `Shortcut`. Timer: `Left`, `Top`. Data: `Negotiate`.|
 
-The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../api/RDCore.Forms.Model.ComponentClass.yml) and `IsNotAvailableAtRunTime`. A Timer's `Left` and `Top` are the same definitions as other controls', and only the Timer makes them unavailable.
+On an RDForms form, a program sets the ones Microsoft Forms 2.0 lets it set: a TextBox's `MultiLine` and `ScrollBars`, a ListBox's `MultiSelect` and `IntegralHeight`, and a ComboBox's `Style`. A Visual Basic 6.0 form, which RDForms renders as its file describes it, keeps VB6's rule for all of them.
 
-> [!NOTE]
-> **Not implemented.** The runtime does not refuse a program's read or assignment of these properties with 393 or 382.
+The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../api/RDCore.Forms.Model.ComponentClass.yml) on an RDForms form, `IsReadOnlyAtRunTimeOnAVisualBasic6Form` on a Visual Basic 6.0 form, and `IsNotAvailableAtRunTime`. A Timer's `Left` and `Top` are the same definitions as other controls', and only the Timer makes them unavailable. The runtime that runs the program refuses an assignment with 382 and a read with 393, by the rule of the form's kind.
 
 ## UI Automation
 

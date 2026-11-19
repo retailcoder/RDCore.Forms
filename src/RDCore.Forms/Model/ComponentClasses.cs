@@ -131,7 +131,8 @@ public static class ComponentClasses
          P.CausesValidation, P.ControlSource],
         [KeyDown, KeyPress, KeyUp, Change, Click, DblClick, GotFocus, LostFocus, MouseDown, MouseMove, MouseUp, Validate, BeforeUpdate,
          AfterUpdate, BeforeDragOver, BeforeDropOrPaste, Error],
-        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground), (P.BorderStyle, BorderStyle.FixedSingle)));
+        Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground), (P.BorderStyle, BorderStyle.FixedSingle)),
+        writableOnAnRDFormsForm: [P.MultiLine, P.ScrollBars]);
 
     /// <summary>
     /// <c>RDForms.Label</c>, windowless. Its background is opaque by default. Its <c>Picture</c> and <c>PicturePosition</c> are an RD-VBA
@@ -183,7 +184,8 @@ public static class ComponentClasses
          AfterUpdate, BeforeDragOver, BeforeDropOrPaste, Error],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
         methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.Selected, M.ListIndex, M.ListCount, M.NewIndex, M.SelCount,
-            M.ListText]);
+            M.ListText],
+        writableOnAnRDFormsForm: [P.MultiSelect, P.IntegralHeight]);
 
     /// <summary>
     /// <c>RDForms.ComboBox</c>. Its colors default to the window's. A program reaches its items through the list members of a ListBox
@@ -196,7 +198,8 @@ public static class ComponentClasses
         [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, Validate, BeforeUpdate, AfterUpdate,
          BeforeDragOver, BeforeDropOrPaste, Error],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
-        methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.ListIndex, M.ListCount, M.NewIndex, M.ListText]);
+        methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.ListIndex, M.ListCount, M.NewIndex, M.ListText],
+        writableOnAnRDFormsForm: [P.ComboBoxStyle]);
 
     /// <summary>
     /// <c>RDForms.DriveListBox</c>: the drives, one of which is its <c>Drive</c>. It raises no Click and no mouse events. Its colours
@@ -406,13 +409,13 @@ public static class ComponentClasses
     // methods follow the ones every control has.
     private static ComponentClass Control(string typeName, string defaultName, PropertyDefinition[] properties, EventDefinition[] events,
         IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null, bool isContainer = false, bool isWindowless = false,
-        MethodDefinition[]? methods = null) =>
+        MethodDefinition[]? methods = null, PropertyDefinition[]? writableOnAnRDFormsForm = null) =>
         new(typeName, defaultName, ComponentKind.Control,
             [.. properties, P.Left, P.Top, P.Width, P.Height, P.Visible, P.Opacity, P.Tag,
              .. events.Contains(MouseUp) ? [P.ContextMenu] : Array.Empty<PropertyDefinition>()],
             events, defaults, isContainer, isWindowless,
             methods: [M.Move, M.Refresh, .. events.Contains(GotFocus) ? [M.SetFocus] : Array.Empty<MethodDefinition>(), M.ZOrder, .. methods ?? []],
-            defaultMember: DefaultMembers.GetValueOrDefault(typeName));
+            defaultMember: DefaultMembers.GetValueOrDefault(typeName), writableAtRunTimeOnAnRDFormsForm: writableOnAnRDFormsForm);
 
     private static Dictionary<PropertyDefinition, object?> Defaults(params (PropertyDefinition Property, object? Value)[] defaults) =>
         defaults.ToDictionary(d => d.Property, d => d.Value);

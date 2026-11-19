@@ -15,19 +15,24 @@ public static class RunTime
     /// <param name="component">The component assigned.</param>
     /// <param name="property">The property assigned.</param>
     /// <param name="value">The value, of the property's type; an extent is in pixels.</param>
+    /// <param name="onAVisualBasic6Form">
+    /// Whether the component is on a Visual Basic 6.0 form, rendered with VB's library, where more properties are read-only at run time
+    /// (<see cref="ComponentClass.IsReadOnlyAtRunTimeOnAVisualBasic6Form"/>); <see langword="false"/> for an RDForms form.
+    /// </param>
     /// <exception cref="ArgumentException">The component's class does not have <paramref name="property"/>.</exception>
     /// <exception cref="FormErrorException">
-    /// 382 for a property a program cannot set (<see cref="ComponentClass.IsReadOnlyAtRunTime"/>); 380 for a value the property cannot
+    /// 382 for a property a program cannot set (<see cref="ComponentClass.IsReadOnlyAtRunTime"/>, and on a Visual Basic 6.0 form
+    /// <see cref="ComponentClass.IsReadOnlyAtRunTimeOnAVisualBasic6Form"/>); 380 for a value the property cannot
     /// hold; 387 for an extent of an aligned control that its alignment fixes (<see cref="AlignLayout.Refusal"/>); a menu item's
     /// errors for its <c>Caption</c>, <c>Checked</c>, <c>Enabled</c> and <c>Visible</c> (<see cref="FormMenuItem"/>).
     /// </exception>
-    public static void Assign(ComponentInstance component, PropertyDefinition property, object? value)
+    public static void Assign(ComponentInstance component, PropertyDefinition property, object? value, bool onAVisualBasic6Form = true)
     {
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(property);
         if (!component.Class.Has(property))
             throw new ArgumentException($"{component.Class.ClassName} has no property {property.Name}.", nameof(property));
-        if (component.Class.IsReadOnlyAtRunTime(property))
+        if (onAVisualBasic6Form ? component.Class.IsReadOnlyAtRunTimeOnAVisualBasic6Form(property) : component.Class.IsReadOnlyAtRunTime(property))
             throw new FormErrorException(FormError.SetNotSupportedAtRuntime);
         if (!property.Accepts(value))
             throw new FormErrorException(FormError.InvalidPropertyValue);

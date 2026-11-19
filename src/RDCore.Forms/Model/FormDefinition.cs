@@ -271,6 +271,31 @@ public sealed class FormDefinition
     }
 
     /// <summary>
+    /// Renames a control, as a program's assignment of its <c>Name</c> does on an RDForms form. Microsoft Forms 2.0 lets a program rename a control it
+    /// added (<see cref="AddControl(ComponentClass, string, ComponentInstance?)"/>), and no other.
+    /// </summary>
+    /// <param name="control">The control.</param>
+    /// <param name="name">Its new name. Any name, as Microsoft Forms 2.0 takes it: one taken, one that is not a legal control name, or none.</param>
+    /// <exception cref="FormErrorException">
+    /// The control is not one of the form's: 730, Control not found. It is one of the form's file, or an element of a control array: 382, "Could not set the
+    /// Name property. Can not set property at runtime.", as Microsoft Forms 2.0 says it. Its name stays.
+    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="control"/> or <paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// The control is then found by its new name, not by its old one.
+    /// </remarks>
+    public void RenameControl(ComponentInstance control, string name)
+    {
+        ArgumentNullException.ThrowIfNull(control);
+        ArgumentNullException.ThrowIfNull(name);
+        if (!Root.Descendants().Contains(control))
+            throw new FormErrorException(FormError.ControlNotFound(control.Name));
+        if (!added.Contains(control) || control.Index is not null)
+            throw new FormErrorException(FormError.PropertyNotSetAtRuntime("Name"));
+        control.Rename(name);
+    }
+
+    /// <summary>
     /// Removes the control that has a name, as a program's <c>Controls.Remove</c> does with a name.
     /// </summary>
     /// <param name="name">The control's name, compared without regard to case.</param>

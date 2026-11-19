@@ -128,7 +128,7 @@ The handlers of an MSForms form and its controls take these names and parameters
 |`DblClick(ByVal Cancel As MSForms.ReturnBoolean)`|`DblClick(Cancel As Boolean)`.|
 |`KeyPress(ByVal KeyAscii As MSForms.ReturnInteger)`, and KeyDown's and KeyUp's `KeyCode`|`KeyAscii As Integer`, `KeyCode As Integer`.|
 |MouseDown, MouseMove and MouseUp, `X` and `Y` in points|The same, `X` and `Y` in twips (20 to a point), and a form's own in its scale.|
-|BeforeDragOver, BeforeDropOrPaste and Error|The same, with `RDForms.DataObject`, `RDForms.ReturnEffect`, `RDForms.DragState` and `RDForms.Action`, and ByRef values for the Return* wrappers.|
+|BeforeDragOver, BeforeDropOrPaste and Error|The same, with `RDForms.DataObject`, `RDForms.ReturnEffect`, `RDForms.fmDragState` and `RDForms.fmAction`, and ByRef values for the Return* wrappers.|
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

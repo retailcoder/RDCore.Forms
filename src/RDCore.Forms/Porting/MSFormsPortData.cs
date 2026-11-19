@@ -1,4 +1,4 @@
-using System.Globalization;
+using RDCore.Forms.Libraries;
 using static RDCore.Forms.Porting.PortUnit;
 
 namespace RDCore.Forms.Porting;
@@ -37,8 +37,8 @@ internal static class MSFormsPortData
             ("Forms.ScrollBar.1", ScrollBars.Vertical),
         ],
         handlerObjects: [("UserForm", "Form")],
-        constants: MSFormsEnums.All.SelectMany(e => e.Members)
-            .Select(m => (m.Name, m.Value.ToString(CultureInfo.InvariantCulture))),
+        // RDForms declares MSForms' enumerations, so their constants port unchanged.
+        constants: [],
         formWindowClass: "ThunderDFrame");
 
     private static TypePort[] Types() =>
@@ -49,8 +49,12 @@ internal static class MSFormsPortData
         new(Library, "Font", "RDForms.Font", TypePortKind.Class),
         new(Library, "ScrollBar", "RDForms." + Extender, TypePortKind.Class, ScrollBars, PortDiagnostic.ScrollBarReference()),
         .. ReturnWrappers.Select(r => new TypePort(Library, r.Wrapper, r.Type, TypePortKind.Parameter)),
-        .. MSFormsEnums.All.Select(e => new TypePort(Library, e.Name, "RDForms." + e.Name[2..], TypePortKind.Enum)),
+        .. Enumerations().Select(name => new TypePort(Library, name, "RDForms." + name, TypePortKind.Enum)),
     ];
+
+    // The enumerations of FM20's type library, which RDForms declares by their names.
+    private static IEnumerable<string> Enumerations() =>
+        RDFormsLibraries.Instance.TryGet(RDFormsLibraries.MSForms, out var fm20) ? fm20.Enums.Select(declared => declared.Name) : [];
 
     private static MemberPort[] Members() =>
     [
@@ -169,7 +173,7 @@ internal static class MSFormsPortData
         PortDiagnostic? note = null) =>
         new(legacyClass, name, rdformsName ?? name, PortSignatures.Parse(parameters, RDFormsType), coordinates, note);
 
-    // A Return* wrapper is its value's type, unwrapped; MSForms' other classes and its enums take the RDForms library.
+    // A Return* wrapper is its value's type, unwrapped; MSForms' other classes and its enums are RDForms' of their names.
     private static (string Type, bool UnwrapsValue) RDFormsType(string legacyType)
     {
         if (!legacyType.StartsWith(Library + ".", StringComparison.Ordinal))
@@ -186,6 +190,6 @@ internal static class MSFormsPortData
             }
         }
 
-        return (name.StartsWith("fm", StringComparison.Ordinal) ? "RDForms." + name[2..] : "RDForms." + name, false);
+        return ("RDForms." + name, false);
     }
 }

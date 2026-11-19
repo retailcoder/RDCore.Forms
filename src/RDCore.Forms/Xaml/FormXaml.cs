@@ -107,6 +107,48 @@ public static class FormXaml
     }
 
     /// <summary>
+    /// Finds where a document's text names a component: the value of the <c>Name</c> attribute of each component of that name, such as
+    /// the ranges a rename of a control replaces.
+    /// </summary>
+    /// <param name="document">The document's text.</param>
+    /// <param name="name">The component's name, matched ignoring case.</param>
+    /// <returns>
+    /// The ranges, in the document's order: one for each component of the form that <see cref="Read"/> reads with that name, the root
+    /// and menu items included, and each element of a control array, which all have the array's name. None where the document holds
+    /// no form.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="document"/> or <paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// A range covers the attribute's value as the text writes it, between its quotes, character references included. A name kept as
+    /// text is not found: a component the model cannot hold (an <see cref="UnmodelledComponent"/>), a property kept as an
+    /// <see cref="UnmodelledProperty"/>, a tab of a <c>TabStrip</c>, or a comment.
+    /// </remarks>
+    public static IReadOnlyList<FormXamlNameRange> NameRangesOf(string document, string name)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(name);
+        var ranges = new List<FormXamlNameRange>();
+        XDocument loaded;
+        try
+        {
+            using var reader = XmlReader.Create(new StringReader(document), ReaderSettings);
+            loaded = XDocument.Load(reader, LoadOptions.SetLineInfo | LoadOptions.PreserveWhitespace);
+        }
+        catch (XmlException)
+        {
+            return ranges;
+        }
+
+        var lines = FormXamlText.LineStarts(document);
+        new FormXamlReader(new FormXamlDiagnosticBag(), attribute =>
+        {
+            if (string.Equals(attribute.Value, name, StringComparison.OrdinalIgnoreCase) && FormXamlText.ValueRange(document, lines, attribute) is { } range)
+                ranges.Add(range);
+        }).Read(loaded.Root!);
+        return ranges;
+    }
+
+    /// <summary>
     /// Writes a form as a document.
     /// </summary>
     /// <param name="form">The form.</param>

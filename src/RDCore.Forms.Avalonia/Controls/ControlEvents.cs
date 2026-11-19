@@ -117,7 +117,7 @@ internal static class ControlEvents
             if (!second || dblClick == DblClick.AfterMouseDown)
                 RaiseMouse(control, e, Events.MouseDown, inScale);
             if (second)
-                RDFormsControl.Raise(control, Events.DblClick);
+                RDFormsControl.Raise(control, Events.DblClick, FormValue.FromBoolean(false));
         }, handledEventsToo: true);
         InputElement.PointerReleasedEvent.AddClassHandler<T>((control, e) => RaiseMouse(control, e, Events.MouseUp, inScale),
             handledEventsToo: true);
