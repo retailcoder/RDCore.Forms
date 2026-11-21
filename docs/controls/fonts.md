@@ -2,6 +2,10 @@
 
 A component holds its `Font` at the size VB6 draws it at, [`FormFont.AtDrawnSize`](../api/RDCore.Forms.Model.FormFont.yml), and that size is the one its `Size` reads back. A font from a form's file, from a designer and from code is held the same way. The sizes below were measured with VB6, native and p-code agreeing.
 
+## The font object
+
+A control's `Font` on an RDForms form is one object that is both a `stdole.StdFont` and an `RDForms.Font`, as a UserForm control's is a `StdFont` and an MSForms `Font` in Excel. `TypeOf` is True for either type, a variable of either type takes the font, and it is the same object either way. `TypeName` gives `StdFont`, as in VB6, through a variable of any type; MSForms gives `IFont`.
+
 ## Size
 
 A font is drawn at a whole number of pixels, 96 to an inch, so its size is a multiple of 0.75 points.

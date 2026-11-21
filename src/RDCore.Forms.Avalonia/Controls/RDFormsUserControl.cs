@@ -10,7 +10,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 
 /// <summary>
 /// A placed UserControl: a control that shows a component of a class <see cref="UserControlClasses.Of"/> made, with its own copy of
-/// that class's UserControl, and holds the controls placed in it.
+/// that class's UserControl (its <see cref="UserControlSite"/>'s), and holds the controls placed in it.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -56,7 +56,7 @@ public sealed class RDFormsUserControl : Control, IRDFormsContainer
         if (!instance.Class.HasExtent)
             throw new ArgumentException($"{instance.Class.TypeName} is invisible at run time.", nameof(instance));
 
-        UserControl = definition.Copy();
+        UserControl = UserControlSite.Of(instance).UserControl;
         var panel = new Panel();
         making ??= new(ReferenceEqualityComparer.Instance);
         if (making.Add(definition))
@@ -83,7 +83,7 @@ public sealed class RDFormsUserControl : Control, IRDFormsContainer
     }
 
     /// <summary>
-    /// The placed control's own copy of its class's UserControl.
+    /// The placed control's own copy of its class's UserControl: its <see cref="UserControlSite.UserControl"/>.
     /// </summary>
     public FormDefinition UserControl { get; }
 

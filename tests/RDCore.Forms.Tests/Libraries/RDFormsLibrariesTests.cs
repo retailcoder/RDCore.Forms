@@ -576,6 +576,23 @@ public sealed class RDFormsLibrariesTests
         Assert.IsTrue(form.Members.Any(member => member.Name == "Show"));
     }
 
+    // One font object serves as VB's Font, a stdole.StdFont, and as MSForms', an RDForms.Font: an RDForms.Font is a stdole.StdFont as well, with stdole
+    // listed after RDForms.
+    [TestMethod]
+    public void AFont_IsAStdFont_AsWell()
+    {
+        var stdole = new LibraryDescription { Name = "stdole", Classes = [new ClassDescription { Name = "StdFont" }] };
+
+        var symbols = new LibrarySymbolReader(new Uri("file:///c:/ws/")).Read([RDForms(), stdole]).OfType<VBClassModuleSymbol>().ToArray();
+        var font = symbols.Single(declared => declared.Name == "Font");
+        var stdFont = symbols.Single(declared => declared.Name == "StdFont");
+
+        CollectionAssert.AreEqual(new[] { "stdole.StdFont" }, RDForms().Classes.Single(declared => declared.Name == "Font").Implements.ToArray());
+        Assert.IsTrue(font.ImplementedInterfaces.Any(implemented => implemented.Uri.AbsoluteUri == stdFont.Uri.AbsoluteUri));
+        Assert.IsFalse(symbols.Where(declared => declared.Name != "Font").Any(declared => declared.ImplementedInterfaces.Any(implemented => implemented.Name == "StdFont")),
+            "only the font is a stdole.StdFont");
+    }
+
     // Every type a member or an event of RDForms names: an intrinsic type, a type of RDForms, a type of VB or of MSForms qualified with its
     // library, or a type of another library they depend on, qualified with it.
     [TestMethod]

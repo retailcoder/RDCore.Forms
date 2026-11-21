@@ -152,6 +152,44 @@ public static partial class VB6FormReader
     [GeneratedRegex("""^"\{(?<id>[0-9A-Fa-f-]{36})\}#(?<version>[^#"]*)#[^"]*"\s*;\s*"(?<file>[^"]*)"$""")]
     private static partial Regex LibraryReference();
 
+    // A Font bag's fields, in any case and any order; a field the bag leaves out keeps the default font's.
+    internal static FormFont? ReadFont(DesignerBag bag)
+    {
+        var font = FormFont.Default;
+        foreach (var field in bag.Properties)
+        {
+            var value = ValueLiteral.Parse(field.Value);
+            switch (field.Name.ToLowerInvariant(), value)
+            {
+                case ("name", ValueLiteral.Text text):
+                    font = font with { Name = text.Value };
+                    break;
+                case ("size", ValueLiteral.Number { Value: > 0 and <= float.MaxValue } size):
+                    font = font with { Size = size.Value };
+                    break;
+                case ("charset", ValueLiteral.Number { IsIntegral: true, Value: >= 0 and <= 255 } charset):
+                    font = font with { Charset = (int)charset.Value };
+                    break;
+                case ("weight", ValueLiteral.Number { IsIntegral: true, Value: >= 0 and <= 1000 } weight):
+                    font = font with { Weight = (int)weight.Value };
+                    break;
+                case ("underline", ValueLiteral.Number underline):
+                    font = font with { Underline = underline.Value != 0 };
+                    break;
+                case ("italic", ValueLiteral.Number italic):
+                    font = font with { Italic = italic.Value != 0 };
+                    break;
+                case ("strikethrough", ValueLiteral.Number strikethrough):
+                    font = font with { Strikethrough = strikethrough.Value != 0 };
+                    break;
+                default:
+                    return null;
+            }
+        }
+
+        return font;
+    }
+
     private sealed class Importer(DiagnosticBag diagnostics, Func<string, (Companion? Companion, string LookedFor)> companions,
         IReadOnlyList<ComponentClass> projectClasses)
     {
@@ -402,44 +440,6 @@ public static partial class VB6FormReader
             }
 
             return hasFontBag;
-        }
-
-        // A Font bag's fields, in any case and any order; a field the bag leaves out keeps the default font's.
-        private static FormFont? ReadFont(DesignerBag bag)
-        {
-            var font = FormFont.Default;
-            foreach (var field in bag.Properties)
-            {
-                var value = ValueLiteral.Parse(field.Value);
-                switch (field.Name.ToLowerInvariant(), value)
-                {
-                    case ("name", ValueLiteral.Text text):
-                        font = font with { Name = text.Value };
-                        break;
-                    case ("size", ValueLiteral.Number { Value: > 0 and <= float.MaxValue } size):
-                        font = font with { Size = size.Value };
-                        break;
-                    case ("charset", ValueLiteral.Number { IsIntegral: true, Value: >= 0 and <= 255 } charset):
-                        font = font with { Charset = (int)charset.Value };
-                        break;
-                    case ("weight", ValueLiteral.Number { IsIntegral: true, Value: >= 0 and <= 1000 } weight):
-                        font = font with { Weight = (int)weight.Value };
-                        break;
-                    case ("underline", ValueLiteral.Number underline):
-                        font = font with { Underline = underline.Value != 0 };
-                        break;
-                    case ("italic", ValueLiteral.Number italic):
-                        font = font with { Italic = italic.Value != 0 };
-                        break;
-                    case ("strikethrough", ValueLiteral.Number strikethrough):
-                        font = font with { Strikethrough = strikethrough.Value != 0 };
-                        break;
-                    default:
-                        return null;
-                }
-            }
-
-            return font;
         }
 
         private void SetFromText(ComponentInstance instance, PropertyDefinition definition, DesignerProperty property, string component)

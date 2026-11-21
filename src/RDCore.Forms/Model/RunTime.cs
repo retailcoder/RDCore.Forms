@@ -10,7 +10,7 @@ public static class RunTime
 {
     /// <summary>
     /// A running program's assignment of <paramref name="value"/> to <paramref name="property"/> on <paramref name="component"/>:
-    /// refused with VB's error where VB6 refuses it, otherwise set.
+    /// refused with VB's error where VB6 refuses it, dropped where VB6 drops it (<see cref="Drops"/>), otherwise set.
     /// </summary>
     /// <param name="component">The component assigned.</param>
     /// <param name="property">The property assigned.</param>
@@ -38,9 +38,31 @@ public static class RunTime
             throw new FormErrorException(FormError.InvalidPropertyValue);
         if (AlignLayout.Refusal(component, property) is { } refused)
             throw new FormErrorException(refused);
+        if (Drops(component, property))
+            return;
         if (ReferenceEquals(component.Class, ComponentClasses.Menu) && AssignToMenu(FormMenuItem.Of(component), property, value))
             return;
         component.TrySet(property, value);
+    }
+
+    /// <summary>
+    /// Whether VB6 drops a running program's assignment to <paramref name="property"/> on <paramref name="component"/> as it stands: it raises
+    /// no error, and the property keeps the value it had. A transparent Label's <c>BackColor</c> is dropped, and making the label opaque
+    /// later shows the colour it had. A form's file sets it all the same.
+    /// </summary>
+    /// <param name="component">The component assigned.</param>
+    /// <param name="property">The property assigned.</param>
+    /// <returns><see langword="true"/> when the assignment is dropped.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="component"/> or <paramref name="property"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// <see cref="Assign"/> drops it once the value is checked. A host that assigns through its own checks asks this before it sets the value.
+    /// </remarks>
+    public static bool Drops(ComponentInstance component, PropertyDefinition property)
+    {
+        ArgumentNullException.ThrowIfNull(component);
+        ArgumentNullException.ThrowIfNull(property);
+        return ReferenceEquals(property, P.BackColor) && ReferenceEquals(component.Class, ComponentClasses.Label)
+            && component.Get(P.BackStyle) == BackStyle.Transparent;
     }
 
     private static bool AssignToMenu(FormMenuItem item, PropertyDefinition property, object? value)

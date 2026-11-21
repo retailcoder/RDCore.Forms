@@ -213,13 +213,25 @@ public sealed class RDFormsLibraries : ILibrarySource
                 members[at] = let with { Description = NameLetDescription };
 
         var described = head ?? new ClassDescription();
-        return described with { Name = name, DefaultInterface = null, IsDefaultInterfaceHidden = false, Members = [.. members], Events = [.. events] };
+        return described with
+        {
+            Name = name,
+            DefaultInterface = null,
+            IsDefaultInterfaceHidden = false,
+            Implements = AlsoIs(name),
+            Members = [.. members],
+            Events = [.. events],
+        };
     }
 
     private const string NameMember = "Name";
 
     private const string NameLetDescription =
         "Renames a control that a program added with Controls.Add. A control of the form's file keeps its name: assigning it is error 382.";
+
+    // The classes an object of an RDForms class is as well. A control's font is one object for VB's Font, a stdole.StdFont, and for MSForms', an RDForms.Font.
+    private static ImmutableArray<string> AlsoIs(string name) =>
+        string.Equals(name, "Font", StringComparison.OrdinalIgnoreCase) ? ["stdole.StdFont"] : [];
 
     private static bool IsCreated(string msformsClass) => FormsPortMap.MSForms.ProgIdOf($"Forms.{msformsClass}.1") is not null;
 
