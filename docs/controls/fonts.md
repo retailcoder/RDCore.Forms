@@ -4,7 +4,7 @@ A component holds its `Font` at the size VB6 draws it at, [`FormFont.AtDrawnSize
 
 ## The font object
 
-A control's `Font` on an RDForms form is one object that is both a `stdole.StdFont` and an `RDForms.Font`, as a UserForm control's is a `StdFont` and an MSForms `Font` in Excel. `TypeOf` is True for either type, a variable of either type takes the font, and it is the same object either way. `TypeName` gives `StdFont`, as in VB6, through a variable of any type; MSForms gives `IFont`.
+A control's `Font` on an RDForms form is one object that is both a `stdole.StdFont` and an `RDForms.Font`, as a UserForm control's is a `StdFont` and an MSForms `Font` in Excel. `TypeOf` is True for either type, a variable of either type takes the font, and it is the same object either way. `TypeName` gives `Font` through a variable of any type, as VB6 and Excel give for a `StdFont`; MSForms gives `IFont` for a UserForm control's font.
 
 ## Size
 
