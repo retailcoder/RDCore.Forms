@@ -100,7 +100,8 @@ public sealed class ComponentClassTests
     {
         var withoutExtent = ComponentClasses.All.Where(c => c.Kind == ComponentKind.Control && !c.Has(Properties.Height)).ToArray();
 
-        CollectionAssert.AreEquivalent(new[] { ComponentClasses.Timer, ComponentClasses.Line, ComponentClasses.Page, ComponentClasses.ImageList }, withoutExtent);
+        CollectionAssert.AreEquivalent(
+            new[] { ComponentClasses.Timer, ComponentClasses.Line, ComponentClasses.Page, ComponentClasses.ImageList }, withoutExtent);
         Assert.IsTrue(ComponentClasses.Timer.Has(Properties.Left));
         Assert.IsTrue(ComponentClasses.ImageList.Has(Properties.Left));
         Assert.IsFalse(ComponentClasses.ImageList.HasExtent);
@@ -137,7 +138,8 @@ public sealed class ComponentClassTests
         CollectionAssert.AreEquivalent(buttons.Append(ComponentClasses.UserControl).Append(ComponentClasses.ImageList).ToArray(),
             ComponentClasses.All.Where(c => c.Has(Properties.MaskColor)).ToArray());
         Assert.AreEqual(FormColor.FromSystem(SystemColor.ButtonFace), ComponentClasses.UserControl.DefaultOf(Properties.MaskColor));
-        CollectionAssert.AreEquivalent(buttons.Append(ComponentClasses.ImageList).ToArray(), ComponentClasses.All.Where(c => c.Has(Properties.UseMaskColor)).ToArray());
+        CollectionAssert.AreEquivalent(
+            buttons.Append(ComponentClasses.ImageList).ToArray(), ComponentClasses.All.Where(c => c.Has(Properties.UseMaskColor)).ToArray());
         Assert.IsTrue(buttons.All(c => c.DefaultOf(Properties.MaskColor) == FormColor.FromRgb(0xC0, 0xC0, 0xC0) && !c.DefaultOf(Properties.UseMaskColor)));
         Assert.AreEqual(FormColor.FromRgb(0xC0, 0xC0, 0xC0), ComponentClasses.ImageList.DefaultOf(Properties.MaskColor));
         Assert.IsTrue(ComponentClasses.ImageList.DefaultOf(Properties.UseMaskColor));

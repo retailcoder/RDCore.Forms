@@ -46,7 +46,11 @@ public sealed class VB6ImageListTests
         [$"         NumListImages   =   {count}", .. listImages.SelectMany(l => l)];
 
     private static string[] ListImage(int number, params string[] fields) =>
-        [$"         BeginProperty ListImage{number} {{2C247F27-8591-11D1-B16A-00C0F0283628}} ", .. fields.Select(f => "            " + f), "         EndProperty"];
+        [
+            $"         BeginProperty ListImage{number} {{2C247F27-8591-11D1-B16A-00C0F0283628}} ",
+            .. fields.Select(f => "            " + f),
+            "         EndProperty",
+        ];
 
     // A ListImage's picture record: the length of the rest, StdPicture's CLSID, "lt\0\0", the image's length, the image.
     private static byte[] ObjectPicture(byte[] image) =>
