@@ -21,6 +21,9 @@
     <EmbeddedResource Include="Libraries/VB.json" LogicalName="RDCore.Forms.Libraries.VB.json" />
     <!-- rdc export-library's description of MSCOMCTL.OCX (the Windows Common Controls 6.0), as exported. -->
     <EmbeddedResource Include="Libraries/MSComctlLib.json" LogicalName="RDCore.Forms.Libraries.MSComctlLib.json" />
+    <!-- rdc export-library's description of FM20.DLL (MSForms 2.0), as RDCore's Symbols folder has it; the RDForms library takes the
+         members of its MSForms-ported classes and its enums from it. -->
+    <EmbeddedResource Include="Libraries/MSForms.json" LogicalName="RDCore.Forms.Libraries.MSForms.json" />
   </ItemGroup>
 
 </Project>

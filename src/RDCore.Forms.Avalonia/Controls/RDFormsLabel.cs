@@ -2,6 +2,7 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
@@ -60,6 +61,9 @@ public sealed class RDFormsLabel : Control
         ComponentBinding.Bind(this, instance, ComponentClasses.Label, Apply);
     }
 
+    /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => new RDFormsControlAutomationPeer(this, AutomationControlType.Text);
+
     /// <summary>
     /// The text the label draws, its access key marker taken out where it has one.
     /// </summary>
@@ -90,11 +94,11 @@ public sealed class RDFormsLabel : Control
                 edge.Edge = RDFormsEdge.Of(instance.Get(P.BorderStyle), instance.Get(P.Appearance));
                 break;
             case nameof(P.BackColor) or nameof(P.BackStyle):
-                background = instance.Get(P.BackStyle) == BackStyle.Opaque ? FormPalette.ToBrush(instance.Get(P.BackColor)) : Brushes.Transparent;
+                background = instance.Get(P.BackStyle) == BackStyle.Opaque ? ComponentBinding.Brush(this, instance.Get(P.BackColor)) : Brushes.Transparent;
                 InvalidateVisual();
                 break;
             case nameof(P.ForeColor):
-                SetValue(TextElement.ForegroundProperty, FormPalette.ToBrush(instance.Get(P.ForeColor)));
+                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(this, instance.Get(P.ForeColor)));
                 break;
             case nameof(P.Picture):
                 picture.Take((byte[]?)e.After);

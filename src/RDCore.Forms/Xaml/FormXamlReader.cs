@@ -7,8 +7,9 @@ using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Xaml;
 
-// Reads a loaded document into the model, reporting what it keeps as text.
-internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
+// Reads a loaded document into the model, reporting what it keeps as text. `named` is called with the Name attribute of each component
+// the model holds, in the document's order.
+internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics, Action<XAttribute>? named = null)
 {
     private static readonly XNamespace Ns = FormXaml.Namespace;
 
@@ -34,6 +35,7 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
         }
 
         var instance = new ComponentInstance(rootClass, name);
+        named?.Invoke(root.Attribute("Name")!);
         form = new FormDefinition(instance);
         ReadVersion(root, instance);
         ReadComponent(root, instance, depth: 1);
@@ -183,6 +185,7 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics)
         if (!ReferenceEquals(container, instance))
             diagnostics.Add(K.MisplacedComponent, LineOf(child), name, instance.Name, container.Name);
         component.SetContainer(container);
+        named?.Invoke(child.Attribute("Name")!);
         return component;
     }
 

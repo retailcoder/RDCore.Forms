@@ -57,6 +57,16 @@ public sealed class FormErrorTests
     }
 
     [TestMethod]
+    public void Error382Named_NamesTheProperty_InEitherLanguage()
+    {
+        Assert.AreEqual("Could not set the Name property. Can not set property at runtime.",
+            InCulture("en-CA", () => FormError.PropertyNotSetAtRuntime("Name").Description));
+        Assert.AreEqual("Impossible de définir la propriété Name. Impossible de définir la propriété au moment de l'exécution.",
+            InCulture("fr-CA", () => FormError.PropertyNotSetAtRuntime("Name").Description));
+        Assert.AreEqual(382, FormError.PropertyNotSetAtRuntime("Name").Number);
+    }
+
+    [TestMethod]
     public void Error383Named_NamesTheProperty_InEitherLanguage()
     {
         Assert.AreEqual("'ListCount' property is read-only", InCulture("en-CA", () => FormError.PropertyIsReadOnly("ListCount").Description));

@@ -25,5 +25,13 @@ public static class Headless
     public static void Run(Action test) => session.Value.Dispatch(test, CancellationToken.None).GetAwaiter().GetResult();
 
     public static T Run<T>(Func<T> test) => session.Value.Dispatch(test, CancellationToken.None).GetAwaiter().GetResult();
+
+    // What a task a test has seen complete gave, as the dialog tests read what a dialog's ShowAsync answered. A task that has not completed
+    // fails the test, rather than waiting on the thread that would complete it.
+    public static T ResultOf<T>(Task<T> completed)
+    {
+        Assert.IsTrue(completed.IsCompleted, "the task has not completed");
+        return completed.GetAwaiter().GetResult();
+    }
 #pragma warning restore VSTHRD002
 }

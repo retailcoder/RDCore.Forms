@@ -2,6 +2,7 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
@@ -81,6 +82,9 @@ public sealed class RDFormsPictureBox : Control, IRDFormsContainer, IRaisesKeyEv
     }
 
     /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => new RDFormsControlAutomationPeer(this, AutomationControlType.Image);
+
+    /// <inheritdoc/>
     public Canvas ChildHost { get; } = new();
 
     /// <summary>
@@ -124,11 +128,11 @@ public sealed class RDFormsPictureBox : Control, IRDFormsContainer, IRaisesKeyEv
                     FitToPicture();
                 break;
             case nameof(P.BackColor):
-                background = ComponentBinding.Brush(e.After);
+                background = ComponentBinding.Brush(this, e.After);
                 InvalidateVisual();
                 break;
             case nameof(P.ForeColor):
-                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(e.After));
+                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(this, e.After));
                 break;
             case nameof(P.Picture):
                 if (picture.Take((byte[]?)e.After))

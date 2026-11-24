@@ -325,7 +325,7 @@ public sealed class FormEventTests
         });
 
         Expect.Lines(["Form1.MouseDown(Integer 1, Integer 0, Single 4500, Single 150)", "Form1.MouseUp(Integer 1, Integer 0, Single 4500, Single 150)",
-            "Form1.Click", "Form1.DblClick", "Form1.MouseUp(Integer 1, Integer 0, Single 4500, Single 150)"], raised);
+            "Form1.Click", "Form1.DblClick(Boolean False)", "Form1.MouseUp(Integer 1, Integer 0, Single 4500, Single 150)"], raised);
     }
 
     [TestMethod]

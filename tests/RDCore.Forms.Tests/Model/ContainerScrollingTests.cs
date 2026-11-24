@@ -1,4 +1,4 @@
-using System.Globalization;
+using RDCore.Forms.Libraries;
 using RDCore.Forms.Model;
 using RDCore.Forms.Porting;
 using P = RDCore.Forms.Model.Properties;
@@ -48,11 +48,12 @@ public sealed class ContainerScrollingTests
     }
 
     [TestMethod]
-    public void ATextBoxsScrollBars_StayItsOwn_ReadOnlyAtRunTime()
+    public void ATextBoxsScrollBars_StayItsOwn_ReadOnlyAtRunTimeOnAVisualBasic6Form()
     {
         Assert.IsTrue(ComponentClasses.TextBox.Has(P.ScrollBars));
         Assert.IsFalse(ComponentClasses.TextBox.Has(P.ContainerScrollBars));
-        Assert.IsTrue(ComponentClasses.TextBox.IsReadOnlyAtRunTime(P.ScrollBars));
+        Assert.IsTrue(ComponentClasses.TextBox.IsReadOnlyAtRunTimeOnAVisualBasic6Form(P.ScrollBars));
+        Assert.IsFalse(ComponentClasses.TextBox.IsReadOnlyAtRunTime(P.ScrollBars));
         Assert.IsFalse(ComponentClasses.Form.Has(P.ScrollBars));
     }
 
@@ -67,17 +68,19 @@ public sealed class ContainerScrollingTests
         Assert.IsNotNull(ported);
         Assert.AreEqual("Scroll", Events.ContainerScroll.Name);
         Assert.AreEqual(
-            string.Join(", ", ported.Parameters.Select(p => $"{p.Name} As {p.RDFormsType.Replace("RDForms.", "")}")),
+            string.Join(", ", ported.Parameters.Select(p => $"{p.Name} As {p.RDFormsType}")),
             string.Join(", ", Events.ContainerScroll.Parameters.Select(p => $"{p.Name} As {p.TypeName}")));
     }
 
     [TestMethod]
-    public void AScrollAction_HasTheValueOfItsMSFormsConstant()
+    public void AScrollAction_HasTheValueOfItsConstantInRDForms_AsMSFormsNamesIt()
     {
+        Assert.IsTrue(RDFormsLibraries.Instance.TryGet(RDFormsLibraries.RDForms, out var rdforms));
+        var constants = rdforms.Enums.Single(declared => declared.Name == "fmScrollAction").Members.ToDictionary(member => member.Name, member => member.Value);
         foreach (var action in Enum.GetValues<ScrollAction>())
         {
             var name = action == ScrollAction.AbsoluteChange ? "_fmScrollActionAbsoluteChange" : "fmScrollAction" + action;
-            Assert.AreEqual(((int)action).ToString(CultureInfo.InvariantCulture), FormsPortMap.MSForms.ConstantOf(name), name);
+            Assert.AreEqual((long)(int)action, constants[name], name);
         }
     }
 }

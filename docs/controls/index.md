@@ -71,9 +71,24 @@ using RDCore.Forms.Avalonia;
 RDFormsApplication.Configure().UsePlatformDetect().StartWithClassicDesktopLifetime(args);
 ```
 
+`Configure(name)` names the application, which the platform shows where it names one, such as the application menu of macOS. An application its host does not name is `RDForms`.
+
 A host that has an Avalonia application of its own keeps it.
 
 The window follows the root's `Caption`, `Icon`, `Width`, `Height`, `MaxButton`, `MinButton` and `ShowInTaskbar`, and a user who resizes it sets the root's `Width` and `Height`. An `Icon` is an icon or a cursor; setting it to any other picture is 380. A window with no `Icon` shows the window system's own. The client area shows the root's `Picture` at its size from its top left corner, under the drawing and the controls (see [Pictures](containers.md#pictures)). A `StartUpPosition` of CenterOwner or CenterScreen centres it; Manual and Windows Default leave its place to the window system. The root raises its own events, Resize, Activate, QueryUnload, Unload and its mouse and key events among them: see [Form events](form-events.md).
+
+## Theme
+
+A form is shown in the light theme variant, whatever the application's theme, as VB6 shows a form in Windows' light colours. RD-VBA's `App.KeepSystemTheme` set to True shows it in the application's theme variant instead, and follows that variant as it changes. The host gives each window it makes its value, as [`RDFormsFormWindow.KeepSystemTheme`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml). Each window has its own value, and a change of it draws the form again in its new variant.
+
+|What is drawn|Light variant|Dark variant|
+|---|---|---|
+|A system colour: a `BackColor` or `ForeColor`, a button's face, an edge, the menu bar|Windows 11's default palette, on every platform|WinUI 3's dark theme ([`FormPalette`](../api/RDCore.Forms.Avalonia.Controls.FormPalette.yml))|
+|`Highlight`|#0078D7|#0078D7|
+|A colour set as RGB|As set|As set|
+|The theme's own parts, such as a TextBox's caret or a scroll bar|The theme's light variant|The theme's dark variant|
+
+What a drawing statement drew keeps its pixels when the variant changes. A system `MaskColor` is the light palette's under both variants: it names a colour of the picture.
 
 ## Placement
 
@@ -130,7 +145,7 @@ A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(con
 |---|---|
 |`Visible`, `Enabled`|Hide or disable the control, and every control it holds. A disabled form takes no input in any of its controls.|
 |`Opacity`|RD-VBA addition. How solid the control is drawn: a Single from 0, not seen, to 1, solid, which is the default. See [Opacity](#opacity).|
-|`BackColor`, `ForeColor`|A system colour is drawn in Windows 11's default palette ([`FormPalette`](../api/RDCore.Forms.Avalonia.Controls.FormPalette.yml)), on every platform.|
+|`BackColor`, `ForeColor`|A system colour is drawn in the palette of the form's theme variant: Windows 11's default palette, on every platform, unless the form keeps the system's theme (see [Theme](#theme)).|
 |`Font`|The control's font, held at the size VB6 draws it at: see [Fonts](fonts.md).|
 |`ToolTipText`|Shown as the control's tooltip; an empty text shows none.|
 |`MousePointer`|The pointer over the control. Custom, drawn from `MouseIcon` in VB6, shows the arrow.|
@@ -160,12 +175,14 @@ A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(con
 |Stacking|Under the controls already in its container, windowed or windowless.|
 |Order|`FormDefinition.Controls` holds the controls of the form's file depth first, then those added, in the order added, whatever their container.|
 |Events|An added control raises its events to the window's sink as the form's other controls do. Adding one raises no event of the form.|
+|Renaming|On an RDForms form, a program's assignment of `Name` renames a control it added ([`FormDefinition.RenameControl`](../api/RDCore.Forms.Model.FormDefinition.yml)), as Microsoft Forms 2.0 does: to any name, one taken, one that is not a legal name, or "". The control is then found by its new name only. A control of the form's file, or an element of a control array, keeps its name.|
 |Removal|Only a control added at run time, with the controls it holds, and not an element of a control array. The other `TabIndex` values close up. A control that had the focus gives it to the first control of the tab order that takes it (RDForms' own).|
 
 |Error|When|
 |---|---|
 |711|No VB class has the ProgID.|
 |720|The class is a menu's or a form's.|
+|382|The `Name` assigned is that of a control of the form's file, or of an element of a control array: *Could not set the Name property. Can not set property at runtime.*|
 |721|The container holds no controls, such as a CommandButton, or not that class: a page outside a MultiPage, or another control in one.|
 |727|The name is taken.|
 |728|The name is empty, or white space only.|
@@ -211,10 +228,22 @@ Some properties are set only by a designer and a form's file. A running VB6 prog
 |Read only|Form and MDIForm: `StartUpPosition`. Form: `ShowInTaskbar`, `MaxButton`, `MinButton`. CommandButton, CheckBox, OptionButton and ComboBox: `Style`. TextBox: `MultiLine`, `ScrollBars`. ListBox and FileListBox: `MultiSelect`. ListBox and ComboBox: `IntegralHeight`. Menu: `WindowList`.|
 |Neither read nor set|Menu: `Shortcut`. Timer and ImageList: `Left`, `Top`. Data: `Negotiate`.|
 
-The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../api/RDCore.Forms.Model.ComponentClass.yml) and `IsNotAvailableAtRunTime`. A Timer's `Left` and `Top` are the same definitions as other controls', and only the Timer and the ImageList make them unavailable.
+On an RDForms form, a program sets the ones Microsoft Forms 2.0 lets it set: a TextBox's `MultiLine` and `ScrollBars`, a ListBox's `MultiSelect` and `IntegralHeight`, and a ComboBox's `Style`. A Visual Basic 6.0 form, which RDForms renders as its file describes it, keeps VB6's rule for all of them.
 
-> [!NOTE]
-> **Not implemented.** The runtime does not refuse a program's read or assignment of these properties with 393 or 382.
+The model answers for each class with [`ComponentClass.IsReadOnlyAtRunTime`](../api/RDCore.Forms.Model.ComponentClass.yml) on an RDForms form, `IsReadOnlyAtRunTimeOnAVisualBasic6Form` on a Visual Basic 6.0 form, and `IsNotAvailableAtRunTime`. A Timer's `Left` and `Top` are the same definitions as other controls', and only the Timer and the ImageList make them unavailable. The runtime that runs the program refuses an assignment with 382 and a read with 393, by the rule of the form's kind.
+
+## UI Automation
+
+A screen reader or a test tool sees each control as the Win32 control VB6 draws for it, and uses it through the same patterns.
+
+|Control|UI Automation|
+|---|---|
+|Label|Text, named by its caption.|
+|Frame|Group, named by its caption.|
+|PictureBox, Image|Image.|
+|ListBox, DirListBox and FileListBox items|SelectionItem. Selecting an item raises the Click a mouse pick raises, once for each change. Selecting the item already selected raises none.|
+|ComboBox, DriveListBox|ExpandCollapse. Expanding drops the list and leaves the focus where it is: no item or control takes it, and no Validate, LostFocus or GotFocus is raised. A ComboBox raises DropDown, as it does whenever its list drops. Collapsing gives the focus to no control. A disabled one refuses both.|
+|The button of a ComboBox or a DriveListBox|Named "Open" in the user's language ("Ouvrir" in French).|
 
 ## Errors
 

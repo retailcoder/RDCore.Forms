@@ -56,6 +56,9 @@ public sealed class ComponentInstance
         }
     }
 
+    // A program's rename of a control it added, which takes any name, an empty one too (FormDefinition.RenameControl).
+    internal void Rename(string newName) => name = newName;
+
     /// <summary>
     /// The instance's index in its control array, or <see langword="null"/> when it is not in one.
     /// </summary>

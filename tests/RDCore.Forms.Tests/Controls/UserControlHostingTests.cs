@@ -77,6 +77,23 @@ public sealed class UserControlHostingTests
     }
 
     [TestMethod]
+    public void APlacedUserControl_ShowsItsSitesCopy()
+    {
+        var showsTheSites = UI.Run(() =>
+        {
+            var type = UserControlClasses.Of(new FormDefinition(UserControl()), "Project1");
+            var root = Form();
+            var gauge1 = Add(root, type, "Gauge1", 20, 30, 120, 80);
+            var window = Show(root);
+            var result = ReferenceEquals(((RDFormsUserControl)window.View.ControlOf(gauge1)!).UserControl, UserControlSite.Of(gauge1).UserControl);
+            window.Close();
+            return result;
+        });
+
+        Assert.IsTrue(showsTheSites);
+    }
+
+    [TestMethod]
     public void ItsUserControlsRoot_TakesThePlacedControlsSize()
     {
         var sizes = UI.Run(() =>

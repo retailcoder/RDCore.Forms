@@ -165,7 +165,7 @@ public sealed class FileListControlTests
         Assert.AreEqual("C.TXT", fileName);
         Assert.AreEqual(0, index);
         Expect.Lines(new[] { "C.TXT" }, items);
-        Expect.Lines(new[] { "File1.PatternChange", "File1.DblClick" }, raised);
+        Expect.Lines(new[] { "File1.PatternChange", "File1.DblClick(Boolean False)" }, raised);
     }
 
     [TestMethod]
@@ -218,7 +218,7 @@ public sealed class FileListControlTests
         Assert.AreEqual(In("SubOne"), path);
         Assert.AreEqual("x.bas", fileName);
         Assert.AreEqual(0, index);
-        Expect.Lines(new[] { "File1.PathChange", "File1.PatternChange", "File1.DblClick" }, raised);
+        Expect.Lines(new[] { "File1.PathChange", "File1.PatternChange", "File1.DblClick(Boolean False)" }, raised);
     }
 
     [TestMethod]
@@ -310,7 +310,7 @@ public sealed class FileListControlTests
         Assert.AreEqual(0, index);
         Assert.AreEqual("noext", fileName);
         Assert.IsFalse(selected);
-        Expect.Lines(new[] { "File1.PatternChange", "File1.DblClick" }, raised);
+        Expect.Lines(new[] { "File1.PatternChange", "File1.DblClick(Boolean False)" }, raised);
     }
 
     [TestMethod]

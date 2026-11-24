@@ -101,6 +101,9 @@ jobs:
          grep -q "id=\"$dep\"" <<< "$nuspec" || { echo "::error::The package does not depend on $dep."; exit 1; }
        done
        ! grep -q 'id="RDCore.Forms' <<< "$nuspec" || { echo "::error::The package depends on an RDCore.Forms package."; exit 1; }
+       # the page nuget.org shows: README.md at the package's root, which the nuspec names.
+       unzip -Z1 "packages/RDCore.Forms.$v.nupkg" | grep -qx 'README.md' || { echo "::error::The package has no README.md at its root."; exit 1; }
+       grep -q '<readme>README.md</readme>' <<< "$nuspec" || { echo "::error::The nuspec names no README.md."; exit 1; }
 
    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
      with:

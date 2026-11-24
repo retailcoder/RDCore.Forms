@@ -2,6 +2,7 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
@@ -62,6 +63,9 @@ public sealed class RDFormsFrame : Control, IRDFormsContainer
         LogicalChildren.Add(panel);
     }
 
+    /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => new RDFormsControlAutomationPeer(this, AutomationControlType.Group);
+
     /// <summary>
     /// The scroll viewer the controls it holds are in: its offset is the Frame's <c>ScrollLeft</c> and <c>ScrollTop</c>.
     /// </summary>
@@ -91,12 +95,12 @@ public sealed class RDFormsFrame : Control, IRDFormsContainer
                 caption.IsVisible = text.Length > 0;
                 break;
             case nameof(P.BackColor):
-                background = ComponentBinding.Brush(e.After);
+                background = ComponentBinding.Brush(this, e.After);
                 caption.Background = background;
                 InvalidateVisual();
                 break;
             case nameof(P.ForeColor):
-                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(e.After));
+                SetValue(TextElement.ForegroundProperty, ComponentBinding.Brush(this, e.After));
                 break;
             default:
                 ComponentBinding.ApplyCommon(this, e.Property, e.After);

@@ -1,4 +1,7 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia.Automation;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -160,6 +163,118 @@ public sealed class MenuBarTests
         Expect.Lines(["mnuSub.Click"], nested);
         Assert.IsEmpty(closed);
         Expect.Lines(["mnuLeaf.Click"], chosen);
+    }
+
+    private static AutomationPeer PeerOf(RDFormsFormWindow window, string name) => ControlAutomationPeer.CreatePeerForElement(Item(window, name));
+
+    // The patterns a Win32 menu's items have: an item that holds items expands and collapses, on the bar or in a menu; one that holds
+    // none, on the bar or in a menu, is invoked and toggled.
+    [TestMethod]
+    [DataRow("mnuTop", true)]
+    [DataRow("mnuSub", true)]
+    [DataRow("mnuSolo", false)]
+    [DataRow("mnuLeaf", false)]
+    public void AMenuItem_HasTheUIAutomationPatternsOfAWin32MenuItem(string name, bool holdsItems)
+    {
+        var patterns = UI.Run(() =>
+        {
+            var window = Open(Probe(), new RecordingSink());
+            var peer = PeerOf(window, name);
+            var result = (peer.GetProvider<IExpandCollapseProvider>() is not null, peer.GetProvider<IInvokeProvider>() is not null,
+                peer.GetProvider<IToggleProvider>() is not null, peer.GetAutomationControlType());
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual((holdsItems, !holdsItems, !holdsItems, AutomationControlType.MenuItem), patterns);
+    }
+
+    // As with the pointer: expanding a menu raises its Click as it opens, invoking a leaf raises its own and closes the menus, and
+    // collapsing the bar's menu closes it with no Click.
+    [TestMethod]
+    public void UIAutomation_ExpandsAMenu_InvokesALeaf_AndCollapses_RaisingTheClicksAPointerDoes()
+    {
+        var (opened, nested, states, chosen, closedAfterChoosing, collapsed) = UI.Run(() =>
+        {
+            var sink = new RecordingSink();
+            var window = Open(Probe(), sink);
+            var top = PeerOf(window, "mnuTop").GetProvider<IExpandCollapseProvider>()!;
+            top.Expand();
+            Dispatcher.UIThread.RunJobs();
+            var first = Clicks(sink);
+            sink.Raised.Clear();
+            var sub = PeerOf(window, "mnuSub").GetProvider<IExpandCollapseProvider>()!;
+            sub.Expand();
+            Dispatcher.UIThread.RunJobs();
+            var second = Clicks(sink);
+            sink.Raised.Clear();
+            var expanded = (top.ExpandCollapseState, sub.ExpandCollapseState);
+            PeerOf(window, "mnuLeaf").GetProvider<IInvokeProvider>()!.Invoke();
+            Dispatcher.UIThread.RunJobs();
+            var third = Clicks(sink);
+            var closed = (Item(window, "mnuTop").IsSubMenuOpen, window.MenuBar.IsOpen);
+            top.Expand();
+            Dispatcher.UIThread.RunJobs();
+            sink.Raised.Clear();
+            top.Collapse();
+            Dispatcher.UIThread.RunJobs();
+            var fourth = (Clicks(sink), top.ExpandCollapseState, window.MenuBar.IsOpen);
+            window.Close();
+            return (first, second, expanded, third, closed, fourth);
+        });
+
+        Expect.Lines(["mnuTop.Click"], opened);
+        Expect.Lines(["mnuSub.Click"], nested);
+        Assert.AreEqual((ExpandCollapseState.Expanded, ExpandCollapseState.Expanded), states);
+        Expect.Lines(["mnuLeaf.Click"], chosen);
+        Assert.AreEqual((false, false), closedAfterChoosing);
+        Assert.IsEmpty(collapsed.Item1);
+        Assert.AreEqual((ExpandCollapseState.Collapsed, false), (collapsed.Item2, collapsed.Item3));
+    }
+
+    // Toggling an item chooses it, as a click does: the program's Checked has the last word, and CheckOnClick ticks it before its Click.
+    // A disabled item refuses every pattern, as a Win32 one does.
+    [TestMethod]
+    public void UIAutomation_TogglesAnItemByChoosingIt_AndADisabledItemRefuses()
+    {
+        var (states, raised, refused) = UI.Run(() =>
+        {
+            var sink = new RecordingSink();
+            var window = Open(Probe(), sink);
+            var alpha = PeerOf(window, "mnuA").GetProvider<IToggleProvider>()!;
+            alpha.Toggle();
+            Dispatcher.UIThread.RunJobs();
+            var untouched = alpha.ToggleState;
+            Model(window, "mnuA").CheckOnClick = true;
+            alpha.Toggle();
+            Dispatcher.UIThread.RunJobs();
+            var ticked = alpha.ToggleState;
+            var clicks = Clicks(sink);
+            var dis = PeerOf(window, "mnuDis");
+            var refusals = new List<string>();
+            foreach (var (pattern, use) in new (string, Action)[]
+                     {
+                         ("Invoke", () => dis.GetProvider<IInvokeProvider>()!.Invoke()),
+                         ("Toggle", () => dis.GetProvider<IToggleProvider>()!.Toggle()),
+                     })
+            {
+                try
+                {
+                    use();
+                }
+                catch (ElementNotEnabledException)
+                {
+                    refusals.Add(pattern);
+                }
+            }
+            var result = ((untouched, ticked), clicks, refusals);
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual((ToggleState.Off, ToggleState.On), states);
+        Expect.Lines(["mnuA.Click", "mnuA.Click"], raised);
+        Expect.Lines(["Invoke", "Toggle"], refused);
     }
 
     [TestMethod]

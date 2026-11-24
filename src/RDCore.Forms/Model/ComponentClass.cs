@@ -37,6 +37,7 @@ public sealed class ComponentClass
     private readonly Dictionary<string, MethodDefinition> methodsByName;
     private readonly Dictionary<PropertyDefinition, object?> defaults;
     private readonly HashSet<PropertyDefinition> notAvailable;
+    private readonly HashSet<PropertyDefinition> writableOnAnRDFormsForm;
 
     /// <summary>
     /// Creates a component class.
@@ -69,17 +70,23 @@ public sealed class ComponentClass
     /// Whether a running program reads and sets an instance's <c>Container</c>, as <see cref="HasContainer"/>: ignored for a class that
     /// is not a control's. A Timer has none.
     /// </param>
+    /// <param name="writableAtRunTimeOnAnRDFormsForm">
+    /// The properties that VB's class makes read-only at run time and Microsoft Forms 2.0's class lets a program set: a program sets them on
+    /// an instance of this class on an RDForms form, such as a TextBox's <c>MultiLine</c>. None where it is <see langword="null"/>.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// <paramref name="typeName"/> or <paramref name="defaultName"/> is empty or white space; two properties, two events or two methods share a
     /// name; a default is given for a property the class does not have, or is not a value the property can hold;
-    /// <paramref name="notAvailableAtRunTime"/> names a property the class does not have; or <paramref name="defaultMember"/> is empty
+    /// <paramref name="notAvailableAtRunTime"/> names a property the class does not have; <paramref name="writableAtRunTimeOnAnRDFormsForm"/>
+    /// names one it does not have, or one whose definition is not read-only at run time; or <paramref name="defaultMember"/> is empty
     /// or white space.
     /// </exception>
     public ComponentClass(string typeName, string defaultName, ComponentKind kind,
         IReadOnlyList<PropertyDefinition> properties, IReadOnlyList<EventDefinition> events,
         IReadOnlyDictionary<PropertyDefinition, object?>? defaults = null,
         bool isContainer = false, bool isWindowless = false, bool hasExtent = true, IReadOnlyList<MethodDefinition>? methods = null,
-        IReadOnlyList<PropertyDefinition>? notAvailableAtRunTime = null, string? defaultMember = null, bool hasContainer = true)
+        IReadOnlyList<PropertyDefinition>? notAvailableAtRunTime = null, string? defaultMember = null, bool hasContainer = true,
+        IReadOnlyList<PropertyDefinition>? writableAtRunTimeOnAnRDFormsForm = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(typeName);
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultName);
@@ -134,6 +141,14 @@ public sealed class ComponentClass
             if (!Has(property))
                 throw new ArgumentException($"{typeName} has no property {property.Name} to make unavailable at run time.", nameof(notAvailableAtRunTime));
             notAvailable.Add(property);
+        }
+
+        writableOnAnRDFormsForm = new(ReferenceEqualityComparer.Instance);
+        foreach (var property in writableAtRunTimeOnAnRDFormsForm ?? [])
+        {
+            if (!Has(property) || !property.ReadOnlyAtRunTime)
+                throw new ArgumentException($"{typeName} has no property {property.Name} that is read-only at run time.", nameof(writableAtRunTimeOnAnRDFormsForm));
+            writableOnAnRDFormsForm.Add(property);
         }
     }
 
@@ -263,14 +278,29 @@ public sealed class ComponentClass
     public bool IsNotAvailableAtRunTime(PropertyDefinition property) => property.NotAvailableAtRunTime || notAvailable.Contains(property);
 
     /// <summary>
-    /// Whether a program cannot set <paramref name="property"/> on an instance of this class: VB's 382 on an assignment.
+    /// Whether a program cannot set <paramref name="property"/> on an instance of this class on an RDForms form: VB's 382 on an
+    /// assignment.
     /// </summary>
     /// <param name="property">The property definition.</param>
     /// <returns>
-    /// <see langword="true"/> when the property is <see cref="PropertyDefinition.ReadOnlyAtRunTime"/>, or is not available at run time
+    /// <see langword="true"/> when the property is <see cref="PropertyDefinition.ReadOnlyAtRunTime"/> and the class does not make it
+    /// writable on an RDForms form, as Microsoft Forms 2.0's class has it writable; or when it is not available at run time
     /// (<see cref="IsNotAvailableAtRunTime"/>).
     /// </returns>
-    public bool IsReadOnlyAtRunTime(PropertyDefinition property) => property.ReadOnlyAtRunTime || IsNotAvailableAtRunTime(property);
+    public bool IsReadOnlyAtRunTime(PropertyDefinition property) =>
+        property.ReadOnlyAtRunTime && !writableOnAnRDFormsForm.Contains(property) || IsNotAvailableAtRunTime(property);
+
+    /// <summary>
+    /// Whether a program cannot set <paramref name="property"/> on an instance of this class on a Visual Basic 6.0 form, which RDForms
+    /// renders as its file describes it, with VB's library: VB's 382 on an assignment.
+    /// </summary>
+    /// <param name="property">The property definition.</param>
+    /// <returns>
+    /// <see langword="true"/> when the property is <see cref="PropertyDefinition.ReadOnlyAtRunTime"/>, as VB's class has it, or is not
+    /// available at run time (<see cref="IsNotAvailableAtRunTime"/>).
+    /// </returns>
+    public bool IsReadOnlyAtRunTimeOnAVisualBasic6Form(PropertyDefinition property) =>
+        property.ReadOnlyAtRunTime || IsNotAvailableAtRunTime(property);
 
     /// <summary>
     /// The class's type name.

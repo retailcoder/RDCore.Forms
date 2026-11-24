@@ -127,6 +127,9 @@ Recherche de l'objet dont le ProgID est : {0}</value>
   <data name="Error740" xml:space="preserve">
     <value>Controls.Remove ne peut supprimer que les conteneurs dont les contrôles ont été ajoutés avec Controls.Add. « {0} » n'a pas été ajouté avec Controls.Add.</value>
   </data>
+  <data name="Error382Named" xml:space="preserve">
+    <value>Impossible de définir la propriété {0}. Impossible de définir la propriété au moment de l'exécution.</value>
+  </data>
   <data name="Error383Named" xml:space="preserve">
     <value>La propriété « {0} » est en lecture seule</value>
   </data>

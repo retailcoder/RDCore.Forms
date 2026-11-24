@@ -2,6 +2,8 @@
 
 An RDForms document holds one form as a constrained XAML dialect: XML whose elements are the form's components, named for their classes, and whose attributes are the properties they set. [`FormXaml`](../api/RDCore.Forms.Xaml.FormXaml.yml) reads a document into the model and writes the model as a document.
 
+In a project, a form is two files of one base name in one folder: its code, `Form1.rdform`, which keeps its `Attribute VB_*` lines, and its document, `Form1.xaml`. [`FormXamlDocumentReader`](../api/RDCore.Forms.Xaml.FormXamlDocumentReader.yml) reads the document for the platform, which declares the form's controls to its code.
+
 ```xml
 <Form FormatVersion="1" Name="Form1" Caption="Orders" Width="320" Height="240" xmlns="https://rubberduckvba.ca/schemas/rdforms">
   <Form.Font>

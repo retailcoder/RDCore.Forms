@@ -86,6 +86,22 @@ public sealed class FormFontTests
         Assert.AreEqual(new FormFont("MS Sans Serif", 8.25), FormFont.FromStdFont(std));
     }
 
+    // As in VB6: MS Sans Serif set to 14 points is drawn at 13.5, and named Arial then is drawn from the 14 points set, at 14.25, as
+    // when it was never drawn. A draw that kept the 13.5 it drew would draw Arial at 13.5.
+    [TestMethod]
+    public void TheFontAStdFontHolds_IsAtTheSizeItIsDrawnAt_AndLeavesTheSizeANewNameSnapsFrom()
+    {
+        var std = new StdFontObject();
+        Assert.AreEqual(StdFontFailure.None, std.TrySetName("MS Sans Serif"));
+        Assert.AreEqual(StdFontFailure.None, std.TrySetSize(14m));
+
+        var drawn = FormFont.FromStdFont(std);
+        Assert.AreEqual(StdFontFailure.None, std.TrySetName("Arial"));
+
+        Assert.AreEqual("13.5, 14.25", $"{drawn.Size.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
+            $"{std.Size.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+    }
+
     [TestMethod]
     public void AFont_MakesTheStdFontThatHoldsIt_AndIsTheFontThatStdFontHolds()
     {

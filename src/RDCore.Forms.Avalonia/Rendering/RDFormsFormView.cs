@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Model;
@@ -71,6 +72,7 @@ public sealed class RDFormsFormView : Canvas
     private readonly List<ComponentInstance> shown = [];
     private readonly RDFormsPicture.Holder picture = new();
     private readonly PictureLayer pictureLayer = new() { ZIndex = int.MinValue };
+    private bool keepSystemTheme;
 
     /// <summary>
     /// Creates the client area of a form.
@@ -107,6 +109,7 @@ public sealed class RDFormsFormView : Canvas
         form.ControlAdded += (_, e) => Added(e);
         form.ControlRemoved += (_, e) => Removed(e);
         form.ContainerChanged += (_, e) => Moved(e);
+        SetValue(ThemeVariantScope.ActualThemeVariantProperty, ThemeVariant.Light);
         ComponentBinding.Bind(this, form.Root, form.Root.Class, Apply);
         AddHandler(KeyDownEvent, OnKeyDown);
     }
@@ -120,6 +123,29 @@ public sealed class RDFormsFormView : Canvas
     /// The surface the form's drawing statements draw on, under its controls.
     /// </summary>
     public RDFormsDrawingLayer Drawing { get; }
+
+    /// <summary>
+    /// Whether the view keeps the theme variant of what it is in.
+    /// </summary>
+    /// <remarks>
+    /// <see langword="false"/>, the default, shows the form in the light theme variant, whatever the variant around it.
+    /// <see langword="true"/> shows it in the variant of what it is in: its window's, or the application's where nothing between them sets one.
+    /// The form's system colours are drawn in the view's variant, with <see cref="FormPalette"/>'s palette for it, and drawn again as
+    /// it changes. A form's window sets it from its own <see cref="RDFormsFormWindow.KeepSystemTheme"/>, and a UserControl's view is
+    /// <see langword="true"/>, in its container's variant.
+    /// </remarks>
+    public bool KeepSystemTheme
+    {
+        get => keepSystemTheme;
+        set
+        {
+            keepSystemTheme = value;
+            if (value)
+                ClearValue(ThemeVariantScope.ActualThemeVariantProperty);
+            else
+                SetValue(ThemeVariantScope.ActualThemeVariantProperty, ThemeVariant.Light);
+        }
+    }
 
     /// <summary>
     /// The error the root's <c>Picture</c> was refused with, <see cref="FormError.InvalidPicture"/>, or <see langword="null"/> where
@@ -235,7 +261,7 @@ public sealed class RDFormsFormView : Canvas
             case nameof(P.BackColor) or nameof(P.BackStyle):
                 Background = Form.Root.Class.Has(P.BackStyle) && Form.Root.Get(P.BackStyle) == BackStyle.Transparent
                     ? null
-                    : ComponentBinding.Brush(Form.Root.Get(P.BackColor));
+                    : ComponentBinding.Brush(this, Form.Root.Get(P.BackColor));
                 break;
             case nameof(P.Picture):
                 if (picture.Take((byte[]?)e.After))

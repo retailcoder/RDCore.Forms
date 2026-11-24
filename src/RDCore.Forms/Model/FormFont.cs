@@ -92,12 +92,16 @@ public readonly record struct FormFont(
     /// Makes the font a <c>stdole.StdFont</c> holds, as a VB6 control takes one for its <c>Font</c>.
     /// </summary>
     /// <param name="font">The <c>stdole.StdFont</c>.</param>
-    /// <returns>The font, at the size the <see cref="StdFontObject"/> reads back, and named where it is.</returns>
+    /// <returns>The font, at the size the <see cref="StdFontObject"/> is drawn at, and named where it is.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="font"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// The size is read as <see cref="StdFontObject.SizeAsDrawn"/>, so the <see cref="StdFontObject"/> keeps the size a later name snaps
+    /// from: drawing a font changes none of its values, as in VB6.
+    /// </remarks>
     public static FormFont FromStdFont(StdFontObject font)
     {
         ArgumentNullException.ThrowIfNull(font);
-        return new FormFont(font.Name, (double)font.Size, font.Weight, font.Italic, font.Underline, font.Strikethrough, font.Charset,
+        return new FormFont(font.Name, (double)font.SizeAsDrawn, font.Weight, font.Italic, font.Underline, font.Strikethrough, font.Charset,
             font.IsNamed);
     }
 

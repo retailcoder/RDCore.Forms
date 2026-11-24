@@ -2,6 +2,7 @@
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Rendering;
@@ -55,6 +56,9 @@ public sealed class RDFormsImage : Control, ICustomHitTest
         LogicalChildren.Add(edge);
         ComponentBinding.Bind(this, instance, ComponentClasses.Image, Apply);
     }
+
+    /// <inheritdoc/>
+    protected override AutomationPeer OnCreateAutomationPeer() => new RDFormsControlAutomationPeer(this, AutomationControlType.Image);
 
     /// <summary>
     /// The edge its border is drawn with.

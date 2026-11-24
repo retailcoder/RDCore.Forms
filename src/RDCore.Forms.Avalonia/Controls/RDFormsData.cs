@@ -42,8 +42,9 @@ public sealed class RDFormsData : Control
 
     private string caption = "";
     private Appearance appearance = Appearance.ThreeD;
-    private IBrush back = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.Window));
-    private IBrush fore = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.WindowText));
+    // Its BackColor and ForeColor, which the binding gives it as it is made.
+    private IBrush back = Brushes.Transparent;
+    private IBrush fore = Brushes.Transparent;
     private FormFont font = FormFont.Default;
 
     /// <summary>
@@ -123,7 +124,7 @@ public sealed class RDFormsData : Control
     }
 
     // A push button's face and raised edge, then its glyph in the button text's colour.
-    private static void Button(DrawingContext context, Rect parts, int index, double x, double centre)
+    private void Button(DrawingContext context, Rect parts, int index, double x, double centre)
     {
         var face = new Rect(x, parts.Y, ButtonWidth, parts.Height);
         context.FillRectangle(Brush(SystemColor.ButtonFace), face);
@@ -157,7 +158,7 @@ public sealed class RDFormsData : Control
     }
 
     // One pixel ring around a rectangle: its top and left in one colour, then its bottom and right in another over them.
-    private static void Ring(DrawingContext context, Rect r, SystemColor topLeft, SystemColor bottomRight)
+    private void Ring(DrawingContext context, Rect r, SystemColor topLeft, SystemColor bottomRight)
     {
         if (r.Width <= 0 || r.Height <= 0)
             return;
@@ -169,7 +170,7 @@ public sealed class RDFormsData : Control
         context.FillRectangle(dark, new Rect(r.Right - 1, r.Y, 1, r.Height));
     }
 
-    private static IBrush Brush(SystemColor color) => FormPalette.ToBrush(FormColor.FromSystem(color));
+    private IBrush Brush(SystemColor color) => ComponentBinding.Brush(this, color);
 
     private void Apply(ComponentPropertyChangedEventArgs e)
     {
@@ -182,10 +183,10 @@ public sealed class RDFormsData : Control
                 appearance = (Appearance)e.After!;
                 break;
             case nameof(P.BackColor):
-                back = ComponentBinding.Brush(e.After);
+                back = ComponentBinding.Brush(this, e.After);
                 break;
             case nameof(P.ForeColor):
-                fore = ComponentBinding.Brush(e.After);
+                fore = ComponentBinding.Brush(this, e.After);
                 break;
             case nameof(P.Font):
                 font = (FormFont)e.After!;

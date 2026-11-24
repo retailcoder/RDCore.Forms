@@ -102,19 +102,19 @@ public sealed class RDFormsShape : Control
                 figure = (ShapeType)e.After!;
                 break;
             case nameof(P.BackColor):
-                back = ComponentBinding.Brush(e.After);
+                back = ComponentBinding.Brush(this, e.After);
                 break;
             case nameof(P.BackStyle):
                 opaque = (BackStyle)e.After! == BackStyle.Opaque;
                 break;
             case nameof(P.FillColor):
-                fill = ComponentBinding.Brush(e.After);
+                fill = ComponentBinding.Brush(this, e.After);
                 break;
             case nameof(P.FillStyle):
                 fillStyle = (FillStyle)e.After!;
                 break;
             case nameof(P.BorderColor):
-                border = ComponentBinding.Brush(e.After);
+                border = ComponentBinding.Brush(this, e.After);
                 break;
             // A Shape's BorderStyle is the ShapeBorderStyle property, named BorderStyle as in VB.
             case nameof(P.BorderStyle):

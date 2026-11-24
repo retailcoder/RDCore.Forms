@@ -118,6 +118,16 @@ public readonly record struct FormError(int Number, string Description)
     public static FormError SetNotSupportedAtRuntime => Standard(382);
 
     /// <summary>
+    /// Error 382, "Could not set the <paramref name="name"/> property. Can not set property at runtime.": the description Microsoft Forms 2.0 gives an
+    /// assignment of a property a program cannot set while it runs, such as the <c>Name</c> of a control of the form's file.
+    /// </summary>
+    /// <param name="name">The property's name.</param>
+    /// <returns>The error.</returns>
+    public static FormError PropertyNotSetAtRuntime(string name) =>
+        new(382, string.Format(CultureInfo.CurrentUICulture,
+            Descriptions.GetString("Error382Named", CultureInfo.CurrentUICulture) ?? "Could not set the {0} property. Can not set property at runtime.", name));
+
+    /// <summary>
     /// Error 383, "Set not supported (read-only property)".
     /// </summary>
     public static FormError SetNotSupportedReadOnly => Standard(383);

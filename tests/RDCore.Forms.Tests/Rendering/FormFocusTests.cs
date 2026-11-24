@@ -31,9 +31,9 @@ public sealed class FormFocusTests
         return root;
     }
 
-    private static RDFormsFormWindow Open(ComponentInstance root, RecordingSink sink)
+    private static RDFormsFormWindow Open(ComponentInstance root, RecordingSink sink, RDFormsProgram? program = null)
     {
-        var window = new RDFormsFormWindow(new FormDefinition(root));
+        var window = new RDFormsFormWindow(new FormDefinition(root)) { Program = program ?? RDFormsProgram.Default };
         RDFormsControl.SetEventSink(window, sink);
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -120,6 +120,38 @@ public sealed class FormFocusTests
         });
 
         Assert.IsEmpty(raised);
+    }
+
+    // As with another application's window: each program keeps its own active form, and nothing is raised on either program's forms as
+    // the activation moves between their windows (for the forms of one program, see AnotherFormShown_ThenTheFirstActivatedAgain_...).
+    [TestMethod]
+    public void AnotherProgramsFormShown_ThenTheFirstActivatedAgain_RaisesNothingOnTheFirst_AndOnlyTheShowOnTheOther()
+    {
+        var (mine, theirs) = UI.Run(() =>
+        {
+            var mySink = new RecordingSink();
+            var myForm = Open(Form("Form1", ComponentClasses.TextBox), mySink, new RDFormsProgram());
+            mySink.Raised.Clear();
+            var theirSink = new RecordingSink();
+            var theirForm = Open(Form("Form2", ComponentClasses.TextBox), theirSink, new RDFormsProgram());
+            myForm.Activate();
+            Dispatcher.UIThread.RunJobs();
+            var result = (Raised(mySink), Raised(theirSink));
+            theirForm.Close();
+            myForm.Close();
+            return result;
+        });
+
+        Assert.IsEmpty(mine);
+        Expect.Lines(["Form2.Resize", "Form2.Activate", "TextBox1.GotFocus"], theirs);
+    }
+
+    [TestMethod]
+    public void AWindowGivenNoProgram_IsAWindowOfTheDefaultProgram()
+    {
+        var program = UI.Run(() => new RDFormsFormWindow(new FormDefinition(Form("Form1"))).Program);
+
+        Assert.AreSame(RDFormsProgram.Default, program);
     }
 
     [TestMethod]

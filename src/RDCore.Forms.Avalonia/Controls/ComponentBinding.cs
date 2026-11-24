@@ -40,6 +40,13 @@ internal static class ComponentBinding
             ApplyAll();
         };
         control.DetachedFromLogicalTree += (_, _) => instance.PropertyChanged -= OnChanged;
+        // A system colour is drawn in the control's theme variant: a new variant, from its window's KeepSystemTheme or from the
+        // application's theme while it is kept, applies every property again and redraws what the control paints itself.
+        control.ActualThemeVariantChanged += (_, _) =>
+        {
+            ApplyAll();
+            control.InvalidateVisual();
+        };
     }
 
     // Applies a property every control class shares, and answers whether it was one.
@@ -96,10 +103,10 @@ internal static class ComponentBinding
         switch (property.Name)
         {
             case nameof(P.BackColor):
-                templated.Background = FormPalette.ToBrush((FormColor)value!);
+                templated.Background = Brush(control, value);
                 return true;
             case nameof(P.ForeColor):
-                templated.Foreground = FormPalette.ToBrush((FormColor)value!);
+                templated.Foreground = Brush(control, value);
                 return true;
         }
         return false;
@@ -125,6 +132,20 @@ internal static class ComponentBinding
         _ => new Cursor(StandardCursorType.Arrow),
     };
 
-    // The brush of a form colour, for a control that paints it itself.
-    public static IBrush Brush(object? value) => FormPalette.ToBrush((FormColor)value!);
+    // Runs an action now and again each time the control's theme variant changes: for a system colour the control takes of its own,
+    // that no property of its component names.
+    public static void FollowVariant(Control control, Action apply)
+    {
+        apply();
+        control.ActualThemeVariantChanged += (_, _) => apply();
+    }
+
+    // The brush of a form colour, in the control's theme variant, for a control that paints it itself.
+    public static IBrush Brush(Control control, object? value) => FormPalette.ToBrush((FormColor)value!, control.ActualThemeVariant);
+
+    // The brush of a system colour, in the control's theme variant.
+    public static IBrush Brush(Control control, SystemColor color) => FormPalette.ToBrush(FormColor.FromSystem(color), control.ActualThemeVariant);
+
+    // The colour of a form colour, in the control's theme variant.
+    public static Color ColorOf(Control control, FormColor color) => FormPalette.ToColor(color, control.ActualThemeVariant);
 }

@@ -894,7 +894,7 @@ public enum DropEffect
 }
 
 /// <summary>
-/// What a <c>BeforeDropOrPaste</c> is about to do: the <c>RDForms.Action</c> of a program's code. Its C# name keeps it apart from
+/// What a <c>BeforeDropOrPaste</c> is about to do: the <c>fmAction</c> of a program's code. Its C# name keeps it apart from
 /// <see cref="System.Action"/>.
 /// </summary>
 public enum DropAction

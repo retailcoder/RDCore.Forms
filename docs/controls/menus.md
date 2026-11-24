@@ -19,6 +19,7 @@ save.Enabled = false;
 - An item whose `Caption` is a hyphen is a separator, drawn as a line. An ampersand in a caption marks the character after it as the item's access key, and two ampersands show one.
 - Each item follows its component's `Caption`, `Enabled`, `Checked`, `Visible` and `Shortcut` as they change. A shortcut's key is shown beside its item.
 - The bar is shown while one of its items is visible. A form whose menus are all hidden, as one that keeps them only to pop up, shows none.
+- The bar is drawn in the system's `Menu` colour, and the captions on it in `MenuText`, in the palette of the form's theme variant (see [Theme](index.md#theme)).
 
 ## Click
 
@@ -35,6 +36,17 @@ A shortcut stops at the first item on its way that is hidden or disabled. Each i
 A shortcut chooses its item before the control that has the focus or the form sees the key, a TextBox included. Where two items have the same shortcut, the first in the form's order has it.
 
 Choosing an item leaves its `Checked` as the program set it.
+
+## UI Automation
+
+Screen readers and automation tools see the menus as a Win32 program's. Each pattern does what the pointer does to the item, and raises the same Click, or none where the pointer raises none.
+
+|Item|Patterns|
+|---|---|
+|One that holds items, on the bar or in a menu|ExpandCollapse: expanding opens its menu and raises its Click; collapsing closes it and raises nothing.|
+|One that holds none|Invoke: chooses it, raises its Click and closes the menus. Toggle: chooses it the same way; its state is the item's `Checked`.|
+
+A disabled item refuses every pattern.
 
 ## Shortcuts
 

@@ -52,9 +52,12 @@ internal static class VB6PortData
             grayedComparesWithIsNull: true)),
     ];
 
-    // The events whose X and Y are in the container's scale. Every other event ports unchanged.
+    // The events whose X and Y are in the container's scale, and DblClick, whose RDForms handler takes Cancel, as an MSForms one does.
+    // Every other event ports unchanged.
     private static EventPort[] Events() =>
     [
+        new(Extender, "DblClick", "DblClick", [new ParameterPort("Cancel", LegacyType: null, "Boolean", ByRef: true, UnwrapsValue: false)],
+            CoordinatesInLegacyUnit: false, Note: null),
         Event(Extender, "MouseDown", "Button As Integer, Shift As Integer, X As Single, Y As Single"),
         Event(Extender, "MouseMove", "Button As Integer, Shift As Integer, X As Single, Y As Single"),
         Event(Extender, "MouseUp", "Button As Integer, Shift As Integer, X As Single, Y As Single"),

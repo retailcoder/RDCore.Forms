@@ -127,9 +127,9 @@ public sealed class FormEventDefinitionsTests
     [TestMethod]
     public void TheDragAndDropEvents_NameTheirRDFormsTypes()
     {
-        Assert.AreEqual("Cancel As Boolean, Data As RDForms.DataObject, X As Single, Y As Single, DragState As RDForms.DragState, "
+        Assert.AreEqual("Cancel As Boolean, Data As RDForms.DataObject, X As Single, Y As Single, DragState As RDForms.fmDragState, "
                         + "Effect As RDForms.ReturnEffect, Shift As Integer", Signature(Events.BeforeDragOver));
-        Assert.AreEqual("Cancel As Boolean, Control As RDForms.Control, Action As RDForms.Action, Data As RDForms.DataObject, X As Single, "
+        Assert.AreEqual("Cancel As Boolean, Control As RDForms.Control, Action As RDForms.fmAction, Data As RDForms.DataObject, X As Single, "
                         + "Y As Single, Effect As RDForms.ReturnEffect, Shift As Integer", Signature(Events.ContainerBeforeDropOrPaste));
     }
 }

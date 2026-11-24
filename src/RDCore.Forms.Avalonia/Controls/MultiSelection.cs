@@ -19,8 +19,50 @@ internal sealed class MultiSelection(ListBox list, ListBoxMultiSelect mode)
     // A Shift press on an Extended list, whose range comes at the release.
     private bool shiftPressed;
 
+    public ListBoxMultiSelect Mode => mode;
+
     // The focused item, which need not be selected.
     public int Focus { get; set; }
+
+    // The selection of a list whose MultiSelect becomes mode, as it is made or from code, so that it selects as a list made with mode
+    // does; the current one where mode is its own. The items stay. To None, the item at ListIndex stays selected where it was, and
+    // nothing else does. From None, the selected item stays selected and takes the focus, the first item where none is. From the other
+    // multi-select mode, the selection, the focus and the anchor stay.
+    public static MultiSelection? Follow(ListBox list, MultiSelection? current, ListBoxMultiSelect mode)
+    {
+        if ((current?.Mode ?? ListBoxMultiSelect.None) == mode)
+            return current;
+        if (mode == ListBoxMultiSelect.None)
+        {
+            var focus = current!.Focus;
+            var kept = focus >= 0 && focus < list.ItemCount && list.Selection.IsSelected(focus) ? focus : -1;
+            list.Selection.BeginBatchUpdate();
+            try
+            {
+                list.SelectionMode = SelectionMode.Single;
+                list.Selection.Clear();
+                if (kept >= 0)
+                    list.Selection.Select(kept);
+            }
+            finally
+            {
+                list.Selection.EndBatchUpdate();
+            }
+            return null;
+        }
+        var next = new MultiSelection(list, mode);
+        if (current is null)
+        {
+            next.Focus = next.anchor = Math.Max(0, list.SelectedIndex);
+            list.SelectionMode = SelectionMode.Multiple;
+        }
+        else
+        {
+            next.Focus = current.Focus;
+            next.anchor = current.anchor;
+        }
+        return next;
+    }
 
     public int Count => list.Selection.SelectedIndexes.Count;
 

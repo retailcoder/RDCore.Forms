@@ -10,7 +10,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 
 /// <summary>
 /// A placed UserControl: a control that shows a component of a class <see cref="UserControlClasses.Of"/> made, with its own copy of
-/// that class's UserControl, and holds the controls placed in it.
+/// that class's UserControl (its <see cref="UserControlSite"/>'s), and holds the controls placed in it.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -56,14 +56,15 @@ public sealed class RDFormsUserControl : Control, IRDFormsContainer
         if (!instance.Class.HasExtent)
             throw new ArgumentException($"{instance.Class.TypeName} is invisible at run time.", nameof(instance));
 
-        UserControl = definition.Copy();
+        UserControl = UserControlSite.Of(instance).UserControl;
         var panel = new Panel();
         making ??= new(ReferenceEqualityComparer.Instance);
         if (making.Add(definition))
         {
             try
             {
-                View = new RDFormsFormView(UserControl, fileSystem);
+                // In its container's theme variant.
+                View = new RDFormsFormView(UserControl, fileSystem) { KeepSystemTheme = true };
                 panel.Children.Add(View);
             }
             finally
@@ -82,7 +83,7 @@ public sealed class RDFormsUserControl : Control, IRDFormsContainer
     }
 
     /// <summary>
-    /// The placed control's own copy of its class's UserControl.
+    /// The placed control's own copy of its class's UserControl: its <see cref="UserControlSite.UserControl"/>.
     /// </summary>
     public FormDefinition UserControl { get; }
 
@@ -108,20 +109,23 @@ public sealed class RDFormsUserControl : Control, IRDFormsContainer
         ComponentBinding.ApplyCommon(this, e.Property, e.After);
     }
 
-    // RDForms' own: a box that names the class, in the button face's colour.
-    private static Border Placeholder(string typeName) => new()
+    // RDForms' own: a box that names the class, in the button face's colour, in its theme variant.
+    private static Border Placeholder(string typeName)
     {
-        Background = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonFace)),
-        BorderBrush = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonShadow)),
-        BorderThickness = new Thickness(1),
-        ClipToBounds = true,
-        Child = new TextBlock
+        var name = new TextBlock
         {
             Text = typeName,
-            Foreground = FormPalette.ToBrush(FormColor.FromSystem(SystemColor.ButtonText)),
             Margin = new Thickness(2),
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Top,
-        },
-    };
+        };
+        var box = new Border { BorderThickness = new Thickness(1), ClipToBounds = true, Child = name };
+        ComponentBinding.FollowVariant(box, () =>
+        {
+            box.Background = ComponentBinding.Brush(box, SystemColor.ButtonFace);
+            box.BorderBrush = ComponentBinding.Brush(box, SystemColor.ButtonShadow);
+            name.Foreground = ComponentBinding.Brush(box, SystemColor.ButtonText);
+        });
+        return box;
+    }
 }

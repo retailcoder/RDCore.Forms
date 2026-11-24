@@ -12,7 +12,8 @@ public enum TypePortKind
     Class,
 
     /// <summary>
-    /// An enum. A reference to it is rewritten to the RDForms enum, and its members to <see cref="FormsPortMap.ConstantOf"/>.
+    /// An enum. RDForms declares it by its name, with its members: a reference to it is rewritten to the RDForms enum, and its members
+    /// port unchanged.
     /// </summary>
     Enum,
 

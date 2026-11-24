@@ -443,9 +443,10 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
         return (int)pixels;
     }
 
-    private static int Rgb(FormColor color)
+    // A system colour is drawn in the layer's theme variant as it is drawn; what is drawn keeps its pixels when the variant changes.
+    private int Rgb(FormColor color)
     {
-        var rgb = FormPalette.ToColor(color);
+        var rgb = ComponentBinding.ColorOf(this, color);
         return rgb.R << 16 | rgb.G << 8 | rgb.B;
     }
 
@@ -480,7 +481,7 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
         using (context.PushTextOptions(AliasedText))
         {
             if (opaque)
-                context.FillRectangle(FormPalette.ToBrush(Component.Get(P.BackColor)), new Rect(left, top, width, font.Line));
+                context.FillRectangle(ComponentBinding.Brush(this, Component.Get(P.BackColor)), new Rect(left, top, width, font.Line));
             var ink = BrushOf(null);
             context.DrawGlyphRun(ink, font.Run(line, left, top));
             // The underline and the strikethrough are as long as the line, its spaces included.
@@ -574,7 +575,7 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
     private ShapeBorderStyle BorderStyle =>
         GdiDrawing.AsBorderStyle(Component.Class.Has(P.DrawStyle) ? Component.Get(P.DrawStyle) : DrawStyle.Solid);
 
-    private IBrush BrushOf(FormColor? color) => FormPalette.ToBrush(color ?? Component.Get(P.ForeColor));
+    private IBrush BrushOf(FormColor? color) => ComponentBinding.Brush(this, color ?? Component.Get(P.ForeColor));
 
     private static (double X, double Y) Resolve(GraphicsPoint point, double fromX, double fromY) =>
         point.IsRelative ? (fromX + point.X, fromY + point.Y) : (point.X, point.Y);
@@ -598,7 +599,7 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
         var style = Component.Class.Has(P.FillStyle) ? Component.Get(P.FillStyle) : FillStyle.Transparent;
         if (style == FillStyle.Transparent)
             return null;
-        var brush = FormPalette.ToBrush(Component.Get(P.FillColor));
+        var brush = ComponentBinding.Brush(this, Component.Get(P.FillColor));
         if (style == FillStyle.Solid)
             return context => context.DrawGeometry(brush, null, figure);
         var (width, height) = (Math.Max(inside.Width, bitmap?.PixelSize.Width ?? 0), Math.Max(inside.Height, bitmap?.PixelSize.Height ?? 0));
@@ -751,7 +752,7 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
             if ((uint)pixel >> 24 != 0)
                 return Unpremultiplied(pixel);
         }
-        var back = FormPalette.ToColor(Component.Get(P.BackColor));
+        var back = ComponentBinding.ColorOf(this, Component.Get(P.BackColor));
         var backRgb = back.R << 16 | back.G << 8 | back.B;
         if (picture is null)
             return backRgb;

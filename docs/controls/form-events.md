@@ -21,7 +21,7 @@ Once its window has been shown, the root raises Resize for a change of size whet
 |---|---|
 |The window is shown for the first time|Activate, then GotFocus on the first control of the tab order that can take the focus.|
 |Another of the program's form windows becomes active|On the form that was active, LostFocus on its focused control, then Deactivate; then, on the new one, Activate, then GotFocus on its control.|
-|Another application takes the activation and gives it back|Nothing.|
+|Another application, or another program's form window in the same process, takes the activation and gives it back|Nothing. Each program has its own active form.|
 |A window whose root is disabled is shown|No Activate: it is shown without being activated.|
 
 Each form keeps the control that last had the focus on it: that control takes the focus again, with a GotFocus, when the form is activated again. A form with no control that can take the focus raises its own GotFocus after its Activate, and its own LostFocus before its Deactivate. That LostFocus was not measured with VB6: its place before the Deactivate is RDForms' own.
@@ -128,7 +128,7 @@ The handlers of an MSForms form and its controls take these names and parameters
 |`DblClick(ByVal Cancel As MSForms.ReturnBoolean)`|`DblClick(Cancel As Boolean)`.|
 |`KeyPress(ByVal KeyAscii As MSForms.ReturnInteger)`, and KeyDown's and KeyUp's `KeyCode`|`KeyAscii As Integer`, `KeyCode As Integer`.|
 |MouseDown, MouseMove and MouseUp, `X` and `Y` in points|The same, `X` and `Y` in twips (20 to a point), and a form's own in its scale.|
-|BeforeDragOver, BeforeDropOrPaste and Error|The same, with `RDForms.DataObject`, `RDForms.ReturnEffect`, `RDForms.DragState` and `RDForms.Action`, and ByRef values for the Return* wrappers.|
+|BeforeDragOver, BeforeDropOrPaste and Error|The same, with `RDForms.DataObject`, `RDForms.ReturnEffect`, `RDForms.fmDragState` and `RDForms.fmAction`, and ByRef values for the Return* wrappers.|
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

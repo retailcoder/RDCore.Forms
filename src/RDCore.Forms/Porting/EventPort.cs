@@ -9,7 +9,10 @@ namespace RDCore.Forms.Porting;
 /// </param>
 /// <param name="LegacyName">The event's legacy name, such as <c>Exit</c>.</param>
 /// <param name="RDFormsName">The RDForms event the handler is renamed to, such as <c>Validate</c>. It is <paramref name="LegacyName"/> for an event that keeps its name.</param>
-/// <param name="Parameters">The handler's parameters, in order, each with its legacy and its RDForms declaration.</param>
+/// <param name="Parameters">
+/// The handler's parameters, in order, each with its legacy and its RDForms declaration. A parameter the legacy handler does not
+/// declare (<see cref="ParameterPort.IsAdded"/>) follows the ones it does.
+/// </param>
 /// <param name="CoordinatesInLegacyUnit">
 /// Whether the event's <c>X</c> and <c>Y</c> are in the legacy unit: <see cref="FormsPortMap.LegacyUnit"/> for MSForms, the
 /// container's scale for VB6. RDForms raises them in twips, and a form's own in its scale. Where the legacy code expects another
