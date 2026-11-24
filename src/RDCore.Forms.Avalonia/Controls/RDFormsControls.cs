@@ -17,8 +17,9 @@ public static class RDFormsControls
     /// </summary>
     /// <param name="instance">The component.</param>
     /// <returns>
-    /// The control, or <see langword="null"/> where its class has none: a menu, a form's root, a UserControl that is invisible at run
-    /// time, and a class that is neither one of <see cref="ComponentClasses"/> nor one <see cref="UserControlClasses.Of"/> made.
+    /// The control, or <see langword="null"/> where its class has none: a menu, a form's root, an ImageList, a UserControl that is
+    /// invisible at run time, and a class that is neither one of <see cref="ComponentClasses"/> nor one <see cref="UserControlClasses.Of"/>
+    /// made.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> is <see langword="null"/>.</exception>
     /// <remarks>
@@ -36,8 +37,9 @@ public static class RDFormsControls
     /// included.
     /// </param>
     /// <returns>
-    /// The control, or <see langword="null"/> where its class has none: a menu, a form's root, a UserControl that is invisible at run
-    /// time, and a class that is neither one of <see cref="ComponentClasses"/> nor one <see cref="UserControlClasses.Of"/> made.
+    /// The control, or <see langword="null"/> where its class has none: a menu, a form's root, an ImageList, a UserControl that is
+    /// invisible at run time, and a class that is neither one of <see cref="ComponentClasses"/> nor one <see cref="UserControlClasses.Of"/>
+    /// made.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="instance"/> or <paramref name="fileSystem"/> is <see langword="null"/>.</exception>
     public static Control? Create(ComponentInstance instance, IFileSystem fileSystem)

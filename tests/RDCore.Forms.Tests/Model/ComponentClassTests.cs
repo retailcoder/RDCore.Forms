@@ -50,7 +50,8 @@ public sealed class ComponentClassTests
 
     [TestMethod]
     public void EveryClass_ButAUserControlAPropertyPageAPageAndAnImageList_HasADefaultMember() =>
-        CollectionAssert.AreEquivalent(new[] { ComponentClasses.UserControl, ComponentClasses.PropertyPage, ComponentClasses.Page, ComponentClasses.ImageList },
+        CollectionAssert.AreEquivalent(
+            new[] { ComponentClasses.UserControl, ComponentClasses.PropertyPage, ComponentClasses.Page, ComponentClasses.ImageList },
             ComponentClasses.All.Where(c => c.DefaultMember is null).ToArray());
 
     [TestMethod]
