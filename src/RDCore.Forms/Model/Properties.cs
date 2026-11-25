@@ -744,6 +744,12 @@ public static class Properties
     public static readonly PropertyDefinition<bool> IntegralHeight = new("IntegralHeight", PropertyCategory.Behavior, true) { ReadOnlyAtRunTime = true };
 
     /// <summary>
+    /// Whether a ListBox or a ComboBox keeps its items in order: an <c>AddItem</c> given no index puts its item where
+    /// <see cref="ListOrder.IndexOf"/> says. False by default.
+    /// </summary>
+    public static readonly PropertyDefinition<bool> Sorted = new("Sorted", PropertyCategory.Behavior, false) { ReadOnlyAtRunTime = true };
+
+    /// <summary>
     /// How a CommandButton, CheckBox or OptionButton is drawn.
     /// </summary>
     public static readonly PropertyDefinition<ButtonStyle> ButtonStyle =

@@ -501,12 +501,17 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     /// Adds an item.
     /// </summary>
     /// <param name="item">The item's text.</param>
-    /// <param name="index">Where it goes, from 0; at the end where it is <see langword="null"/>.</param>
+    /// <param name="index">
+    /// Where it goes, from 0, sorted or not; where it is <see langword="null"/>, at the end, or where <see cref="ListOrder.IndexOf"/> says
+    /// in a <see cref="P.Sorted"/> list.
+    /// </param>
     /// <exception cref="FormErrorException"><paramref name="index"/> is outside 0 to <see cref="ListCount"/>: 5, Invalid procedure call or argument.</exception>
     public void AddItem(string item, int? index = null)
     {
         ArgumentNullException.ThrowIfNull(item);
-        var at = index ?? ItemCount;
+        var at = index ?? (instance.Get(P.Sorted)
+            ? ListOrder.IndexOf(instance.Get(P.List), item, System.Globalization.CultureInfo.CurrentCulture)
+            : ItemCount);
         if (at < 0 || at > ItemCount)
             throw new FormErrorException(FormError.InvalidProcedureCall);
         Items.Insert(at, item);

@@ -178,8 +178,8 @@ public static class ComponentClasses
     /// <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c> and <c>Text</c>.
     /// </summary>
     public static readonly ComponentClass ListBox = Control("RDForms.ListBox", "List",
-        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.IntegralHeight, P.DragIcon, P.MousePointer,
-         P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.CausesValidation, P.ControlSource, P.RowSource],
+        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.IntegralHeight, P.Sorted, P.DragIcon,
+         P.MousePointer, P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.CausesValidation, P.ControlSource, P.RowSource],
         [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, Validate, BeforeUpdate,
          AfterUpdate, BeforeDragOver, BeforeDropOrPaste, Error],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
@@ -193,7 +193,7 @@ public static class ComponentClasses
     /// </summary>
     public static readonly ComponentClass ComboBox = Control("RDForms.ComboBox", "Combo",
         [P.Text, P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.Locked, P.ComboBoxStyle, P.IntegralHeight,
-         P.MousePointer, P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.SelStart, P.SelLength, P.SelText,
+         P.Sorted, P.MousePointer, P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.SelStart, P.SelLength, P.SelText,
          P.CausesValidation, P.ControlSource, P.RowSource],
         [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, Validate, BeforeUpdate, AfterUpdate,
          BeforeDragOver, BeforeDropOrPaste, Error],

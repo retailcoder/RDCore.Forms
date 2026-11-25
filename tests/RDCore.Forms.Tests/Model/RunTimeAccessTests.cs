@@ -16,6 +16,7 @@ public sealed class RunTimeAccessTests
     [
         "Form.StartUpPosition", "Form.ShowInTaskbar", "Form.MaxButton", "Form.MinButton", "MDIForm.StartUpPosition",
         "CommandButton.Style", "CheckBox.Style", "OptionButton.Style", "ComboBox.IntegralHeight", "FileListBox.MultiSelect",
+        "ListBox.Sorted", "ComboBox.Sorted",
         "Menu.WindowList", "Menu.Shortcut", "Menu.NegotiatePosition", "Timer.Left", "Timer.Top", "Data.Negotiate",
     ];
 

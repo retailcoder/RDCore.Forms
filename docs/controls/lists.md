@@ -59,7 +59,19 @@ var x = window.Invoke(combo, Methods.List, [FormValue.FromInteger(0)]).AsString(
 The index and argument rules follow RDForms' own rules, as a method's do. A ListBox or ComboBox that `Controls.Add` adds takes the same members as one of the form's file.
 
 > [!NOTE]
-> **Not implemented.** `Sorted` and `TopIndex` are not modeled: a program's `TopIndex` is error 438, and a list whose file sets `Sorted` to True holds its items in the order they are added.
+> **Not implemented.** `TopIndex` is not modeled: a program's `TopIndex` is error 438.
+
+## Sorted
+
+A ListBox or ComboBox whose file sets `Sorted` to True keeps its items in order, as VB6's does. A program reads `Sorted`, and an assignment is error 382, "'Sorted' property cannot be set at run time".
+
+|Call|Where the item goes|
+|---|---|
+|`AddItem item`|In order. Items are compared without regard to case, in the user's regional settings, with their hyphens and apostrophes left out: `10` sorts before `9`, and `a-c` after `ab`. Items left equal are ordered by those marks, as in `coop`, `coop-`, `co-op`, `-coop`. The list is searched by halves from its middle item, and an item equal to another, such as `APPLE` to `apple`, takes the place of the first equal item the search reaches.|
+|`AddItem item, index`|At `index`, in order or not. A later `AddItem` searches the list as it is.|
+|`List(index) = text`|The item's text changes in place, and the list is not sorted again.|
+
+An item keeps its `ItemData` and its icon as items go in before it, and the selected item stays selected, with no Click.
 
 ## Item icons
 
