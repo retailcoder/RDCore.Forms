@@ -55,7 +55,9 @@ public static class ListOrder
     /// <param name="first">The first item.</param>
     /// <param name="second">The second item.</param>
     /// <param name="culture">The culture the items are compared in.</param>
-    /// <returns>Less than 0 where <paramref name="first"/> sorts first, more than 0 where <paramref name="second"/> does, and 0 where they are equal.</returns>
+    /// <returns>
+    /// Less than 0 where <paramref name="first"/> sorts first, more than 0 where <paramref name="second"/> does, and 0 where they are equal.
+    /// </returns>
     /// <remarks>
     /// The items are compared without regard to case, in <paramref name="culture"/>'s order, with their hyphens and apostrophes left out:
     /// <c>10</c> sorts before <c>9</c>, <c>a b</c> before <c>ab</c>, and <c>a-c</c> after <c>ab</c>. Two items that are then equal are
