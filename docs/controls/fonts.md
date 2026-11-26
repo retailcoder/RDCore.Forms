@@ -31,12 +31,11 @@ Past 160 pixels, a bitmap font is drawn at whole pixels. That is RDForms' own.
 
 ## Underline and strikethrough
 
-A font's `Underline` and `Strikethrough` (`FontUnderline` and `FontStrikethru`) draw a line under and through the text of a Label, a CheckBox, an OptionButton, a CommandButton, a Frame, a list's items and a Data control's caption.
+A font's `Underline` and `Strikethrough` (`FontUnderline` and `FontStrikethru`) draw a line under and through the text of a Label, a CheckBox, an OptionButton, a CommandButton, a Frame, a TextBox, a list's items and a Data control's caption.
 
 [`Print`](drawing.md) draws them as long as the printed text, its spaces included, as VB6 does: spaces alone draw the lines from the text's left edge. Their position and thickness come from the face's own tables, and are RDForms' own.
 
-> [!NOTE]
-> **Not implemented.** A TextBox's text is drawn without an underline or a strikethrough.
+A TextBox draws them at the lines `Print` draws, along each line of its text, leading and trailing spaces included, as VB6 does. A wrapped line's lines take in the space it ends with, and an empty line has none. Under the selection they are drawn in the selected text's colour.
 
 ## A font never named
 
