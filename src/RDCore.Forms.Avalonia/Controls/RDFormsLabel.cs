@@ -26,7 +26,7 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <para>
 /// Where <c>AutoSize</c> is set, it sets its component's size to its caption's, as VB6 does: as a program sets another caption, sets
 /// <c>AutoSize</c>, or changes its <c>Font</c>, <c>BorderStyle</c> or <c>WordWrap</c>, and, where <c>WordWrap</c> is set, sets its
-/// <c>Width</c>. It does not as it is made. With <c>WordWrap</c> it keeps its width and grows down, and shows the lines it counted.
+/// <c>Width</c>. It does not as its form loads. With <c>WordWrap</c> it keeps its width and grows down, and shows the lines it counted.
 /// </para>
 /// <para>
 /// Its <c>Picture</c>, an RD-VBA addition, is laid out against its caption as MSForms' Label lays it out: the two make one block,

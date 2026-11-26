@@ -32,7 +32,7 @@ A Label whose `AutoSize` is set fits itself to its caption, in its `Font` and in
 - With `WordWrap`, the label keeps its width and grows down to its lines. A word stays on a line where the line through it fits the width, and a line's width counts the spaces after its last word. A line wider than the label, or a word wider than it, widens the label to that line.
 - A fit takes `Left`, `Top` and the width to whole pixels. A fit from a `Width` set keeps the width as set where the lines fit it.
 - The label keeps its left edge, its right edge where `Alignment` is right, or its centre where it is centred.
-- A `Width` or `Height` set by a program stays until the next fit.
+- A `Height` set by a program, or a `Width` without `WordWrap`, stays until the next fit.
 
 ### Picture
 
