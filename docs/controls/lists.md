@@ -69,7 +69,7 @@ The index and argument rules follow RDForms' own rules, as a method's do. A List
 
 |Case|Behaviour|
 |---|---|
-|`TopIndex` set|Takes 0 to `ListCount` - 1, and 0 on an empty ListBox; anything else is error 380, and every value on an empty combo. A value past the last top shows the last rows. Scroll is raised where the list scrolls, and not where it is already there.|
+|`TopIndex` set|Takes 0 to `ListCount` - 1, and 0 on an empty ListBox; anything else is error 380, and every value on an empty combo. A value past the last top shows the last rows. Scroll is raised where the list scrolls, and not where the top does not move.|
 |A ListBox's `ListIndex` and `Text`|Bring the item they select into view: at the top row from above, at the last row from below, and not at all where it is in view. `Text` does so where the item is selected already. No Scroll.|
 |A combo's selection set|`ListIndex`, a Dropdown List's `Text`, an `AddItem` at or before the selected item, and `SetList` of any item put the selected item at the top row, or item 0 where none is selected. No Scroll.|
 |A key that moves the selection|Brings the item into view, in both controls, and raises Scroll after its Click where the list scrolls. A ListBox's character typed does the same (RDForms' own).|
@@ -104,6 +104,7 @@ list.SetItemIcon(0, File.ReadAllBytes("open.png"));
 |`GetSelected`, `SetSelected`|Read and set an item's selection; 381 for an index outside the items. `SetSelected` raises Click when it changes something.|
 |`SelCount`|The number of items selected.|
 |`Text`|The text of the item at `ListIndex`, or "". `SetText` selects the first item whose whole text it is, without regard to case, and raises Click; on a multi-select list it raises Click and changes nothing.|
+|Scroll|Raised where the list scrolls: see [TopIndex](#topindex).|
 
 ### MultiSelect
 
