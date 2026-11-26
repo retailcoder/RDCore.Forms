@@ -175,16 +175,16 @@ public static class ComponentClasses
     /// <summary>
     /// <c>RDForms.ListBox</c>. Its colors default to the window's. A program reaches its items through its list members, which its window
     /// answers: <c>AddItem</c>, <c>RemoveItem</c>, <c>Clear</c>, <c>List</c>, <c>ItemData</c>, <c>ItemIcon</c>, <c>Selected</c>,
-    /// <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c> and <c>Text</c>.
+    /// <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c>, <c>Text</c> and <c>TopIndex</c>.
     /// </summary>
     public static readonly ComponentClass ListBox = Control("RDForms.ListBox", "List",
         [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.IntegralHeight, P.DragIcon, P.MousePointer,
          P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.CausesValidation, P.ControlSource, P.RowSource],
-        [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, Validate, BeforeUpdate,
+        [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, Scroll, Validate, BeforeUpdate,
          AfterUpdate, BeforeDragOver, BeforeDropOrPaste, Error],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
         methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.Selected, M.ListIndex, M.ListCount, M.NewIndex, M.SelCount,
-            M.ListText],
+            M.ListText, M.TopIndex],
         writableOnAnRDFormsForm: [P.MultiSelect, P.IntegralHeight]);
 
     /// <summary>
