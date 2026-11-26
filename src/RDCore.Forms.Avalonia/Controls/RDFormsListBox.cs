@@ -99,7 +99,7 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
         AutoScrollToSelectedItem = false;
         top = new ListTop(this, () => ItemCount, () => (int)Math.Floor(((double.IsNaN(Height) ? Bounds.Height : Height) - ListBorder) / Row),
             () => Row);
-        top.FollowKeys(() => ListIndex);
+        top.FollowKeys(() => ListIndex, typed: true);
         ComponentBinding.Bind(this, instance!, ComponentClasses.ListBox, Apply);
     }
 

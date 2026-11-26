@@ -195,10 +195,11 @@ public static class ComponentClasses
         [P.Text, P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.Locked, P.ComboBoxStyle, P.IntegralHeight,
          P.MousePointer, P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.SelStart, P.SelLength, P.SelText,
          P.CausesValidation, P.ControlSource, P.RowSource],
-        [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, Validate, BeforeUpdate, AfterUpdate,
+        [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, Scroll, Validate, BeforeUpdate, AfterUpdate,
          BeforeDragOver, BeforeDropOrPaste, Error],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
-        methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.ListIndex, M.ListCount, M.NewIndex, M.ListText],
+        methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.ListIndex, M.ListCount, M.NewIndex, M.ListText,
+            M.TopIndex],
         writableOnAnRDFormsForm: [P.ComboBoxStyle]);
 
     /// <summary>

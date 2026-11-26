@@ -448,11 +448,13 @@ public sealed class ListMemberTests
 
     // As measured with VB6: TopIndex takes 0 to ListCount - 1, an Integer.
     [TestMethod]
-    public void ATopIndex_IsAssignedAndRead_AndOutsideTheItemsIs380_AndNullIs94()
+    [DataRow(ListBox)]
+    [DataRow(ComboBox)]
+    public void ATopIndex_IsAssignedAndRead_AndOutsideTheItemsIs380_AndNullIs94(string type)
     {
         var lines = UI.Run(() =>
         {
-            var (window, list, sink) = Open(ListBox, [.. Enumerable.Range(0, 30).Select(i => $"item{i:00}")]);
+            var (window, list, sink) = Open(type, [.. Enumerable.Range(0, 30).Select(i => $"item{i:00}")]);
             sink.Raised.Clear();
             window.Assign(list, M.TopIndex, [], I(5));
             List<string> result = [$"{Get(window, list, M.TopIndex).AsInteger()} | {string.Join(", ", sink.Raised)}"];

@@ -46,6 +46,7 @@ var x = window.Invoke(combo, Methods.List, [FormValue.FromInteger(0)]).AsString(
 |`NewIndex` As Integer|Read-only property|yes|yes|
 |`SelCount` As Integer|Read-only property|yes|no|
 |`Text` As String|Property|yes|yes|
+|`TopIndex` As Integer|Property|yes|yes|
 
 |Rule|Behaviour|
 |---|---|
@@ -55,11 +56,29 @@ var x = window.Invoke(combo, Methods.List, [FormValue.FromInteger(0)]).AsString(
 |`Text`|A ListBox's and a Dropdown List's is the selected item's text, and setting it selects the first item whose whole text it is (383 on a Dropdown List where none has it). Another combo's is its edit box's: see [ComboBox](#combobox).|
 |`ItemIcon`|An object (`FormValue.FromObject`): the bytes of the item's picture file, or `Nothing` for none. Assigning anything else is error 13, and a picture that is refused error 481 (see [Item icons](#item-icons)).|
 |`Column`|Error 438: VB6's ListBox has no `Column`, which is an MSForms ListBox's.|
+|`TopIndex`|Error 380 outside 0 to `ListCount` - 1: see [TopIndex](#topindex).|
 
 The index and argument rules follow RDForms' own rules, as a method's do. A ListBox or ComboBox that `Controls.Add` adds takes the same members as one of the form's file.
 
 > [!NOTE]
-> **Not implemented.** `Sorted` and `TopIndex` are not modeled: a program's `TopIndex` is error 438, and a list whose file sets `Sorted` to True holds its items in the order they are added.
+> **Not implemented.** `Sorted` is not modeled: a list whose file sets `Sorted` to True holds its items in the order they are added.
+
+## TopIndex
+
+`TopIndex` is the item in the list's top row, from 0. A ListBox shows the rows its height takes, a Simple Combo's list the rows under its edit box, and a Dropdown Combo's and a Dropdown List's list 8. The top is at most the item in the top row where the last item fills the last row: with 30 items and 10 rows, 20.
+
+|Case|Behaviour|
+|---|---|
+|`TopIndex` set|Takes 0 to `ListCount` - 1, and 0 on an empty ListBox; anything else is error 380, and every value on an empty combo. A value past the last top shows the last rows. Scroll is raised where the list scrolls, and not where it is already there.|
+|A ListBox's `ListIndex` and `Text`|Bring the item they select into view: at the top row from above, at the last row from below, and not at all where it is in view. `Text` does so where the item is selected already. No Scroll.|
+|A combo's selection set|`ListIndex`, a Dropdown List's `Text`, an `AddItem` at or before the selected item, and `SetList` of any item put the selected item at the top row, or item 0 where none is selected. No Scroll.|
+|A key that moves the selection|Brings the item into view, in both controls, and raises Scroll after its Click where the list scrolls. A ListBox's character typed does the same (RDForms' own).|
+|Items added and removed|Otherwise leave the top where it is, the last top at most. `Clear` makes it 0.|
+|The user's scroll bar|Moves the top and raises Scroll once the list has scrolled. The list ends its scroll on a whole row (RDForms' own).|
+|The mouse wheel|Moves the top and raises no Scroll.|
+
+> [!NOTE]
+> **Not implemented.** A Dropdown Combo's and a Dropdown List's open list shows more than 8 rows, opens at the selected item rather than at `TopIndex`, and its scrolling raises no Scroll.
 
 ## Item icons
 
@@ -125,6 +144,7 @@ On an RDForms form, a program can set `Style` (see [Properties set only at desig
 |Click|For every pick of an item by the mouse, the one already selected too; for every arrow key that moves the selection, the list open or closed; for a Dropdown List's character that selects another item; for Enter on a Dropdown Combo's highlighted item; and for `ListIndex` from code when it moves.|
 |Change|From the edit box's text, by typing or by code, and never from choosing an item.|
 |DropDown|As the list opens.|
+|Scroll|Where the list scrolls: see [TopIndex](#topindex).|
 |GotFocus, LostFocus|Once as the combo is entered and left, whether the combo or its edit box has the focus.|
 |KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list. The form raises its own for them only where its `KeyPreview` is True. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
 

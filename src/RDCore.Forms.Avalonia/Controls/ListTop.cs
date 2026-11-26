@@ -73,9 +73,10 @@ internal sealed class ListTop
     // Keeps the top where it is, the last top at most, as items are added and removed.
     public void Keep() => MoveTo(Value, raise: false);
 
-    // A key or a character typed that moves the list's selection brings its item into view, as code's ListIndex does, and raises
-    // Scroll after its Click where the top moved. The item is the one that takes the selection or, on a multi-select list, the focus.
-    public void FollowKeys(Func<int> item)
+    // A key, and where typed is set a character typed, that moves the list's selection brings its item into view, as code's ListIndex
+    // does, and raises Scroll after its Click where the top moved. The item is the one that takes the selection or, on a multi-select
+    // list, the focus.
+    public void FollowKeys(Func<int> item, bool typed)
     {
         // The list's own key handling may scroll, and further than VB6's, before any handler of this one sees the key: the key moves the
         // top from where it last settled.
@@ -88,7 +89,8 @@ internal sealed class ListTop
                 RDFormsControl.Raise(owner, Events.Scroll);
         }
         owner.AddHandler(InputElement.KeyDownEvent, End, RoutingStrategies.Bubble, handledEventsToo: true);
-        owner.AddHandler(InputElement.TextInputEvent, End, RoutingStrategies.Bubble, handledEventsToo: true);
+        if (typed)
+            owner.AddHandler(InputElement.TextInputEvent, End, RoutingStrategies.Bubble, handledEventsToo: true);
     }
 
     // The viewer that shows the list's rows: it is scrolled to the top from now on.
@@ -148,7 +150,8 @@ internal sealed class ListTop
         // A layout that changes the extent or the rows shown scrolls the viewer to the top again: nobody scrolled.
         if (e.Property == ScrollViewer.ExtentProperty || e.Property == ScrollViewer.ViewportProperty)
             Dispatcher.UIThread.Post(Place);
-        if (e.Property != ScrollViewer.OffsetProperty || placing || viewer is null)
+        // A viewer not laid out, or hidden, shows no rows: its offset says nothing of the top.
+        if (e.Property != ScrollViewer.OffsetProperty || placing || viewer is null || viewer.Viewport.Height <= 0)
             return;
         var shown = Shown(viewer);
         moved |= shown != Value;
