@@ -14,6 +14,9 @@ internal sealed class Companion(byte[] bytes, Encoding encoding)
     // "lt\0\0": the signature of a picture record.
     private const uint PictureSignature = 0x0000746C;
 
+    // The CLSID of stdole's StdPicture, which an ActiveX control's saved picture starts with.
+    private static readonly Guid StdPicture = new("0BE35204-8F91-11CE-9DE3-00AA004BB851");
+
     // A string cited as $"Form1.frx":0000: a 4-byte length, then the string's bytes.
     public bool TryReadLongString(int offset, out string value)
     {
@@ -55,6 +58,25 @@ internal sealed class Companion(byte[] bytes, Encoding encoding)
         }
 
         image = imageLength == 0 ? null : file.ToArray();
+        return true;
+    }
+
+    // A picture an ActiveX control saved in its property bag, such as an ImageList's ListImage: a 4-byte length of the rest, the
+    // StdPicture class's CLSID, the picture signature, the image's 4-byte length, then the image file. Such a record always holds an
+    // image.
+    public bool TryReadObjectPicture(int offset, out byte[] image)
+    {
+        image = [];
+        if (!TryReadInt32(offset, out var length) || length < 24
+            || !TryGetSpan(offset + 4, 16, out var clsid) || new Guid(clsid) != StdPicture
+            || !TryReadInt32(offset + 20, out var signature) || unchecked((uint)signature) != PictureSignature
+            || !TryReadInt32(offset + 24, out var imageLength) || imageLength == 0 || imageLength != length - 24
+            || !TryGetSpan(offset + 28, imageLength, out var file))
+        {
+            return false;
+        }
+
+        image = file.ToArray();
         return true;
     }
 

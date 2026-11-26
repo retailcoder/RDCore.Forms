@@ -8,12 +8,12 @@ Initialize, Load and Terminate are the program's: the window raises none of them
 
 |Situation|Raised|
 |---|---|
-|The window is shown for the first time|Resize, inside `Show`, then Activate.|
-|The root's `Width` or `Height` changes|One Resize for each change, inside the assignment. A size the root already has raises nothing.|
+|The window is shown for the first time|Resize, inside `Show`, then Activate. It is raised whatever the size, even one a Resize was raised for before the window was shown.|
+|The root's `Width` or `Height` changes|One Resize for each change, inside the assignment; one for a `Move` that sets both. A size the root already has raises nothing.|
 |The user resizes the window|The root's `Width` and `Height` take the client area's size, in whole pixels, and one Resize is raised for both.|
 |The window is shown again after `Hide`|No Resize.|
 
-Once its window has been shown, the root raises Resize for a change of size whether the window is hidden or not. With `AutoRedraw` False, Paint follows Resize as the window is shown and as its client area grows: see [Drawing](drawing.md).
+The root raises Resize for a change of size whether its window is shown, hidden, or not shown yet (a form that is loaded and not shown), as in VB6. With `AutoRedraw` False, Paint follows Resize as the window is shown and as its client area grows: see [Drawing](drawing.md).
 
 ## Activation
 

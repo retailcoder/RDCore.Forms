@@ -175,16 +175,16 @@ public static class ComponentClasses
     /// <summary>
     /// <c>RDForms.ListBox</c>. Its colors default to the window's. A program reaches its items through its list members, which its window
     /// answers: <c>AddItem</c>, <c>RemoveItem</c>, <c>Clear</c>, <c>List</c>, <c>ItemData</c>, <c>ItemIcon</c>, <c>Selected</c>,
-    /// <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c> and <c>Text</c>.
+    /// <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c>, <c>Text</c> and <c>TopIndex</c>.
     /// </summary>
     public static readonly ComponentClass ListBox = Control("RDForms.ListBox", "List",
-        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.IntegralHeight, P.DragIcon, P.MousePointer,
-         P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.CausesValidation, P.ControlSource, P.RowSource],
-        [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, Validate, BeforeUpdate,
+        [P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.MultiSelect, P.IntegralHeight, P.Sorted, P.DragIcon,
+         P.MousePointer, P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.CausesValidation, P.ControlSource, P.RowSource],
+        [Click, DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, Scroll, Validate, BeforeUpdate,
          AfterUpdate, BeforeDragOver, BeforeDropOrPaste, Error],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
         methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.Selected, M.ListIndex, M.ListCount, M.NewIndex, M.SelCount,
-            M.ListText],
+            M.ListText, M.TopIndex],
         writableOnAnRDFormsForm: [P.MultiSelect, P.IntegralHeight]);
 
     /// <summary>
@@ -193,12 +193,13 @@ public static class ComponentClasses
     /// </summary>
     public static readonly ComponentClass ComboBox = Control("RDForms.ComboBox", "Combo",
         [P.Text, P.Enabled, P.Font, P.ForeColor, P.BackColor, P.List, P.ItemData, P.ItemIcon, P.Locked, P.ComboBoxStyle, P.IntegralHeight,
-         P.MousePointer, P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.SelStart, P.SelLength, P.SelText,
+         P.Sorted, P.MousePointer, P.RightToLeft, P.Appearance, P.TabStop, P.TabIndex, P.ToolTipText, P.SelStart, P.SelLength, P.SelText,
          P.CausesValidation, P.ControlSource, P.RowSource],
-        [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, Validate, BeforeUpdate, AfterUpdate,
+        [Change, Click, DblClick, DropDown, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, Scroll, Validate, BeforeUpdate, AfterUpdate,
          BeforeDragOver, BeforeDropOrPaste, Error],
         Defaults((P.BackColor, WindowBackground), (P.ForeColor, WindowForeground)),
-        methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.ListIndex, M.ListCount, M.NewIndex, M.ListText],
+        methods: [M.AddItem, M.RemoveItem, M.Clear, M.List, M.ItemData, M.ItemIcon, M.ListIndex, M.ListCount, M.NewIndex, M.ListText,
+            M.TopIndex],
         writableOnAnRDFormsForm: [P.ComboBoxStyle]);
 
     /// <summary>
@@ -256,6 +257,17 @@ public static class ComponentClasses
     public static readonly ComponentClass Timer = new("RDForms.Timer", "Timer", ComponentKind.Control,
         [P.Enabled, P.Interval, P.Left, P.Top, P.Tag], [Events.Timer], hasExtent: false, notAvailableAtRunTime: [P.Left, P.Top],
         defaultMember: DefaultMembers["RDForms.Timer"], hasContainer: false);
+
+    /// <summary>
+    /// <c>RDForms.ImageList</c>, MSComctlLib's: the pictures other controls show, in <c>ListImages</c>. It has a place in the designer
+    /// and no size, and a running program does not show it and can neither read nor set its <c>Left</c> and <c>Top</c>. Its
+    /// <c>BackColor</c> is the window colour, and it leaves its silver <c>MaskColor</c> out of its pictures by default. It has no
+    /// default member.
+    /// </summary>
+    public static readonly ComponentClass ImageList = new("RDForms.ImageList", "ImageList", ComponentKind.Control,
+        [P.BackColor, P.ImageWidth, P.ImageHeight, P.MaskColor, P.UseMaskColor, P.ListImages, P.Left, P.Top, P.Tag], [],
+        Defaults((P.BackColor, WindowBackground), (P.UseMaskColor, true)), hasExtent: false,
+        notAvailableAtRunTime: [P.Left, P.Top]);
 
     /// <summary>
     /// <c>RDForms.HScrollBar</c>.
@@ -364,7 +376,8 @@ public static class ComponentClasses
     /// </summary>
     public static IReadOnlyList<ComponentClass> All { get; } =
         [Form, MDIForm, UserControl, PropertyPage, CommandButton, TextBox, Label, CheckBox, OptionButton, Frame, ListBox, ComboBox, PictureBox, Image,
-         Timer, HScrollBar, VScrollBar, Shape, Line, Menu, DriveListBox, DirListBox, FileListBox, Data, ToggleButton, SpinButton, MultiPage, Page, TabStrip];
+         Timer, HScrollBar, VScrollBar, Shape, Line, Menu, DriveListBox, DirListBox, FileListBox, Data, ToggleButton, SpinButton, MultiPage, Page, TabStrip,
+         ImageList];
 
     private static readonly Dictionary<string, ComponentClass> byTypeName =
         All.ToDictionary(c => c.TypeName, StringComparer.OrdinalIgnoreCase);

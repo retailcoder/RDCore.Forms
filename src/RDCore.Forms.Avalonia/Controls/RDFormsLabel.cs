@@ -11,6 +11,7 @@ using Avalonia.Media.Imaging;
 using RDCore.Forms.Model;
 using RDCore.SDK.Workspace.Pictures;
 using P =RDCore.Forms.Model.Properties;
+using ModelTextAlignment = RDCore.Forms.Model.TextAlignment;
 
 namespace RDCore.Forms.Avalonia.Controls;
 
@@ -21,6 +22,11 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <para>
 /// Its caption's <c>&amp;</c> marks an access key where <c>UseMnemonic</c> is set; otherwise every <c>&amp;</c> is drawn. A
 /// <c>BackStyle</c> of Transparent paints no background. A single border is a sunken edge when 3-D, and one pixel when flat.
+/// </para>
+/// <para>
+/// Where <c>AutoSize</c> is set, it sets its component's size to its caption's, as VB6 does: as a program sets another caption, sets
+/// <c>AutoSize</c>, or changes its <c>Font</c>, <c>BorderStyle</c> or <c>WordWrap</c>, and, where <c>WordWrap</c> is set, sets its
+/// <c>Width</c>. It does not as its form loads. With <c>WordWrap</c> it keeps its width and grows down, and shows the lines it counted.
 /// </para>
 /// <para>
 /// Its <c>Picture</c>, an RD-VBA addition, is laid out against its caption as MSForms' Label lays it out: the two make one block,
@@ -39,6 +45,8 @@ public sealed class RDFormsLabel : Control
     private readonly LabelFace face = new();
     private readonly RDFormsPicture.Holder picture = new();
     private IBrush background = Brushes.Transparent;
+    private Wrapped? wrapped;
+    private bool fitting;
 
     static RDFormsLabel()
     {
@@ -85,13 +93,38 @@ public sealed class RDFormsLabel : Control
 
     private void Apply(ComponentPropertyChangedEventArgs e)
     {
+        // A value a program set, as against one applied again; and one it changed.
+        var set = !ComponentBinding.IsReapplying(instance);
+        var changed = set && !Equals(e.Before, e.After);
         switch (e.Property.Name)
         {
-            case nameof(P.Caption) or nameof(P.UseMnemonic) or nameof(P.Alignment) or nameof(P.WordWrap) or nameof(P.AutoSize):
+            case nameof(P.Caption) or nameof(P.WordWrap):
+                if (changed)
+                    Fit(widthSet: false);
+                ShowCaption();
+                break;
+            case nameof(P.AutoSize):
+                if (set)
+                    Fit(widthSet: false);
+                ShowCaption();
+                break;
+            case nameof(P.UseMnemonic) or nameof(P.Alignment):
                 ShowCaption();
                 break;
             case nameof(P.BorderStyle) or nameof(P.Appearance):
                 edge.Edge = RDFormsEdge.Of(instance.Get(P.BorderStyle), instance.Get(P.Appearance));
+                if (changed && e.Property.Name == nameof(P.BorderStyle) && Fit(widthSet: false))
+                    ShowCaption();
+                break;
+            case nameof(P.Font):
+                ComponentBinding.ApplyCommon(this, e.Property, e.After);
+                if (changed && Fit(widthSet: false))
+                    ShowCaption();
+                break;
+            case nameof(P.Width):
+                ComponentBinding.ApplyCommon(this, e.Property, e.After);
+                if (set && instance.Get(P.WordWrap) && Fit(widthSet: true))
+                    ShowCaption();
                 break;
             case nameof(P.BackColor) or nameof(P.BackStyle):
                 background = instance.Get(P.BackStyle) == BackStyle.Opaque ? ComponentBinding.Brush(this, instance.Get(P.BackColor)) : Brushes.Transparent;
@@ -121,16 +154,61 @@ public sealed class RDFormsLabel : Control
     {
         var caption = instance.Get(P.Caption);
         var parsed = instance.Get(P.UseMnemonic) ? RDFormsCaption.Parse(caption) : (RDFormsCaption.Parsed?)null;
+        var shown = parsed?.Shown ?? caption;
+        // A label that fitted itself to its caption wrapped shows the lines it counted, so that its text takes the height it has.
+        var lines = instance.Get(P.AutoSize) && instance.Get(P.WordWrap) && wrapped is { } fit && fit.Shown == shown ? wrapped : null;
+        if (lines is not null)
+            parsed = parsed is { } key ? new RDFormsCaption.Parsed(lines.Text, lines.At(key.AccessKey)) : null;
         var text = parsed is { FitsAccessText: true } ? new AccessText { Text = parsed.Value.ForAccessText }
-            : new TextBlock { Text = parsed?.Shown ?? caption };
+            : new TextBlock { Text = lines?.Text ?? shown };
         // A label of a fixed size wraps its caption at its width; WordWrap decides only whether one that sizes itself grows down or across.
-        text.TextWrapping = Wraps(instance) ? TextWrapping.Wrap : TextWrapping.NoWrap;
+        text.TextWrapping = Wraps(instance) && lines is null ? TextWrapping.Wrap : TextWrapping.NoWrap;
         text.TextAlignment = RDFormsTextBox.ToAvalonia(instance.Get(P.Alignment));
         face.Text = text;
-        if ((parsed?.Shown ?? caption) is { Length: > 0 } shown)
+        if (shown.Length > 0)
             SetValue(global::Avalonia.Automation.AutomationProperties.NameProperty, shown);
         else
             ClearValue(global::Avalonia.Automation.AutomationProperties.NameProperty);
+    }
+
+    // VB6 fits a Label whose AutoSize is set to its caption as shown, in its font, inside its border, and gives it whole pixels: across
+    // to its longest line, or, where WordWrap is set, down to its lines wrapped at its width, across only to a line wider than that. A
+    // fit from a Width set keeps that width where the lines fit it. Its alignment's edge stays: the left one, the right one or the centre.
+    // It answers whether the label was fitted.
+    private bool Fit(bool widthSet)
+    {
+        if (fitting || !instance.Get(P.AutoSize))
+            return false;
+        var font = PrintFont.Of(instance.Get(P.Font));
+        var caption = instance.Get(P.Caption);
+        var shown = instance.Get(P.UseMnemonic) ? RDFormsCaption.Parse(caption).Shown : caption;
+        var border = 2 * RDFormsEdge.WidthOf(RDFormsEdge.Of(instance.Get(P.BorderStyle), instance.Get(P.Appearance)));
+        var (left, top, width) = (instance.Get(P.Left), instance.Get(P.Top), instance.Get(P.Width));
+        var wraps = instance.Get(P.WordWrap);
+        var across = widthSet ? width : Whole(width);
+        var lines = Wrapped.Of(font, shown, wraps ? across - border : double.PositiveInfinity);
+        wrapped = wraps ? lines : null;
+        // An empty caption is a space wide.
+        var widest = shown.Length == 0 ? font.Width(" ") : lines.Widths.Max();
+        var fitted = !wraps || widest > across - border ? widest + border : across;
+        var at = instance.Get(P.Alignment) switch
+        {
+            ModelTextAlignment.RightJustify => Whole(left + width) - fitted,
+            ModelTextAlignment.Center => Whole(left + (width - fitted) / 2),
+            _ => Whole(left),
+        };
+        fitting = true;
+        try
+        {
+            instance.Set(P.Width, fitted).Set(P.Height, lines.Widths.Length * font.Line + border).Set(P.Left, at).Set(P.Top, Whole(top));
+        }
+        finally
+        {
+            fitting = false;
+        }
+        return true;
+
+        static double Whole(double pixels) => Math.Round(pixels, MidpointRounding.AwayFromZero);
     }
 
     // MSForms takes the colour of a bitmap's lower-left pixel as transparent; a GIF keeps its own transparent colour.
@@ -138,6 +216,72 @@ public sealed class RDFormsLabel : Control
     {
         var mask = picture.Format == PictureFormat.Bitmap ? picture.LowerLeft : null;
         face.Show(picture.MaskedBy(mask), instance.Get(P.PicturePosition));
+    }
+
+    // A caption in the lines a Label fitted to it counts, each one's width in pixels, and the text it shows them as.
+    private sealed class Wrapped
+    {
+        private readonly List<int> breaks;
+
+        private Wrapped(string shown, List<int> breaks, int[] widths)
+        {
+            Shown = shown;
+            this.breaks = breaks;
+            Widths = widths;
+            var text = new System.Text.StringBuilder(shown);
+            for (var i = breaks.Count - 1; i >= 0; i--)
+                text.Insert(breaks[i], '\n');
+            Text = text.ToString();
+        }
+
+        public string Shown { get; }
+
+        public int[] Widths { get; }
+
+        // The caption with a line feed where each wrapped line starts.
+        public string Text { get; }
+
+        // Where a character of the caption is in the text.
+        public int? At(int? index) => index is { } at ? at + breaks.Count(start => start <= at) : null;
+
+        // The lines of a caption, wrapped as VB6 wraps a Label's (DrawText's word break, measured): a word stays on a line where the
+        // line through it, without the spaces after it, fits the room. A line's width counts the spaces after its last word, and a word
+        // wider than the room is alone on its line. A carriage return, a line feed, or both together end a line too.
+        public static Wrapped Of(PrintFont font, string shown, double room)
+        {
+            var breaks = new List<int>();
+            var widths = new List<int>();
+            for (var start = 0; ; )
+            {
+                var end = shown.IndexOfAny(['\r', '\n'], start);
+                if (end < 0)
+                    end = shown.Length;
+                // The line's start, and where its next word starts, past the spaces after its last one.
+                var (line, next) = (start, start);
+                while (next < end)
+                {
+                    var word = next;
+                    while (word < end && shown[word] == ' ')
+                        word++;
+                    while (word < end && shown[word] != ' ')
+                        word++;
+                    if (next > line && font.Width(shown[line..word]) > room)
+                    {
+                        widths.Add(font.Width(shown[line..next]));
+                        breaks.Add(next);
+                        line = next;
+                        continue;
+                    }
+                    next = word;
+                    while (next < end && shown[next] == ' ')
+                        next++;
+                }
+                widths.Add(font.Width(shown[line..end]));
+                if (end == shown.Length)
+                    return new Wrapped(shown, breaks, [.. widths]);
+                start = end + (shown[end] == '\r' && end + 1 < shown.Length && shown[end + 1] == '\n' ? 2 : 1);
+            }
+        }
     }
 }
 

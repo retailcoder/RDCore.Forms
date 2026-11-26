@@ -40,9 +40,9 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// </para>
 /// <list type="bullet">
 /// <item><description>
-/// Resize, inside <see cref="Window.Show()"/> the first time the window is shown, and once for each change of the root's
-/// <c>Width</c> or <c>Height</c> after that. A size the root already has raises none, and neither does showing the window again
-/// after it was hidden.
+/// Resize, once for each change of the root's <c>Width</c> or <c>Height</c>, whether or not the window is shown, and inside
+/// <see cref="Window.Show()"/> the first time the window is shown, whatever its size. A size the root already has raises none, and
+/// neither does showing the window again after it was hidden.
 /// </description></item>
 /// <item><description>
 /// Activate, as the window becomes the active one of its <see cref="Program"/>'s form windows, after the Resize that shows it; Deactivate
@@ -158,6 +158,9 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
         AddHandler(PointerPressedEvent, (_, e) => pointer = e.GetPosition(View), RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerReleasedEvent, OnPointerReleasedOverForm, RoutingStrategies.Bubble, handledEventsToo: true);
         Apply();
+        // A form loaded and not shown raises Resize as its size changes, as VB6's does.
+        resizedAt = SizeOfRoot();
+        Root.PropertyChanged += OnRootChanged;
     }
 
     /// <summary>
@@ -381,10 +384,12 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
     /// (<see cref="Assign"/> assigns it). An index is an Integer, rounded half to even, and Null is error 94. <c>AddItem</c> is error 5
     /// for an index outside 0 to <c>ListCount</c>, and <c>RemoveItem</c> for one outside the items; <c>ItemData</c>, <c>ItemIcon</c> and
     /// <c>Selected</c> are error 381 for an index outside the items, and <c>List</c> is "" there; <c>ListIndex</c> is error 380 for a
-    /// value outside -1 to <c>ListCount</c> - 1. <c>ItemIcon</c>, an RD-VBA addition, is an object (<see cref="FormValue.FromObject"/>):
-    /// the bytes of the item's picture file, or <c>Nothing</c>. It is assigned one too: anything else is error 13, and a picture
-    /// <see cref="FormPictures.Inspect"/> refuses is error 481. <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c> and <c>SelCount</c>
-    /// are Integers. Past 32767, a count or an index is a Long: RDForms sets this rule.
+    /// value outside -1 to <c>ListCount</c> - 1, and <c>TopIndex</c> for one outside 0 to <c>ListCount</c> - 1 (see
+    /// <see cref="RDFormsListBox.TopIndex"/> and <see cref="RDFormsComboBox.TopIndex"/>). <c>ItemIcon</c>, an RD-VBA addition, is an
+    /// object (<see cref="FormValue.FromObject"/>): the bytes of the item's picture file, or <c>Nothing</c>. It is assigned one too:
+    /// anything else is error 13, and a picture
+    /// <see cref="FormPictures.Inspect"/> refuses is error 481. <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c> and
+    /// <c>TopIndex</c> are Integers. Past 32767, a count or an index is a Long: RDForms sets this rule.
     /// </para>
     /// </remarks>
     public FormValue Invoke(ComponentInstance component, MethodDefinition method, IReadOnlyList<FormValue?> arguments, CodeUnit unit = CodeUnit.Pixel)
@@ -472,6 +477,8 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
             list.ListIndex = MethodArguments.Integer(value, ofNull: FormError.InvalidUseOfNull);
         else if (ReferenceEquals(property, Methods.ListText))
             list.SetText(MethodArguments.String(value));
+        else if (ReferenceEquals(property, Methods.TopIndex))
+            list.TopIndex = MethodArguments.Integer(value, ofNull: FormError.InvalidUseOfNull);
         else
             throw new FormErrorException(FormError.ObjectDoesntSupportPropertyOrMethod);
     }
@@ -503,6 +510,8 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
             return Integer(counted.SelCount);
         else if (ReferenceEquals(method, Methods.ListText))
             return FormValue.FromString(list.Text);
+        else if (ReferenceEquals(method, Methods.TopIndex))
+            return Integer(list.TopIndex);
         else
             return null;
         return FormValue.Empty;
@@ -613,7 +622,7 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
         (DrawingSurfaces.Of(component) as RDFormsDrawingLayer)?.PaintNow();
     }
 
-    // It follows its root while it is open, so that a closed window holds no handler of its root's.
+    // It follows its root from its creation until it is closed, so that a closed window holds no handler of its root's.
     /// <inheritdoc/>
     protected override void OnOpened(EventArgs e)
     {
@@ -744,7 +753,7 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
     // The aligned boxes follow the form's size after its Resize, and raise theirs after it.
     private void RaiseResize()
     {
-        if (opened && SizeOfRoot() != resizedAt)
+        if (SizeOfRoot() != resizedAt)
         {
             resizedAt = SizeOfRoot();
             RDFormsControl.Raise(View, Events.Resize);

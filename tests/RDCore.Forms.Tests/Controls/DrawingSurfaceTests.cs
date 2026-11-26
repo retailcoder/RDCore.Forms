@@ -339,6 +339,36 @@ public sealed class DrawingSurfaceTests
         Assert.IsNull(closed);
     }
 
+    // PSet on the form and its PictureBox while the form is loaded and not shown, Point before and after the first Show, as VB6 has it:
+    // AutoRedraw True keeps the drawing; False draws on a window that is not on the screen, so Point is -1 and nothing is kept.
+    [TestMethod]
+    [DataRow(true, new[] { Red, Red, Red, Red }, DisplayName = "AutoRedraw True")]
+    [DataRow(false, new[] { -1, -1, White, White }, DisplayName = "AutoRedraw False")]
+    public void WhatIsDrawnOnAFormNotShown_IsKept_OnlyWithAutoRedraw_AndTheCurrentPointMovesEitherWay(bool autoRedraw, int[] expected)
+    {
+        var (colours, moved) = UI.Run(() =>
+        {
+            var root = Root(autoRedraw);
+            var picture = new ComponentInstance(ComponentClasses.PictureBox, "Picture1").Set(P.Left, 150d).Set(P.Top, 50d).Set(P.Width, 100d)
+                .Set(P.Height, 100d).Set(P.ScaleMode, ScaleMode.Pixel).Set(P.BackColor, FormColor.FromRgb(255, 255, 255)).Set(P.AutoRedraw, autoRedraw);
+            picture.SetContainer(root);
+            var window = new RDFormsFormWindow(new FormDefinition(root));
+            IDrawingSurface[] surfaces = [DrawingSurfaces.Of(root)!, DrawingSurfaces.Of(picture)!];
+            foreach (var surface in surfaces)
+                surface.PSet(new GraphicsPoint(10, 10), FormColor.FromRgb(255, 0, 0));
+            var hidden = surfaces.Select(surface => surface.Point(10, 10)).ToList();
+            var moved = surfaces.All(surface => (surface.CurrentX, surface.CurrentY) == (10d, 10d));
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var result = hidden.Concat(surfaces.Select(surface => surface.Point(10, 10))).ToArray();
+            window.Close();
+            return (result, moved);
+        });
+
+        CollectionAssert.AreEqual(expected, colours);
+        Assert.IsTrue(moved);
+    }
+
     [TestMethod]
     public void APictureBoxsSurface_IsItsInside_WithinItsBorder()
     {

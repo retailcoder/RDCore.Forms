@@ -3,7 +3,8 @@ using RDCore.Forms.Model;
 
 namespace RDCore.Forms.Tests.Import.VB6;
 
-// Forms VB6's IDE wrote, from HexIDE's corpus: in-box ActiveX controls, which the model does not have, beside intrinsic ones.
+// Forms VB6's IDE wrote, from HexIDE's corpus: in-box ActiveX controls beside intrinsic ones. The model has none of the ActiveX ones
+// but MSComctlLib's ImageList.
 [TestClass]
 public sealed class VB6CorpusTests
 {
@@ -40,11 +41,29 @@ public sealed class VB6CorpusTests
     [TestMethod]
     public void AnActiveXControlsPropertyBags_StayInItsText()
     {
-        var images = Read("imagelist-three", "Form1.frm").Form!.Root.UnmodelledContents.Single();
+        var rich = Read("richtextbox", "Form1.frm").Form!.Root.UnmodelledContents.Single(c => c.Name == "RichTextBox1");
 
-        Assert.AreEqual("MSComctlLib.ImageList", images.TypeName);
-        Assert.Contains("            Picture         =   \"Form1.frx\":0352", images.Text);
-        Assert.Contains("      EndProperty", images.Text);
+        Assert.AreEqual("RichTextLib.RichTextBox", rich.TypeName);
+        Assert.Contains("      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} ", rich.Text);
+        Assert.Contains("      EndProperty", rich.Text);
+    }
+
+    // The ImageList, MSComctlLib's, is modelled: each ListImage's record is the length of the rest, StdPicture's CLSID, "lt\0\0", the
+    // image's length and the image, here two 16x16 bitmaps and an icon.
+    [TestMethod]
+    public void AnImageListVB6Saved_IsReadWithItsPictures_TheirKeysAndTags()
+    {
+        var import = Read("imagelist-three", "Form1.frm");
+        var imageList = import.Form!.Find("ImageList1")!;
+        var images = imageList.Get(Properties.ListImages);
+
+        Assert.IsEmpty(import.Diagnostics);
+        Assert.IsEmpty(import.Form.Root.UnmodelledContents);
+        Assert.AreEqual(((short)16, (short)16), (imageList.Get(Properties.ImageWidth), imageList.Get(Properties.ImageHeight)));
+        CollectionAssert.AreEqual(new[] { ("red", "t1"), ("blue", ""), ("ico", "t3") }, images.Select(i => (i.Key, i.Tag)).ToArray());
+        CollectionAssert.AreEqual(new[] { 0x336, 0x336, 0x1BE }, images.Select(i => i.Picture.Length).ToArray());
+        CollectionAssert.AreEqual(new[] { "424D", "424D", "0000" }, images.Select(i => Convert.ToHexString(i.Picture, 0, 2)).ToArray());
+        Assert.IsFalse(imageList.UnmodelledProperties.Any(p => p.Name == "Images"));
     }
 
     [TestMethod]

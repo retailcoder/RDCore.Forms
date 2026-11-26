@@ -93,6 +93,11 @@ public static class Methods
     public static readonly MethodDefinition ListIndex = new("ListIndex") { Value = new MethodParameter("ListIndex", "Integer") };
 
     /// <summary>
+    /// <c>TopIndex</c>, a property: the item in the top row of a ListBox's or ComboBox's list, from 0.
+    /// </summary>
+    public static readonly MethodDefinition TopIndex = new("TopIndex") { Value = new MethodParameter("TopIndex", "Integer") };
+
+    /// <summary>
     /// <c>ListCount</c>, a read-only property: the number of items of a ListBox or ComboBox.
     /// </summary>
     public static readonly MethodDefinition ListCount = new("ListCount") { Value = new MethodParameter("ListCount", "Integer"), IsReadOnly = true };

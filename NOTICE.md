@@ -11,7 +11,7 @@ Le contenu de ce référentiel est distribué sous la licence **MIT** : voir [LI
 
 ## Code tiers
 
-Des parties de RDCore.Forms sont dérivées de [HexIDE](https://github.com/hexide-io/HexIDE), à partir du _commit_ `ae17f1db` : le modèle des composants, les contrôles Avalonia et la lecture des fichiers `.frm` et `.frx`.
+Des parties de RDCore.Forms sont dérivées de [HexIDE](https://github.com/hexide-io/HexIDE), à partir du _commit_ `ae17f1db` : le modèle des composants, les contrôles Avalonia et la lecture des fichiers `.frm` et `.frx`, celle de l'ImageList de MSComctlLib comprise.
 
 - HexIDE est distribué sous la licence MIT.
 - Chaque fichier dérivé de HexIDE conserve, dans son en-tête, l'avis de droit d'auteur de HexIDE.
@@ -19,6 +19,10 @@ Des parties de RDCore.Forms sont dérivées de [HexIDE](https://github.com/hexid
 - La licence de HexIDE est reproduite à la fin de ce fichier, dans sa version anglaise originale, comme elle l'exige : voir [Licence de HexIDE](#hexide-licence).
 
 Les paquets NuGet dont dépend RDCore.Forms, dont Avalonia, demeurent sous leurs propres licences.
+
+## RDCore.SDK et RDCore.SDK.Protocols
+
+RDCore.Forms est bâti sur deux paquets NuGet publiés sous la licence **MIT** : **RDCore.SDK** (`RDCore.SDK.dll`), à partir de [rubberduck-vba/RDCore.SDK](https://github.com/rubberduck-vba/RDCore.SDK), et **RDCore.SDK.Protocols** (`RDCore.SDK.Protocols.dll`), à partir de [rubberduck-vba/RDCore.SDK.Protocols](https://github.com/rubberduck-vba/RDCore.SDK.Protocols). Un paquet de RDCore.Forms dépend de RDCore.SDK, qui dépend de RDCore.SDK.Protocols, et ne contient aucune de leurs _assemblies_.
 
 ## Palette sombre de WinUI 3
 
@@ -61,7 +65,7 @@ The content of this repository is licensed under the **MIT** licence: see [LICEN
 
 ## Third-party code
 
-Parts of RDCore.Forms are derived from [HexIDE](https://github.com/hexide-io/HexIDE), from commit `ae17f1db`: the component model, the Avalonia controls, and the reading of `.frm` and `.frx` files.
+Parts of RDCore.Forms are derived from [HexIDE](https://github.com/hexide-io/HexIDE), from commit `ae17f1db`: the component model, the Avalonia controls, and the reading of `.frm` and `.frx` files, MSComctlLib's ImageList included.
 
 - HexIDE is licensed under the MIT licence.
 - Every file derived from HexIDE keeps HexIDE's copyright notice in its header.
@@ -69,6 +73,10 @@ Parts of RDCore.Forms are derived from [HexIDE](https://github.com/hexide-io/Hex
 - HexIDE's licence is reproduced below, as it requires.
 
 The NuGet packages RDCore.Forms depends on, Avalonia among them, remain under their own licences.
+
+## RDCore.SDK and RDCore.SDK.Protocols
+
+RDCore.Forms builds on two NuGet packages published under the **MIT** licence: **RDCore.SDK** (`RDCore.SDK.dll`), from [rubberduck-vba/RDCore.SDK](https://github.com/rubberduck-vba/RDCore.SDK), and **RDCore.SDK.Protocols** (`RDCore.SDK.Protocols.dll`), from [rubberduck-vba/RDCore.SDK.Protocols](https://github.com/rubberduck-vba/RDCore.SDK.Protocols). A package of RDCore.Forms depends on RDCore.SDK, which depends on RDCore.SDK.Protocols, and carries neither assembly.
 
 ## WinUI 3 dark palette
 

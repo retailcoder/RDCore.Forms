@@ -12,6 +12,8 @@ internal interface IRDFormsList
 
     int NewIndex { get; }
 
+    int TopIndex { get; set; }
+
     string Text { get; }
 
     void SetText(string text);

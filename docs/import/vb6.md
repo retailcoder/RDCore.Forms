@@ -14,6 +14,8 @@ The text is decoded as Windows-1252 unless [`VB6ImportOptions.Encoding`](../api/
 
 A class of VB6's `VB` library reads as the RDForms class of the same name: `Begin VB.TextBox Text1` is an `RDForms.TextBox`.
 
+MSComctlLib's ImageList (MSCOMCTL.OCX) reads as an `RDForms.ImageList`: `Begin MSComctlLib.ImageList ImageList1`. Its `Images` bag becomes its `ListImages`: each `ListImage` bag's picture, read from the companion, with its `Key` and `Object.Tag`. An `Images` bag with any part the reader cannot read is reported, and kept whole as an `UnmodelledProperty`; the ImageList then has no pictures. MSComctlLib's other classes are kept as text.
+
 The project's own UserControls that a form places, such as `Begin Project1.Gauge Gauge1`, are read as components when `VB6ImportOptions.Classes` holds their classes: see [UserControls](../controls/usercontrols.md). Without them, each one is kept as text.
 
 `ReadFile` reads a companion only from the designer file's folder. A cited name that is a rooted path, such as a network path, is not read, and neither is a name that holds a NUL: each is reported as a missing companion.

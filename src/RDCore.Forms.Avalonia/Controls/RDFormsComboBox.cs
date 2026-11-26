@@ -33,7 +33,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// Its events, as measured with VB6: Click is a choice, raised for every pick of an item by the mouse (the one already selected too),
 /// every arrow key that moves the selection with the list open or closed, a Dropdown List's character that selects another item,
 /// and code's <see cref="ListIndex"/> when it moves. Change is the edit box's, raised from the component's <c>Text</c>, from typing and from
-/// code, never from choosing an item. DropDown is raised as the list opens. It raises GotFocus and LostFocus once as the combo is
+/// code, never from choosing an item. DropDown is raised as the list opens, and Scroll where it scrolls (see <see cref="TopIndex"/>).
+/// It raises GotFocus and LostFocus once as the combo is
 /// entered and left, whether the combo or its edit box has the focus. KeyDown, KeyPress and KeyUp are raised for the keys of the combo,
 /// of its edit box and of its open list, and the form raises none of its own for them where its <c>KeyPreview</c> is False. A key's
 /// Click, Change or DropDown comes after its KeyDown, and its KeyPress where it types a character, and before its KeyUp.
@@ -103,6 +104,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     private bool locked;
     private readonly ItemIcons icons = new();
     private readonly RDFormsDropDown dropDown;
+    private readonly ListTop top;
     // Set while the component's selection goes to the edit box, and the edit box's to the component.
     private bool selecting;
 
@@ -139,11 +141,46 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             if (narrowed is not null)
                 ShowNarrowing();
         };
+        // The list scrolls as VB6's does, by its TopIndex, and not to every item selected.
+        AutoScrollToSelectedItem = false;
+        top = new ListTop(this, () => ItemCount, () => style == ComboBoxStyle.SimpleCombo
+            ? (int)Math.Floor(((double.IsNaN(Height) ? Bounds.Height : Height) - EditHeight - ListBorder) / Row)
+            : DropDownRows, () => Row);
+        top.FollowKeys(() => SelectedIndex, typed: false);
         ComponentBinding.Bind(this, instance!, ComponentClasses.ComboBox, Apply);
     }
 
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ComboBox);
+
+    // The rows of a Dropdown Combo's and a Dropdown List's list, as measured with VB6.
+    private const int DropDownRows = 8;
+
+    /// <summary>
+    /// The item in the top row of the combo's list, from 0.
+    /// </summary>
+    /// <exception cref="FormErrorException">
+    /// Set outside 0 to <see cref="ListCount"/> - 1, and on an empty combo: 380, Invalid property value.
+    /// </exception>
+    /// <remarks>
+    /// The list shows 8 rows, and a Simple Combo's list the rows its height takes. The top is at most the item in the top row where
+    /// the last item fills the last row, and an item set past it shows the last rows. Setting it raises Scroll where the list scrolls.
+    /// Where the combo's selection is set, by <see cref="ListIndex"/>, a Dropdown List's <c>Text</c>, an <see cref="AddItem"/> before
+    /// the selected item or a <c>List</c> of any item, the selected item goes to the top row, and item 0 with none selected. A key
+    /// brings the item it selects into view, at the top row from above and at the last row from below, and raises Scroll after its
+    /// Click where the list scrolls. Items removed leave the top where it is. A Simple Combo's list is scrolled to it, and the user's
+    /// scroll bar raises Scroll there, and the wheel none.
+    /// </remarks>
+    public int TopIndex
+    {
+        get => top.Value;
+        set
+        {
+            if (value < 0 || value >= ItemCount)
+                throw new FormErrorException(FormError.InvalidPropertyValue);
+            top.MoveTo(value, raise: true);
+        }
+    }
 
     // A Simple Combo's shape, as measured with VB6: its edit box is a row and 8 pixels high, 21 at the default font, and its list's
     // border takes 2 pixels on each side.
@@ -349,6 +386,8 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             if (value == SelectedIndex)
                 return;
             SelectedIndex = value;
+            if (value >= 0)
+                top.MoveTo(value, raise: false);
             RDFormsControl.Raise(this, Events.Click);
         }
     }
@@ -384,6 +423,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             if (index < 0)
                 throw new FormErrorException(FormError.PropertyIsReadOnly("Text"));
             SelectedIndex = index;
+            top.MoveTo(index, raise: false);
             RDFormsControl.Raise(this, Events.Click);
             return;
         }
@@ -501,18 +541,27 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     /// Adds an item.
     /// </summary>
     /// <param name="item">The item's text.</param>
-    /// <param name="index">Where it goes, from 0; at the end where it is <see langword="null"/>.</param>
+    /// <param name="index">
+    /// Where it goes, from 0, sorted or not; where it is <see langword="null"/>, at the end, or where <see cref="ListOrder.IndexOf"/> says
+    /// in a <see cref="P.Sorted"/> list.
+    /// </param>
     /// <exception cref="FormErrorException"><paramref name="index"/> is outside 0 to <see cref="ListCount"/>: 5, Invalid procedure call or argument.</exception>
     public void AddItem(string item, int? index = null)
     {
         ArgumentNullException.ThrowIfNull(item);
-        var at = index ?? ItemCount;
+        var at = index ?? (instance.Get(P.Sorted)
+            ? ListOrder.IndexOf(instance.Get(P.List), item, System.Globalization.CultureInfo.CurrentCulture)
+            : ItemCount);
         if (at < 0 || at > ItemCount)
             throw new FormErrorException(FormError.InvalidProcedureCall);
+        var selected = SelectedIndex;
         Items.Insert(at, item);
         WriteList();
         ListItems.Inserted(instance, ItemCount - 1, at);
         newIndex = at;
+        // The selection moves down with its item, and is set again.
+        if (selected >= 0 && at <= selected)
+            top.MoveTo(SelectedIndex, raise: false);
     }
 
     /// <summary>
@@ -582,6 +631,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             textFromComponent = false;
         }
         WriteList();
+        top.MoveTo(Math.Max(SelectedIndex, 0), raise: false);
     }
 
     /// <summary>
@@ -629,6 +679,8 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
         // The edit box is one line, at a combo's height, too short for a TextBox's own padding.
         editBox = e.NameScope.Find<TextBox>("PART_EditableTextBox");
         listBorder = e.NameScope.Find<Border>("PART_List");
+        // A Simple Combo's list is shown in rows of a line, as VB6's; a dropping list's is not, and its top is the combo's alone.
+        top.Attach(style == ComboBoxStyle.SimpleCombo ? listBorder?.Child as ScrollViewer : null);
         if (editBox is not { } box)
             return;
         box.PropertyChanged += TakeSelection;
@@ -988,6 +1040,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             foreach (var item in (IReadOnlyList<string>)e.After!)
                 Items.Add(item);
             newIndex = -1;
+            top.Keep();
         }
         else if (ReferenceEquals(e.Property, P.Locked))
         {
@@ -1087,6 +1140,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
         {
             writingList = false;
         }
+        top.Keep();
     }
 }
 

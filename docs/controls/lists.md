@@ -46,6 +46,7 @@ var x = window.Invoke(combo, Methods.List, [FormValue.FromInteger(0)]).AsString(
 |`NewIndex` As Integer|Read-only property|yes|yes|
 |`SelCount` As Integer|Read-only property|yes|no|
 |`Text` As String|Property|yes|yes|
+|`TopIndex` As Integer|Property|yes|yes|
 
 |Rule|Behaviour|
 |---|---|
@@ -55,11 +56,38 @@ var x = window.Invoke(combo, Methods.List, [FormValue.FromInteger(0)]).AsString(
 |`Text`|A ListBox's and a Dropdown List's is the selected item's text, and setting it selects the first item whose whole text it is (383 on a Dropdown List where none has it). Another combo's is its edit box's: see [ComboBox](#combobox).|
 |`ItemIcon`|An object (`FormValue.FromObject`): the bytes of the item's picture file, or `Nothing` for none. Assigning anything else is error 13, and a picture that is refused error 481 (see [Item icons](#item-icons)).|
 |`Column`|Error 438: VB6's ListBox has no `Column`, which is an MSForms ListBox's.|
+|`TopIndex`|Error 380 outside 0 to `ListCount` - 1: see [TopIndex](#topindex).|
 
 The index and argument rules follow RDForms' own rules, as a method's do. A ListBox or ComboBox that `Controls.Add` adds takes the same members as one of the form's file.
 
+## Sorted
+
+A ListBox or ComboBox whose file sets `Sorted` to True keeps its items in order, as VB6's does. A program reads `Sorted`, and an assignment is error 382, "'Sorted' property cannot be set at run time".
+
+|Call|Where the item goes|
+|---|---|
+|`AddItem item`|In order. Items are compared without regard to case, in the user's regional settings, with their hyphens and apostrophes left out: `10` sorts before `9`, and `a-c` after `ab`. Items left equal are ordered by those marks, as in `coop`, `coop-`, `co-op`, `-coop`. The list is searched by halves from its middle item, and an item equal to another, such as `APPLE` to `apple`, takes the place of the first equal item the search reaches.|
+|`AddItem item, index`|At `index`, in order or not. A later `AddItem` searches the list as it is.|
+|`List(index) = text`|The item's text changes in place, and the list is not sorted again.|
+
+An item keeps its `ItemData` and its icon as items go in before it, and the selected item stays selected, with no Click.
+
+## TopIndex
+
+`TopIndex` is the item in the list's top row, from 0. A ListBox shows the rows its height takes, a Simple Combo's list the rows under its edit box, and a Dropdown Combo's and a Dropdown List's list 8. The top is at most the item in the top row where the last item fills the last row: with 30 items and 10 rows, 20.
+
+|Case|Behaviour|
+|---|---|
+|`TopIndex` set|Takes 0 to `ListCount` - 1, and 0 on an empty ListBox; anything else is error 380, and every value on an empty combo. A value past the last top shows the last rows. Scroll is raised where the list scrolls, and not where the top does not move.|
+|A ListBox's `ListIndex` and `Text`|Bring the item they select into view: at the top row from above, at the last row from below, and not at all where it is in view. `Text` does so where the item is selected already. No Scroll.|
+|A combo's selection set|`ListIndex`, a Dropdown List's `Text`, an `AddItem` at or before the selected item, and `SetList` of any item put the selected item at the top row, or item 0 where none is selected. No Scroll.|
+|A key that moves the selection|Brings the item into view, in both controls, and raises Scroll after its Click where the list scrolls. A ListBox's character typed does the same (RDForms' own).|
+|Items added and removed|Otherwise leave the top where it is, the last top at most. `Clear` makes it 0.|
+|The user's scroll bar|Moves the top and raises Scroll once the list has scrolled. The list ends its scroll on a whole row (RDForms' own).|
+|The mouse wheel|Moves the top and raises no Scroll.|
+
 > [!NOTE]
-> **Not implemented.** `Sorted` and `TopIndex` are not modeled: a program's `TopIndex` is error 438, and a list whose file sets `Sorted` to True holds its items in the order they are added.
+> **Not implemented.** A Dropdown Combo's and a Dropdown List's open list shows more than 8 rows, opens at the selected item rather than at `TopIndex`, and its scrolling raises no Scroll.
 
 ## Item icons
 
@@ -85,6 +113,7 @@ list.SetItemIcon(0, File.ReadAllBytes("open.png"));
 |`GetSelected`, `SetSelected`|Read and set an item's selection; 381 for an index outside the items. `SetSelected` raises Click when it changes something.|
 |`SelCount`|The number of items selected.|
 |`Text`|The text of the item at `ListIndex`, or "". `SetText` selects the first item whose whole text it is, without regard to case, and raises Click; on a multi-select list it raises Click and changes nothing.|
+|Scroll|Raised where the list scrolls: see [TopIndex](#topindex).|
 
 ### MultiSelect
 
@@ -125,6 +154,7 @@ On an RDForms form, a program can set `Style` (see [Properties set only at desig
 |Click|For every pick of an item by the mouse, the one already selected too; for every arrow key that moves the selection, the list open or closed; for a Dropdown List's character that selects another item; for Enter on a Dropdown Combo's highlighted item; and for `ListIndex` from code when it moves.|
 |Change|From the edit box's text, by typing or by code, and never from choosing an item.|
 |DropDown|As the list opens.|
+|Scroll|Where the list scrolls: see [TopIndex](#topindex).|
 |GotFocus, LostFocus|Once as the combo is entered and left, whether the combo or its edit box has the focus.|
 |KeyDown, KeyPress, KeyUp|For the keys of the combo, its edit box and its open list. The form raises its own for them only where its `KeyPreview` is True. A key's Click, Change or DropDown comes before its KeyUp. Alt+Down raises KeyDown 18, KeyDown 40, DropDown, KeyUp 40, then KeyUp 18.|
 

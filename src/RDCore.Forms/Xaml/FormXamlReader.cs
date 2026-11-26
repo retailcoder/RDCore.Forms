@@ -209,6 +209,9 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics, Action<X
             case "Tabs" when instance.Class.Has(P.Tabs):
                 ReadTabs(element, instance);
                 return;
+            case "ListImages" when instance.Class.Has(P.ListImages):
+                ReadListImages(element, instance);
+                return;
             case "UnmodelledProperties":
                 foreach (var property in element.Elements())
                 {
@@ -345,6 +348,26 @@ internal sealed class FormXamlReader(FormXamlDiagnosticBag diagnostics, Action<X
             return flag;
         Invalid(instance, $"Tabs({index}).{name}", attribute.Value, attribute);
         return true;
+    }
+
+    // One ListImage for each picture, with its Picture, and its Key and Tag where it has them. A ListImage with no picture, or one that
+    // is not a picture's bytes, is kept as text.
+    private void ReadListImages(XElement element, ComponentInstance instance)
+    {
+        var images = new List<ListImage>();
+        foreach (var item in element.Elements())
+        {
+            if (item.Name != Ns + "ListImage" || item.Attribute("Picture") is not { } attribute
+                || FormXamlValues.ParsePicture(attribute.Value) is not { Length: > 0 } picture)
+            {
+                Unmodelled(item, instance);
+                continue;
+            }
+
+            images.Add(new ListImage(picture) { Key = (string?)item.Attribute("Key") ?? "", Tag = (string?)item.Attribute("Tag") ?? "" });
+        }
+
+        instance.Set(P.ListImages, [.. images]);
     }
 
     private void ReadControlLibraries(XElement element, ComponentInstance instance)

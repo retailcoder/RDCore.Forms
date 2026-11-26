@@ -446,6 +446,29 @@ public sealed class ListMemberTests
         Assert.IsNull(ComponentClasses.ListBox.Property("Column"));
     }
 
+    // As measured with VB6: TopIndex takes 0 to ListCount - 1, an Integer.
+    [TestMethod]
+    [DataRow(ListBox)]
+    [DataRow(ComboBox)]
+    public void ATopIndex_IsAssignedAndRead_AndOutsideTheItemsIs380_AndNullIs94(string type)
+    {
+        var lines = UI.Run(() =>
+        {
+            var (window, list, sink) = Open(type, [.. Enumerable.Range(0, 30).Select(i => $"item{i:00}")]);
+            sink.Raised.Clear();
+            window.Assign(list, M.TopIndex, [], I(5));
+            List<string> result = [$"{Get(window, list, M.TopIndex).AsInteger()} | {string.Join(", ", sink.Raised)}"];
+            result.Add($"{ErrorOf(() => window.Assign(list, M.TopIndex, [], I(30))).Number}");
+            result.Add($"{ErrorOf(() => window.Assign(list, M.TopIndex, [], I(-1))).Number}");
+            result.Add($"{ErrorOf(() => window.Assign(list, M.TopIndex, [], FormValue.Null)).Number}");
+            result.Add($"{Get(window, list, M.TopIndex).AsInteger()}");
+            window.Close();
+            return result;
+        });
+
+        Expect.Lines(["5 | List1.Scroll", "380", "380", "94", "5"], lines);
+    }
+
     [TestMethod]
     public void List_WithoutItsIndex_Is449_AndWithTwo450()
     {

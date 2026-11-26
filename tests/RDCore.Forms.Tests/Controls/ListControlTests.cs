@@ -67,6 +67,46 @@ public sealed class ListControlTests
         Assert.AreEqual("b", text);
     }
 
+    // As measured with VB6: a Sorted list puts an item given no index in order, and one given an index there, out of order. The selected
+    // item keeps the selection as items go in before it, with no Click, and each item keeps its ItemData.
+    [TestMethod]
+    [DataRow(false, DisplayName = "ListBox")]
+    [DataRow(true, DisplayName = "ComboBox")]
+    public void ASortedListsAddItem_PutsTheItemInOrder_OrAtTheIndexGiven(bool combo)
+    {
+        var (items, newIndexes, selected, data, raised) = UI.Run(() =>
+        {
+            var instance = new ComponentInstance(combo ? ComponentClasses.ComboBox : ComponentClasses.ListBox, "List1").Set(P.Sorted, true);
+            var comboBox = combo ? new RDFormsComboBox(instance) : null;
+            var listBox = combo ? null : new RDFormsListBox(instance);
+            var (window, sink) = ControlHost.Show(comboBox ?? (global::Avalonia.Controls.Control)listBox!);
+            var indexes = new List<int>();
+            void Add(string item, int? index = null)
+            {
+                if (comboBox is not null) comboBox.AddItem(item, index); else listBox!.AddItem(item, index);
+                indexes.Add(comboBox?.NewIndex ?? listBox!.NewIndex);
+            }
+
+            Add("zebra");
+            Add("Apple");
+            Add("mango");
+            instance.Set(P.ItemData, [1, 2, 3]);
+            if (comboBox is not null) comboBox.ListIndex = 2; else listBox!.ListIndex = 2;
+            var selectedAt = sink.Raised.Count;
+            Add("banana");
+            Add("aaa", 4);
+            var raisedByAddItem = sink.Raised.Skip(selectedAt).ToArray();
+            window.Close();
+            return (instance.Get(P.List), indexes, comboBox?.ListIndex ?? listBox!.ListIndex, instance.Get(P.ItemData), raisedByAddItem);
+        });
+
+        Expect.Lines(new[] { "Apple", "banana", "mango", "zebra", "aaa" }, items.ToArray());
+        CollectionAssert.AreEqual(new[] { 0, 0, 1, 1, 4 }, newIndexes);
+        Assert.AreEqual(3, selected);
+        CollectionAssert.AreEqual(new[] { 1, 0, 2, 3, 0 }, data.ToArray());
+        Assert.IsEmpty(raised);
+    }
+
     [TestMethod]
     public void AddItemPastTheEnd_Is5()
     {

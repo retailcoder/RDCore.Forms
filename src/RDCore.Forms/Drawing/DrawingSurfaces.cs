@@ -4,11 +4,11 @@ using RDCore.Forms.Model;
 namespace RDCore.Forms.Drawing;
 
 /// <summary>
-/// The drawing surface of each shown form and PictureBox, by its component: where a program's drawing statements go.
+/// The drawing surface of each form and PictureBox a view was made for, by its component: where a program's drawing statements go.
 /// </summary>
 /// <remarks>
-/// A form's view registers the surfaces of its root and its PictureBoxes while it is shown, and unregisters them when it is closed. A
-/// component holds no reference to its surface, so a component no longer shown can be collected.
+/// A form's view registers the surfaces of its root and its PictureBoxes as it is made, before it is shown, and unregisters them when
+/// its window is closed. A component holds no reference to its surface, so a component whose window was closed can be collected.
 /// </remarks>
 public static class DrawingSurfaces
 {
@@ -18,7 +18,7 @@ public static class DrawingSurfaces
     /// The surface a component draws on.
     /// </summary>
     /// <param name="component">The form's root or the PictureBox.</param>
-    /// <returns>Its surface, or <see langword="null"/> where it is not shown, or has none.</returns>
+    /// <returns>Its surface, or <see langword="null"/> where no view was made for it, its window was closed, or it has none.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="component"/> is <see langword="null"/>.</exception>
     public static IDrawingSurface? Of(ComponentInstance component)
     {
@@ -27,7 +27,7 @@ public static class DrawingSurfaces
     }
 
     /// <summary>
-    /// Registers the surface of a shown component, in place of any it had.
+    /// Registers the surface of a component, in place of any it had.
     /// </summary>
     /// <param name="surface">The surface, registered for its <see cref="IDrawingSurface.Component"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="surface"/> is <see langword="null"/>.</exception>

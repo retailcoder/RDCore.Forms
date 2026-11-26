@@ -3,6 +3,7 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
@@ -40,10 +41,10 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// Every key such a list takes raises Click, whether or not anything changed.
 /// </para>
 /// <para>
-/// It raises DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove and MouseUp. A key's Click comes after its
-/// KeyDown, and its KeyPress where it types a character, and before its KeyUp. Where its <c>MultiSelect</c> is None, a character
-/// typed selects the next item that starts with it, after the selected one and from the top again past the last, compared without
-/// regard to case, and raises Click where the selection moved.
+/// It raises DblClick, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp and Scroll (see
+/// <see cref="TopIndex"/>). A key's Click comes after its KeyDown, and its KeyPress where it types a character, and before its KeyUp.
+/// Where its <c>MultiSelect</c> is None, a character typed selects the next item that starts with it, after the selected one and from
+/// the top again past the last, compared without regard to case, and raises Click where the selection moved.
 /// </para>
 /// <para>
 /// Its rows are a line of its font high, inside a border of 2 pixels on each side. Where <c>IntegralHeight</c> is True, its height is
@@ -59,6 +60,7 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
     private bool writingList;
     private int newIndex = -1;
     private readonly ItemIcons icons = new();
+    private readonly ListTop top;
 
     static RDFormsListBox()
     {
@@ -93,11 +95,46 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
         {
             Setters = { new Setter(PaddingProperty, new Thickness(2, 0)), new Setter(MinHeightProperty, 0d) },
         });
+        // The list scrolls as VB6's does, by its TopIndex, and not to every item selected.
+        AutoScrollToSelectedItem = false;
+        top = new ListTop(this, () => ItemCount, () => (int)Math.Floor(((double.IsNaN(Height) ? Bounds.Height : Height) - ListBorder) / Row),
+            () => Row);
+        top.FollowKeys(() => ListIndex, typed: true);
         ComponentBinding.Bind(this, instance!, ComponentClasses.ListBox, Apply);
     }
 
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ListBox);
+
+    /// <inheritdoc/>
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        top.Attach(e.NameScope.Find<ScrollViewer>("PART_ScrollViewer"));
+    }
+
+    /// <summary>
+    /// The item in the list's top row, from 0.
+    /// </summary>
+    /// <exception cref="FormErrorException">
+    /// Set outside 0 to <see cref="ListCount"/> - 1, or to more than 0 on an empty list: 380, Invalid property value.
+    /// </exception>
+    /// <remarks>
+    /// The top is at most the item in the top row where the last item fills the last row, and an item set past it shows the last rows.
+    /// Setting it raises Scroll where the list scrolls. <see cref="ListIndex"/>, <c>Text</c> and a key bring the item they select into
+    /// view, at the top row from above and at the last row from below; a key's raises Scroll after its Click. Items added or removed
+    /// leave the top where it is. The user's scroll bar raises Scroll, and the wheel none.
+    /// </remarks>
+    public int TopIndex
+    {
+        get => top.Value;
+        set
+        {
+            if (value < 0 || value > Math.Max(0, ItemCount - 1))
+                throw new FormErrorException(FormError.InvalidPropertyValue);
+            top.MoveTo(value, raise: true);
+        }
+    }
 
     /// <inheritdoc/>
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) =>
@@ -133,6 +170,7 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
                 multi.Focus = value;
             else
                 SelectedIndex = value;
+            top.Show(value, raise: false);
             RDFormsControl.Raise(this, Events.Click);
         }
     }
@@ -237,6 +275,7 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
                 if (string.Equals(Items[i] as string, text, StringComparison.OrdinalIgnoreCase))
                     index = i;
             SelectedIndex = index;
+            top.Show(index, raise: false);
         }
         RDFormsControl.Raise(this, Events.Click);
     }
@@ -245,12 +284,17 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
     /// Adds an item.
     /// </summary>
     /// <param name="item">The item's text.</param>
-    /// <param name="index">Where it goes, from 0; at the end where it is <see langword="null"/>.</param>
+    /// <param name="index">
+    /// Where it goes, from 0, sorted or not; where it is <see langword="null"/>, at the end, or where <see cref="ListOrder.IndexOf"/> says
+    /// in a <see cref="P.Sorted"/> list.
+    /// </param>
     /// <exception cref="FormErrorException"><paramref name="index"/> is outside 0 to <see cref="ListCount"/>: 5, Invalid procedure call or argument.</exception>
     public void AddItem(string item, int? index = null)
     {
         ArgumentNullException.ThrowIfNull(item);
-        var at = index ?? ItemCount;
+        var at = index ?? (instance.Get(P.Sorted)
+            ? ListOrder.IndexOf(instance.Get(P.List), item, System.Globalization.CultureInfo.CurrentCulture)
+            : ItemCount);
         if (at < 0 || at > ItemCount)
             throw new FormErrorException(FormError.InvalidProcedureCall);
         Items.Insert(at, item);
@@ -366,6 +410,7 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
                 Items.Add(item);
             multi?.Reset();
             newIndex = -1;
+            top.Keep();
         }
         else if (ReferenceEquals(e.Property, P.ItemIcon))
         {
@@ -443,6 +488,7 @@ public sealed class RDFormsListBox : ListBox, IRaisesKeyEvents, IMultiSelectList
         {
             writingList = false;
         }
+        top.Keep();
     }
 
     private void RequireItem(int index) => ListMembers.Require(ItemCount, index);

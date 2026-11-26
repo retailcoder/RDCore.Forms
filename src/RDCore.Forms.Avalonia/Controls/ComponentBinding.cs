@@ -16,6 +16,14 @@ namespace RDCore.Forms.Avalonia.Controls;
 // taken out of its form holds no handler of its component's.
 internal static class ComponentBinding
 {
+    // The component whose properties are being applied again, which no program set: VB fits a Label to its caption as AutoSize is set,
+    // even to the value it has, and never as the form loads.
+    [ThreadStatic]
+    private static ComponentInstance? reapplied;
+
+    // Whether the change being applied is a property applied again, as the control is made, joins a logical tree or takes a new theme.
+    public static bool IsReapplying(ComponentInstance instance) => ReferenceEquals(reapplied, instance);
+
     public static void Bind(Control control, ComponentInstance instance, ComponentClass expected, Action<ComponentPropertyChangedEventArgs> changed)
     {
         ArgumentNullException.ThrowIfNull(instance);
@@ -26,10 +34,19 @@ internal static class ComponentBinding
         void OnChanged(object? sender, ComponentPropertyChangedEventArgs e) => changed(e);
         void ApplyAll()
         {
-            foreach (var property in instance.Class.Properties)
+            var outer = reapplied;
+            reapplied = instance;
+            try
             {
-                var value = instance.GetBoxed(property);
-                changed(new ComponentPropertyChangedEventArgs(property, value, value));
+                foreach (var property in instance.Class.Properties)
+                {
+                    var value = instance.GetBoxed(property);
+                    changed(new ComponentPropertyChangedEventArgs(property, value, value));
+                }
+            }
+            finally
+            {
+                reapplied = outer;
             }
         }
         ApplyAll();

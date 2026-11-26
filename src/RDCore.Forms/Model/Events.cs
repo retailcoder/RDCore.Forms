@@ -90,7 +90,7 @@ public static class Events
 
     /// <summary>
     /// A scroll bar's thumb was dragged to a new value. The Change comes once the thumb is released, where the value is not the one
-    /// the drag started at.
+    /// the drag started at. A ListBox's and a ComboBox's Scroll is raised where its list scrolls, as its <c>TopIndex</c> says.
     /// </summary>
     public static readonly EventDefinition Scroll = new("Scroll");
 

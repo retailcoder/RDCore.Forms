@@ -105,6 +105,7 @@ public sealed class RDFormsFormView : Canvas
         Children.Add(pictureLayer);
         Drawing = new RDFormsDrawingLayer(form.Root) { ZIndex = int.MinValue };
         Children.Add(Drawing);
+        Drawing.AwaitWindow();
         Place(form.Root, this);
         form.ControlAdded += (_, e) => Added(e);
         form.ControlRemoved += (_, e) => Removed(e);
@@ -185,6 +186,7 @@ public sealed class RDFormsFormView : Canvas
             // Each control goes under the ones of its plane placed before it.
             control.ZIndex = component.Class.IsWindowless ? windowless-- : windowed--;
             host.Children.Add(control);
+            (control as RDFormsPictureBox)?.Drawing.AwaitWindow();
             controls.Add(component, control);
             shown.Add(component);
             if (control is IRDFormsContainer inner)
@@ -204,6 +206,7 @@ public sealed class RDFormsFormView : Canvas
                                                  && other.Class.IsWindowless == windowless).Select(child => child.ZIndex).ToList();
         control.ZIndex = plane.Count == 0 ? (windowless ? WindowlessTop : 0) : plane.Min() - 1;
         host.Children.Add(control);
+        (control as RDFormsPictureBox)?.Drawing.AwaitWindow();
         controls.Add(e.Control, control);
         shown.Add(e.Control);
         // A control added with contents of its own, as a MultiPage comes with its pages.

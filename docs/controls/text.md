@@ -16,6 +16,24 @@ Label and TextBox. The behaviour below was measured with VB6.
 
 It raises MouseUp before Click, and Click only where the release is over the label again.
 
+### AutoSize
+
+A Label whose `AutoSize` is set fits itself to its caption, in its `Font` and inside its border, in whole pixels. It keeps the size its form's file gives it until a program changes one of these:
+
+|Set|Fits the label|
+|---|---|
+|`Caption`|To another caption, whether or not the form is shown. The same caption again does not.|
+|`AutoSize` True|Always, even where it was True.|
+|`Font`, `BorderStyle`, `WordWrap`|To another value.|
+|`Width`|Where `WordWrap` is set.|
+|`Height`, `Alignment`, `UseMnemonic`|Never.|
+
+- Without `WordWrap`, the label is as wide as the caption's `TextWidth` and as high as its `TextHeight`: its longest line, and its lines. An access key's `&` is not counted; with `UseMnemonic` False it is. An empty caption is a space wide and a line high.
+- With `WordWrap`, the label keeps its width and grows down to its lines. A word stays on a line where the line through it fits the width, and a line's width counts the spaces after its last word. A line wider than the label, or a word wider than it, widens the label to that line.
+- A fit takes `Left`, `Top` and the width to whole pixels. A fit from a `Width` set keeps the width as set where the lines fit it.
+- The label keeps its left edge, its right edge where `Alignment` is right, or its centre where it is centred.
+- A `Height` set by a program, or a `Width` without `WordWrap`, stays until the next fit.
+
 ### Picture
 
 A Label's `Picture` and `PicturePosition` are an RD-VBA addition: VB6's Label has neither. They follow MSForms' Label, as measured in Excel.
@@ -35,7 +53,7 @@ A Label's `Picture` and `PicturePosition` are an RD-VBA addition: VB6's Label ha
 - The space between picture and caption follows RDForms' text measurement, so the caption can be a pixel from where MSForms puts it.
 
 > [!NOTE]
-> **Not implemented.** `AutoSize` does not fit a Label to its caption or to its picture.
+> **Not implemented.** `AutoSize` does not fit a Label to its picture: it fits the caption alone.
 
 ## TextBox
 

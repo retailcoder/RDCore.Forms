@@ -44,6 +44,7 @@ RDCore.Forms est distribué sous la licence **MIT** : voir [LICENSE](LICENSE). L
 
 - [RDCore](https://github.com/rubberduck-vba/RDCore) : la plateforme, son _runtime_ et son serveur de langage
 - [RDCore.SDK](https://github.com/rubberduck-vba/RDCore.SDK) : le modèle du langage et l'infrastructure commune sur lesquels reposent chaque composant et chaque extension de RDCore
+- [RDCore.SDK.Protocols](https://github.com/rubberduck-vba/RDCore.SDK.Protocols) : le protocole de la plateforme, dont dépend RDCore.SDK
 - [RDCore.HexIDE](https://github.com/rubberduck-vba/RDCore.HexIDE) : le module d'extension qui intègre RDCore à HexIDE
 - [HexIDE](https://github.com/hexide-io/HexIDE) : l'environnement de développement pour les développeurs VB que RDCore.HexIDE étend
 

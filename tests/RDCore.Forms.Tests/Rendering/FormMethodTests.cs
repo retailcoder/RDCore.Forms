@@ -188,6 +188,40 @@ public sealed class FormMethodTests
     }
 
     [TestMethod]
+    public void AFormNotShown_RaisesResize_InsideWhatChangesItsSize_AndAgainAsItIsFirstShown()
+    {
+        var steps = UI.Run(() =>
+        {
+            var root = Form("Form1");
+            var sink = new RecordingSink();
+            var window = Window(root, sink);
+            List<string> result = [];
+            void Step(string name, Action change)
+            {
+                sink.Raised.Clear();
+                change();
+                result.Add($"{name}: {string.Join(", ", Raised(sink))}");
+            }
+            Step("made", () => { });
+            Step("Move", () => window.Invoke(root, M.Move, [S(10), S(20), S(400), S(300)]));
+            Step("the same Move", () => window.Invoke(root, M.Move, [S(10), S(20), S(400), S(300)]));
+            Step("Width", () => root.Set(P.Width, 500d));
+            Step("Height", () => root.Set(P.Height, 350d));
+            Step("Left and Top", () => window.Invoke(root, M.Move, [S(5), S(5)]));
+            Step("Show", () =>
+            {
+                window.Show();
+                Dispatcher.UIThread.RunJobs();
+            });
+            window.Close();
+            return result;
+        });
+
+        Expect.Lines(["made: ", "Move: Form1.Resize", "the same Move: ", "Width: Form1.Resize", "Height: Form1.Resize", "Left and Top: ",
+            "Show: Form1.Resize, Form1.Activate, Form1.GotFocus"], steps);
+    }
+
+    [TestMethod]
     public void AFormsMove_InVB6Units_IsInTwips_WhateverItsScaleMode()
     {
         var left = UI.Run(() =>

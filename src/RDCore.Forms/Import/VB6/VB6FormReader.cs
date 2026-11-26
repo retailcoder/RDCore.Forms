@@ -205,12 +205,19 @@ public static partial class VB6FormReader
 
         public List<UnmodelledProperty> UnmodelledHeader { get; } = [];
 
-        // The RDForms class a class of VB6's VB library ports to: VB.TextBox is RDForms.TextBox. A class of another library has none, and
-        // nor has a name VB's library does not have, such as VB.MultiPage: RDForms has a MultiPage, which MSForms' ports to.
+        // The classes of MSComctlLib (MSCOMCTL.OCX) the model has.
+        private static readonly Dictionary<string, ComponentClass> CommonControls = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["MSComctlLib.ImageList"] = ComponentClasses.ImageList,
+        };
+
+        // The RDForms class a class of VB6's VB library ports to: VB.TextBox is RDForms.TextBox. A name VB's library does not have, such
+        // as VB.MultiPage, has none: RDForms has a MultiPage, which MSForms' ports to. Of another library, only MSComctlLib's classes
+        // the model has are read.
         private static ComponentClass? PortedClass(string typeName) =>
-            typeName.StartsWith("VB.", StringComparison.OrdinalIgnoreCase) && FormsPortMap.VB6.TypeOf(typeName) is { Kind: TypePortKind.Class } port
-                ? ComponentClasses.ByTypeName(port.RDFormsName)
-                : null;
+            typeName.StartsWith("VB.", StringComparison.OrdinalIgnoreCase)
+                ? FormsPortMap.VB6.TypeOf(typeName) is { Kind: TypePortKind.Class } port ? ComponentClasses.ByTypeName(port.RDFormsName) : null
+                : CommonControls.GetValueOrDefault(typeName);
 
         public FormDefinition? Import(DesignerFile file, DesignerBlock root)
         {
@@ -436,10 +443,147 @@ public static partial class VB6FormReader
                     diagnostics.Add(VB6ImportDiagnosticKind.InvalidValue, bag.Line, bag.Name, instance.ToString());
                 }
 
+                if (bag.Name.Equals("Images", StringComparison.OrdinalIgnoreCase) && instance.Class.Has(Properties.ListImages)
+                    && ReadImages(bag, instance) is { } images)
+                {
+                    instance.Set(Properties.ListImages, images);
+                    continue;
+                }
+
                 instance.UnmodelledProperties.Add(new UnmodelledProperty(bag.Name, bag.Text));
             }
 
             return hasFontBag;
+        }
+
+        // An ImageList's Images: NumListImages, then a ListImage1, ListImage2... bag for each, with its Picture, Key and Object.Tag.
+        // Null, after a diagnostic, where any part of it cannot be read, and the whole bag is kept as text.
+        private IReadOnlyList<ListImage>? ReadImages(DesignerBag bag, ComponentInstance instance)
+        {
+            var component = instance.ToString();
+            var count = bag.Properties.Count == 1 ? bag.Properties[0] : null;
+            if (count is null || !count.Name.Equals("NumListImages", StringComparison.OrdinalIgnoreCase)
+                || ValueLiteral.Parse(count.Value) is not ValueLiteral.Number { IsIntegral: true } number || number.Value != bag.Bags.Count)
+            {
+                diagnostics.Add(VB6ImportDiagnosticKind.InvalidValue, count?.Line ?? bag.Line, $"{bag.Name}.NumListImages", component);
+                return null;
+            }
+
+            var images = new List<ListImage>(bag.Bags.Count);
+            foreach (var item in bag.Bags)
+            {
+                var name = $"ListImage{images.Count + 1}";
+                if (!item.Name.Equals(name, StringComparison.OrdinalIgnoreCase) || item.Bags.Count > 0)
+                {
+                    diagnostics.Add(VB6ImportDiagnosticKind.InvalidValue, item.Line, $"{bag.Name}.{item.Name}", component);
+                    return null;
+                }
+
+                if (ReadImage(item, $"{bag.Name}.{name}", component) is not { } image)
+                {
+                    return null;
+                }
+
+                images.Add(image);
+            }
+
+            return images;
+        }
+
+        // One ListImage: its Picture, cited in the companion, and its Key and Object.Tag, each written once at most.
+        private ListImage? ReadImage(DesignerBag item, string path, string component)
+        {
+            byte[]? picture = null;
+            string key = "", tag = "";
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var field in item.Properties)
+            {
+                var at = $"{path}.{field.Name}";
+                var read = seen.Add(field.Name)
+                    ? field.Name.ToLowerInvariant() switch
+                    {
+                        "picture" => ReadObjectPicture(field, at, component, out picture),
+                        "key" => ReadText(field, at, component, out key),
+                        "object.tag" => ReadText(field, at, component, out tag),
+                        _ => Invalid(field, at, component),
+                    }
+                    : Invalid(field, at, component);
+                if (!read)
+                {
+                    return null;
+                }
+            }
+
+            if (picture is null)
+            {
+                diagnostics.Add(VB6ImportDiagnosticKind.InvalidValue, item.Line, $"{path}.Picture", component);
+                return null;
+            }
+
+            return new ListImage(picture) { Key = key, Tag = tag };
+        }
+
+        private bool ReadObjectPicture(DesignerProperty field, string path, string component, out byte[]? picture)
+        {
+            picture = null;
+            if (ValueLiteral.Parse(field.Value) is not ValueLiteral.Citation { IsDollar: false } citation)
+            {
+                return Invalid(field, path, component);
+            }
+
+            var (companion, lookedFor) = companions(citation.FileName);
+            if (companion is null)
+            {
+                diagnostics.Add(VB6ImportDiagnosticKind.MissingCompanion, field.Line, path, component, lookedFor);
+                return false;
+            }
+
+            if (!companion.TryReadObjectPicture(citation.Offset, out var image))
+            {
+                diagnostics.Add(VB6ImportDiagnosticKind.MissingRecord, field.Line, path, component,
+                    citation.Offset.ToString("X4", System.Globalization.CultureInfo.InvariantCulture), citation.FileName);
+                return false;
+            }
+
+            picture = image;
+            return true;
+        }
+
+        // A text written in quotes, or cited in the companion.
+        private bool ReadText(DesignerProperty field, string path, string component, out string text)
+        {
+            text = "";
+            switch (ValueLiteral.Parse(field.Value))
+            {
+                case ValueLiteral.Text written:
+                    text = written.Value;
+                    return true;
+                case ValueLiteral.Citation citation:
+                    var (companion, lookedFor) = companions(citation.FileName);
+                    if (companion is null)
+                    {
+                        diagnostics.Add(VB6ImportDiagnosticKind.MissingCompanion, field.Line, path, component, lookedFor);
+                        return false;
+                    }
+
+                    if (TryReadRecord(companion, typeof(string), citation, out var record) && record is string cited)
+                    {
+                        text = cited;
+                        return true;
+                    }
+
+                    diagnostics.Add(VB6ImportDiagnosticKind.MissingRecord, field.Line, path, component,
+                        citation.Offset.ToString("X4", System.Globalization.CultureInfo.InvariantCulture), citation.FileName);
+                    return false;
+                default:
+                    return Invalid(field, path, component);
+            }
+        }
+
+        private bool Invalid(DesignerProperty field, string path, string component)
+        {
+            diagnostics.Add(VB6ImportDiagnosticKind.InvalidValue, field.Line, path, component);
+            return false;
         }
 
         private void SetFromText(ComponentInstance instance, PropertyDefinition definition, DesignerProperty property, string component)

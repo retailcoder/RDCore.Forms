@@ -49,8 +49,9 @@ public sealed class ComponentClassTests
         Assert.AreEqual(member, ComponentClasses.ByTypeName(typeName)!.DefaultMember);
 
     [TestMethod]
-    public void EveryClass_ButAUserControlAPropertyPageAndAPage_HasADefaultMember() =>
-        CollectionAssert.AreEquivalent(new[] { ComponentClasses.UserControl, ComponentClasses.PropertyPage, ComponentClasses.Page },
+    public void EveryClass_ButAUserControlAPropertyPageAPageAndAnImageList_HasADefaultMember() =>
+        CollectionAssert.AreEquivalent(
+            new[] { ComponentClasses.UserControl, ComponentClasses.PropertyPage, ComponentClasses.Page, ComponentClasses.ImageList },
             ComponentClasses.All.Where(c => c.DefaultMember is null).ToArray());
 
     [TestMethod]
@@ -96,12 +97,15 @@ public sealed class ComponentClassTests
     }
 
     [TestMethod]
-    public void TheCatalog_GivesEachControlItsPlaceAndSize_ExceptTheLineTheTimerAndAPage()
+    public void TheCatalog_GivesEachControlItsPlaceAndSize_ExceptTheLineTheTimerAnImageListAndAPage()
     {
         var withoutExtent = ComponentClasses.All.Where(c => c.Kind == ComponentKind.Control && !c.Has(Properties.Height)).ToArray();
 
-        CollectionAssert.AreEquivalent(new[] { ComponentClasses.Timer, ComponentClasses.Line, ComponentClasses.Page }, withoutExtent);
+        CollectionAssert.AreEquivalent(
+            new[] { ComponentClasses.Timer, ComponentClasses.Line, ComponentClasses.Page, ComponentClasses.ImageList }, withoutExtent);
         Assert.IsTrue(ComponentClasses.Timer.Has(Properties.Left));
+        Assert.IsTrue(ComponentClasses.ImageList.Has(Properties.Left));
+        Assert.IsFalse(ComponentClasses.ImageList.HasExtent);
         Assert.IsFalse(ComponentClasses.Line.Has(Properties.Left));
         Assert.IsFalse(ComponentClasses.Page.Has(Properties.Left));
         Assert.IsFalse(ComponentClasses.Timer.HasExtent);
@@ -125,17 +129,35 @@ public sealed class ComponentClassTests
         Assert.AreEqual(BackStyle.Transparent, ComponentClasses.Shape.DefaultOf(Properties.BackStyle));
     }
 
-    // VB6 gives the three buttons a MaskColor of silver and UseMaskColor False, and a UserControl a MaskColor of the button face and no
-    // UseMaskColor; the model gives them to no other class.
+    // VB6 gives the three buttons a MaskColor of silver and UseMaskColor False, a UserControl a MaskColor of the button face and no
+    // UseMaskColor, and an ImageList a MaskColor of silver and UseMaskColor True; the model gives them to no other class.
     [TestMethod]
-    public void TheCatalog_GivesTheButtonsAMaskColor_SilverAndNotUsed_AndAUserControlTheButtonFace()
+    public void TheCatalog_GivesTheButtonsAMaskColor_SilverAndNotUsed_AUserControlTheButtonFace_AndAnImageListSilverAndUsed()
     {
         var buttons = new[] { ComponentClasses.CommandButton, ComponentClasses.CheckBox, ComponentClasses.OptionButton };
 
-        CollectionAssert.AreEquivalent(buttons.Append(ComponentClasses.UserControl).ToArray(), ComponentClasses.All.Where(c => c.Has(Properties.MaskColor)).ToArray());
+        CollectionAssert.AreEquivalent(buttons.Append(ComponentClasses.UserControl).Append(ComponentClasses.ImageList).ToArray(),
+            ComponentClasses.All.Where(c => c.Has(Properties.MaskColor)).ToArray());
         Assert.AreEqual(FormColor.FromSystem(SystemColor.ButtonFace), ComponentClasses.UserControl.DefaultOf(Properties.MaskColor));
-        CollectionAssert.AreEquivalent(buttons, ComponentClasses.All.Where(c => c.Has(Properties.UseMaskColor)).ToArray());
+        CollectionAssert.AreEquivalent(
+            buttons.Append(ComponentClasses.ImageList).ToArray(), ComponentClasses.All.Where(c => c.Has(Properties.UseMaskColor)).ToArray());
         Assert.IsTrue(buttons.All(c => c.DefaultOf(Properties.MaskColor) == FormColor.FromRgb(0xC0, 0xC0, 0xC0) && !c.DefaultOf(Properties.UseMaskColor)));
+        Assert.AreEqual(FormColor.FromRgb(0xC0, 0xC0, 0xC0), ComponentClasses.ImageList.DefaultOf(Properties.MaskColor));
+        Assert.IsTrue(ComponentClasses.ImageList.DefaultOf(Properties.UseMaskColor));
+    }
+
+    // MSComctlLib's ImageList: a BackColor of the window colour, no pictures and a picture size of 0 by default, and a place a running
+    // program does not reach.
+    [TestMethod]
+    public void TheCatalog_GivesAnImageListTheWindowColour_NoPictures_AndASizeOfZero()
+    {
+        var imageList = ComponentClasses.ImageList;
+
+        Assert.AreEqual(FormColor.FromSystem(SystemColor.Window), imageList.DefaultOf(Properties.BackColor));
+        Assert.IsEmpty(imageList.DefaultOf(Properties.ListImages));
+        Assert.AreEqual((short)0, imageList.DefaultOf(Properties.ImageWidth));
+        Assert.AreEqual((short)0, imageList.DefaultOf(Properties.ImageHeight));
+        Assert.IsTrue(imageList.IsNotAvailableAtRunTime(Properties.Left) && imageList.IsNotAvailableAtRunTime(Properties.Top));
     }
 
     [TestMethod]

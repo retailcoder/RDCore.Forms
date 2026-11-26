@@ -132,12 +132,12 @@ Xor Pen drawn twice gives back what was there. Another value is error 380, and t
 
 ## AutoRedraw and Paint
 
-The surface keeps what it draws whatever the component's `AutoRedraw`, and keeps it as the component shrinks and grows again.
+Once its window is shown, the surface keeps what it draws whatever the component's `AutoRedraw`, and keeps it as the component shrinks and grows again. A form that is loaded and not shown, and its PictureBoxes, are drawn on too, and each one's `AutoRedraw` decides what is kept.
 
-|`AutoRedraw`|Paint|
-|---|---|
-|False, the default|Raised once the surface is shown, and each time the component's inside grows. One is raised for the changes made before it comes, so a window grown across and down at once raises one.|
-|True|Not raised.|
+|`AutoRedraw`|Paint|Before the window is first shown|
+|---|---|---|
+|False, the default|Raised once the surface is shown, and each time the component's inside grows. One is raised for the changes made before it comes, so a window grown across and down at once raises one.|Nothing is drawn, the current point still moves, and `Point` is -1.|
+|True|Not raised.|What is drawn is kept, and `Point` reads it, before and after the window is shown.|
 
 ---
 [ACCUEIL](../index.fr.md) • [HOME](../index.md) | [BIENVENUE](../introduction.fr.md) • [WELCOME](../introduction.md) | [DÉMARRER](../getting-started.fr.md) • [GET STARTED](../getting-started.md) | [IMPORTER](../import/vb6.fr.md) • [IMPORT](../import/vb6.md) | [CONTROLS](index.md) | [FORMAT](../format/index.md) | 🌐 [rubberduckvba.ca](https://rubberduckvba.ca)

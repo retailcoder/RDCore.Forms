@@ -16,10 +16,13 @@ public sealed class RunTimeAccessTests
     [
         "Form.StartUpPosition", "Form.ShowInTaskbar", "Form.MaxButton", "Form.MinButton", "MDIForm.StartUpPosition",
         "CommandButton.Style", "CheckBox.Style", "OptionButton.Style", "ComboBox.IntegralHeight", "FileListBox.MultiSelect",
+        "ListBox.Sorted", "ComboBox.Sorted",
         "Menu.WindowList", "Menu.Shortcut", "Menu.NegotiatePosition", "Timer.Left", "Timer.Top", "Data.Negotiate",
+        "ImageList.Left", "ImageList.Top",
     ];
 
-    private static readonly string[] NotAvailable = ["Menu.Shortcut", "Menu.NegotiatePosition", "Timer.Left", "Timer.Top", "Data.Negotiate"];
+    private static readonly string[] NotAvailable =
+        ["Menu.Shortcut", "Menu.NegotiatePosition", "Timer.Left", "Timer.Top", "Data.Negotiate", "ImageList.Left", "ImageList.Top"];
 
     private static IEnumerable<string> Where(Func<ComponentClass, PropertyDefinition, bool> flagged) =>
         ComponentClasses.All.SelectMany(c => c.Properties.Where(p => flagged(c, p)).Select(p => $"{c.ClassName}.{p.Name}")).Order();
