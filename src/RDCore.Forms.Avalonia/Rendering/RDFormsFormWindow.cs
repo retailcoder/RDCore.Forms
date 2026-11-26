@@ -40,9 +40,9 @@ namespace RDCore.Forms.Avalonia.Rendering;
 /// </para>
 /// <list type="bullet">
 /// <item><description>
-/// Resize, inside <see cref="Window.Show()"/> the first time the window is shown, and once for each change of the root's
-/// <c>Width</c> or <c>Height</c> after that. A size the root already has raises none, and neither does showing the window again
-/// after it was hidden.
+/// Resize, once for each change of the root's <c>Width</c> or <c>Height</c>, whether or not the window is shown, and inside
+/// <see cref="Window.Show()"/> the first time the window is shown, whatever its size. A size the root already has raises none, and
+/// neither does showing the window again after it was hidden.
 /// </description></item>
 /// <item><description>
 /// Activate, as the window becomes the active one of its <see cref="Program"/>'s form windows, after the Resize that shows it; Deactivate
@@ -158,6 +158,9 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
         AddHandler(PointerPressedEvent, (_, e) => pointer = e.GetPosition(View), RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerReleasedEvent, OnPointerReleasedOverForm, RoutingStrategies.Bubble, handledEventsToo: true);
         Apply();
+        // A form loaded and not shown raises Resize as its size changes, as VB6's does.
+        resizedAt = SizeOfRoot();
+        Root.PropertyChanged += OnRootChanged;
     }
 
     /// <summary>
@@ -613,7 +616,7 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
         (DrawingSurfaces.Of(component) as RDFormsDrawingLayer)?.PaintNow();
     }
 
-    // It follows its root while it is open, so that a closed window holds no handler of its root's.
+    // It follows its root from its creation until it is closed, so that a closed window holds no handler of its root's.
     /// <inheritdoc/>
     protected override void OnOpened(EventArgs e)
     {
@@ -744,7 +747,7 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
     // The aligned boxes follow the form's size after its Resize, and raise theirs after it.
     private void RaiseResize()
     {
-        if (opened && SizeOfRoot() != resizedAt)
+        if (SizeOfRoot() != resizedAt)
         {
             resizedAt = SizeOfRoot();
             RDFormsControl.Raise(View, Events.Resize);
