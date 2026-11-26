@@ -382,8 +382,9 @@ public sealed class RDFormsFormWindow : Window, IMenuHost, IFormFocus
     /// for an index outside 0 to <c>ListCount</c>, and <c>RemoveItem</c> for one outside the items; <c>ItemData</c>, <c>ItemIcon</c> and
     /// <c>Selected</c> are error 381 for an index outside the items, and <c>List</c> is "" there; <c>ListIndex</c> is error 380 for a
     /// value outside -1 to <c>ListCount</c> - 1, and <c>TopIndex</c> for one outside 0 to <c>ListCount</c> - 1 (see
-    /// <see cref="RDFormsListBox.TopIndex"/> and <see cref="RDFormsComboBox.TopIndex"/>). <c>ItemIcon</c>, an RD-VBA addition, is an object (<see cref="FormValue.FromObject"/>):
-    /// the bytes of the item's picture file, or <c>Nothing</c>. It is assigned one too: anything else is error 13, and a picture
+    /// <see cref="RDFormsListBox.TopIndex"/> and <see cref="RDFormsComboBox.TopIndex"/>). <c>ItemIcon</c>, an RD-VBA addition, is an
+    /// object (<see cref="FormValue.FromObject"/>): the bytes of the item's picture file, or <c>Nothing</c>. It is assigned one too:
+    /// anything else is error 13, and a picture
     /// <see cref="FormPictures.Inspect"/> refuses is error 481. <c>ListIndex</c>, <c>ListCount</c>, <c>NewIndex</c>, <c>SelCount</c> and
     /// <c>TopIndex</c> are Integers. Past 32767, a count or an index is a Long: RDForms sets this rule.
     /// </para>
