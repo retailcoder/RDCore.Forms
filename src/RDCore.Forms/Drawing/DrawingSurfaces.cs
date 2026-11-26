@@ -8,7 +8,7 @@ namespace RDCore.Forms.Drawing;
 /// </summary>
 /// <remarks>
 /// A form's view registers the surfaces of its root and its PictureBoxes as it is made, before it is shown, and unregisters them when
-/// its window is closed. A component holds no reference to its surface, so a component no longer shown can be collected.
+/// its window is closed. A component holds no reference to its surface, so a component whose window was closed can be collected.
 /// </remarks>
 public static class DrawingSurfaces
 {

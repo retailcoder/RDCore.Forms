@@ -132,7 +132,7 @@ Xor Pen drawn twice gives back what was there. Another value is error 380, and t
 
 ## AutoRedraw and Paint
 
-Once its window is shown, the surface keeps what it draws whatever the component's `AutoRedraw`, and keeps it as the component shrinks and grows again. A form that is loaded and not shown is drawn on too, and its `AutoRedraw` decides what is kept.
+Once its window is shown, the surface keeps what it draws whatever the component's `AutoRedraw`, and keeps it as the component shrinks and grows again. A form that is loaded and not shown, and its PictureBoxes, are drawn on too, and each one's `AutoRedraw` decides what is kept.
 
 |`AutoRedraw`|Paint|Before the window is first shown|
 |---|---|---|
