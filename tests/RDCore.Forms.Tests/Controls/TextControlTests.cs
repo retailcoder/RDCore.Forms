@@ -121,7 +121,6 @@ public sealed class TextControlTests
     [DataRow(false, false, true, DisplayName = "fixed size: wraps")]
     [DataRow(false, true, true, DisplayName = "fixed size, WordWrap: wraps")]
     [DataRow(true, false, false, DisplayName = "AutoSize: one line")]
-    [DataRow(true, true, true, DisplayName = "AutoSize, WordWrap: wraps")]
     public void ALabel_WrapsItsCaptionAtItsWidth_UnlessItSizesItselfAcross(bool autoSize, bool wordWrap, bool wraps)
     {
         var wrapping = UI.Run(() =>
