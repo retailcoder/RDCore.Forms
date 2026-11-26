@@ -21,6 +21,11 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// its inside grows.
 /// </para>
 /// <para>
+/// A surface a form's view makes before its window is first shown keeps what is drawn on it where <c>AutoRedraw</c> is True, as VB6's
+/// persistent bitmap does. Where it is False, VB6 draws on a window that is not on the screen: the surface draws nothing until the
+/// window shows it, its current point still moves, and <see cref="Point"/> is -1.
+/// </para>
+/// <para>
 /// It draws as GDI does, with no smoothing. A point is placed on the pixel nearest its twips, rounded half to even. A line is drawn as a
 /// Line control draws it. A box covers both of its corners. Lines are dashed only where they are one pixel wide, and a fill's lines
 /// are eight pixels apart from the surface's corner. The component's <c>DrawMode</c> combines each pixel of a point, a line and a fill
@@ -32,8 +37,8 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <c>BackColor</c> on a form. <see cref="CurrentX"/> and <see cref="CurrentY"/> are kept.
 /// </para>
 /// <para>
-/// While it is shown, <see cref="DrawingSurfaces.Of"/> gives it for its component. It takes no input. From its creation, its
-/// component's scale follows <see cref="ScaleRules"/>.
+/// From its creation until it leaves a window that showed it, <see cref="DrawingSurfaces.Of"/> gives it for its component. It takes no
+/// input. From its creation, its component's scale follows <see cref="ScaleRules"/>.
 /// </para>
 /// </remarks>
 public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
@@ -66,7 +71,19 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
         ClipToBounds = true;
         ScaleRules.Follow(component);
         SizeToInside();
+        // A form loaded and not shown is drawn on, as VB6's is.
+        Component.PropertyChanged += OnComponentChanged;
+        DrawingSurfaces.Register(this);
     }
+
+    // Set by the form's view that made it while no window shows it, and cleared as one does.
+    private bool awaitingWindow;
+
+    // Whether what is drawn is kept: on a surface that awaits no window, or one whose AutoRedraw is True.
+    private bool Kept => !awaitingWindow || Component.Class.Has(P.AutoRedraw) && Component.Get(P.AutoRedraw);
+
+    // A form's view marks each surface it makes, once it has placed it: one that no window shows yet awaits the window.
+    internal void AwaitWindow() => awaitingWindow = !attached;
 
     /// <inheritdoc/>
     public ComponentInstance Component { get; }
@@ -255,7 +272,7 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
     public int Point(double x, double y)
     {
         var (px, py) = ToPixel(x, y);
-        if (px < 0 || py < 0 || px >= inside.Width || py >= inside.Height)
+        if (!Kept || px < 0 || py < 0 || px >= inside.Width || py >= inside.Height)
             return -1;
         var colour = Under(px, py);
         // As a VB colour: red in the low byte.
@@ -364,7 +381,7 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
         var operation = opcode >> 16 & 0xFF;
         var style = Component.Class.Has(P.FillStyle) ? Component.Get(P.FillStyle) : FillStyle.Transparent;
         // An operation reads the pattern where its result differs between a pattern bit of 1 (the high four bits) and of 0.
-        if (style == FillStyle.Transparent && (operation >> 4) != (operation & 0xF))
+        if (style == FillStyle.Transparent && (operation >> 4) != (operation & 0xF) || !Kept)
             return;
 
         Grow();
@@ -473,7 +490,7 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
     private void DrawText(PrintFont font, string line, int left, int top, int width)
     {
         var opaque = Component.Class.Has(P.FontTransparent) && !Component.Get(P.FontTransparent);
-        if (line.Length == 0 || width == 0 && !opaque)
+        if (line.Length == 0 || width == 0 && !opaque || !Kept)
             return;
         Grow();
         using (var context = bitmap!.CreateDrawingContext(false))
@@ -507,6 +524,8 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
     {
         base.OnAttachedToVisualTree(e);
         attached = true;
+        awaitingWindow = false;
+        Component.PropertyChanged -= OnComponentChanged;
         Component.PropertyChanged += OnComponentChanged;
         DrawingSurfaces.Register(this);
         SizeToInside();
@@ -625,7 +644,7 @@ public sealed class RDFormsDrawingLayer : Control, IDrawingSurface
     private void Draw(PixelRect area, Action<DrawingContext>? fill, Action<DrawingContext>? edge)
     {
         var mode = DrawMode;
-        if (mode == 11 || fill is null && edge is null)
+        if (mode == 11 || fill is null && edge is null || !Kept)
             return;
         Grow();
         if (mode == 13)
