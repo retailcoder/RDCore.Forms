@@ -58,6 +58,11 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// item matches.
 /// </para>
 /// <para>
+/// A Dropdown Combo's and a Dropdown List's list, as measured with VB6, drops under the combo, as wide as the combo whatever its
+/// items. It shows a row of a line of its font for each item, 8 at most, with a scroll bar where it has more, and one row where it
+/// has none. Its border takes a pixel on each side: 8 rows are 106 pixels high at the default font.
+/// </para>
+/// <para>
 /// A Simple Combo shows its edit box with its list always shown under it and no button; the list takes the rest of its height, and
 /// scrolls where its items do not fit. Its rows are a line of its font high, and its edit box a row and 8 pixels: 13 and 21 at the
 /// default font. Where <c>IntegralHeight</c> is True, its height is snapped to whole rows of its list, or to the edit box alone where
@@ -81,8 +86,8 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
 
     private readonly ComponentInstance instance;
     private ComboBoxStyle style;
-    // A Simple Combo's rows: VB6's are a line of text high.
-    private readonly Style simpleRows = new(x => x.OfType<ComboBoxItem>())
+    // The rows of its list, at every style: VB6's are a line of text high.
+    private readonly Style rows = new(x => x.OfType<ComboBoxItem>())
     {
         Setters = { new Setter(TemplatedControl.PaddingProperty, new Thickness(2, 0)), new Setter(MinHeightProperty, 0d) },
     };
@@ -101,6 +106,10 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     private int newIndex = -1;
     private TextBox? editBox;
     private Border? listBorder;
+    // A Dropdown Combo's and a Dropdown List's popup, the viewer of its rows, and set while it is open.
+    private Popup? popup;
+    private ScrollViewer? dropped;
+    private bool isDropped;
     private bool locked;
     private readonly ItemIcons icons = new();
     private readonly RDFormsDropDown dropDown;
@@ -132,6 +141,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
         // A Dropdown List shows its item in the combo's own padding, too deep for a combo's height.
         Padding = new Thickness(2, 0);
         VerticalContentAlignment = VerticalAlignment.Center;
+        Styles.Add(rows);
         ShowStyle(instance?.Get(P.ComboBoxStyle) ?? ComboBoxStyle.DropdownCombo, built: false);
         // On the way down, so that the edit box does not take them first.
         AddHandler(KeyDownEvent, TakeKey, RoutingStrategies.Tunnel);
@@ -153,8 +163,10 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(ComboBox);
 
-    // The rows of a Dropdown Combo's and a Dropdown List's list, as measured with VB6.
+    // A Dropdown Combo's and a Dropdown List's list, as measured with VB6: its items' rows, 8 at most and one where it has no item,
+    // and a border of a pixel on each side, as the popup's. It is as wide as the combo, whatever its items.
     private const int DropDownRows = 8;
+    private const double DropDownBorder = 2;
 
     /// <summary>
     /// The item in the top row of the combo's list, from 0.
@@ -168,8 +180,10 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     /// Where the combo's selection is set, by <see cref="ListIndex"/>, a Dropdown List's <c>Text</c>, an <see cref="AddItem"/> before
     /// the selected item or a <c>List</c> of any item, the selected item goes to the top row, and item 0 with none selected. A key
     /// brings the item it selects into view, at the top row from above and at the last row from below, and raises Scroll after its
-    /// Click where the list scrolls. Items removed leave the top where it is. A Simple Combo's list is scrolled to it, and the user's
-    /// scroll bar raises Scroll there, and the wheel none.
+    /// Click where the list scrolls. Items removed leave the top where it is. The list is scrolled to it, and the user's scroll bar
+    /// raises Scroll there, and the wheel none. A Dropdown Combo's and a Dropdown List's list opens and closes with the selected item
+    /// in the top row, and item 0 with none selected; a Dropdown Combo's opening with none selected raises Scroll where the top moves,
+    /// and closing raises none. A Dropdown Combo's list narrowed by typing shows its matches from its first row.
     /// </remarks>
     public int TopIndex
     {
@@ -278,7 +292,7 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
     private bool IsInList(Visual source) =>
         listBorder is { } list && (ReferenceEquals(source, list) || list.IsVisualAncestorOf(source));
 
-    // A Style's view, as the combo is made and from code: a Simple Combo's template, rows and presses on its list, a Dropdown Combo's
+    // A Style's view, as the combo is made and from code: a Simple Combo's template and presses on its list, a Dropdown Combo's
     // completion panel, and an edit box at every style except Dropdown List. Each sets up its own and undoes the others', so that the combo is as one
     // made with the style. The items and the selection stay. An edit box gained takes the selected item's text, and once the combo is
     // built the component's Text takes it too, quietly.
@@ -290,27 +304,17 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             SetCurrentValue(IsDropDownOpenProperty, false);
         EndNarrowing();
         word = "";
-        var simple = value == ComboBoxStyle.SimpleCombo;
-        Styles.Remove(simpleRows);
         RemoveHandler(PointerPressedEvent, PressList);
         RemoveHandler(PointerReleasedEvent, ReleaseList);
-        if (simple)
+        if (value == ComboBoxStyle.SimpleCombo)
         {
             Template = SimpleTemplate;
-            Styles.Add(simpleRows);
             // On the way down, so that the press is the list's before an item takes it.
             AddHandler(PointerPressedEvent, PressList, RoutingStrategies.Tunnel);
             AddHandler(PointerReleasedEvent, ReleaseList, RoutingStrategies.Tunnel);
         }
         else
             ClearValue(TemplateProperty);
-        foreach (var container in GetRealizedContainers())
-        {
-            if (simple)
-                container.Height = Row;
-            else
-                container.ClearValue(HeightProperty);
-        }
         if (value == ComboBoxStyle.DropdownCombo)
             ItemsPanel = new FuncTemplate<Panel?>(() => panel = new CompletionPanel(this));
         else
@@ -679,8 +683,11 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
         // The edit box is one line, at a combo's height, too short for a TextBox's own padding.
         editBox = e.NameScope.Find<TextBox>("PART_EditableTextBox");
         listBorder = e.NameScope.Find<Border>("PART_List");
-        // A Simple Combo's list is shown in rows of a line, as VB6's; a dropping list's is not, and its top is the combo's alone.
-        top.Attach(style == ComboBoxStyle.SimpleCombo ? listBorder?.Child as ScrollViewer : null);
+        popup = style == ComboBoxStyle.SimpleCombo ? null : e.NameScope.Find<Popup>("PART_Popup");
+        dropped = (popup?.Child as Border)?.Child as ScrollViewer;
+        // The list is scrolled to the top: a Simple Combo's always, a dropping list's while it is open and not narrowed. A closed
+        // popup's viewer keeps the extent it last had, which says nothing of the top.
+        top.Attach(style == ComboBoxStyle.SimpleCombo ? listBorder?.Child as ScrollViewer : isDropped && narrowed is null ? dropped : null);
         if (editBox is not { } box)
             return;
         box.PropertyChanged += TakeSelection;
@@ -757,9 +764,29 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             if (change.GetNewValue<bool>() && (style == ComboBoxStyle.SimpleCombo || locked))
                 SetCurrentValue(IsDropDownOpenProperty, false);
             else if (change.GetNewValue<bool>())
+            {
+                Drop();
+                isDropped = true;
                 RDFormsControl.Raise(this, Events.DropDown);
+                // The list opens, as VB6's, with its selected item in the top row, and item 0 with none; a Dropdown Combo's raises
+                // Scroll where none is selected and its top moves. A list opened by typing is narrowed, and shows its matches instead.
+                if (narrowed is null)
+                {
+                    top.MoveTo(Math.Max(SelectedIndex, 0), raise: style == ComboBoxStyle.DropdownCombo && SelectedIndex < 0);
+                    top.Attach(dropped);
+                }
+            }
             else
+            {
                 EndNarrowing();
+                // Closing puts the selected item back in the top row, and item 0 with none, and raises nothing.
+                if (isDropped)
+                {
+                    top.Attach(null);
+                    top.MoveTo(Math.Max(SelectedIndex, 0), raise: false);
+                }
+                isDropped = false;
+            }
         }
         else if (change.Property == SelectedIndexProperty)
         {
@@ -770,12 +797,21 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
         }
     }
 
+    // A dropping list is sized as VB6's: its rows, 8 at most and one where it has no item, at the combo's width.
+    private void Drop()
+    {
+        MaxDropDownHeight = DropDownRows * Row + DropDownBorder;
+        if (popup is null)
+            return;
+        popup.MinHeight = Row + DropDownBorder;
+        popup.MaxWidth = Bounds.Width;
+    }
+
     /// <inheritdoc/>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
-        if (style == ComboBoxStyle.SimpleCombo)
-            container.Height = Row;
+        container.Height = Row;
         icons.Show(container, item, index);
         ShowNarrowing(container, index);
         dropDown.Prepare(container);
@@ -870,6 +906,9 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
                 Dispatcher.UIThread.Post(CloseUnmatched);
             return;
         }
+        // A narrowed list shows its matches from its first row, not its top.
+        if (narrowed is null)
+            top.Attach(null);
         narrowed = matches;
         highlighted = 0;
         if (!IsDropDownOpen)
@@ -896,6 +935,8 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             return;
         narrowed = null;
         ShowNarrowing();
+        if (isDropped)
+            top.Attach(dropped);
     }
 
     private void ShowNarrowing()
@@ -904,7 +945,11 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
             ShowNarrowing(container, IndexFromContainer(container));
         panel?.InvalidateArrange();
         if (narrowed is { } matches && ContainerFromIndex(matches[highlighted]) is { } best)
+        {
+            // Arranged first, so that the match is brought into view where it is now, best first, and not where its item was.
+            panel?.UpdateLayout();
             best.BringIntoView();
+        }
     }
 
     // An item the text does not match is hidden; the highlighted match is drawn in the highlight's colours.
@@ -1074,10 +1119,13 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
         }
         else if (style == ComboBoxStyle.SimpleCombo && ReferenceEquals(e.Property, P.IntegralHeight) && !Equals(e.Before, e.After))
             Snap(instance.Get(P.Height), null);
-        else if (style == ComboBoxStyle.SimpleCombo && ReferenceEquals(e.Property, P.Font) && !Equals(e.Before, e.After))
+        else if (ReferenceEquals(e.Property, P.Font) && !Equals(e.Before, e.After))
         {
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
-            Refont((FormFont)e.Before!);
+            if (style == ComboBoxStyle.SimpleCombo)
+                Refont((FormFont)e.Before!);
+            else
+                ShowRows();
         }
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
@@ -1124,9 +1172,14 @@ public sealed class RDFormsComboBox : ComboBox, IRaisesKeyEvents, IRDFormsList
         var list = Math.Max(0, instance.Get(P.Height) - (FormFonts.LineHeight(before) + EditBeyondRow));
         if (editBox is { } box)
             box.Height = EditHeight;
+        ShowRows();
+        Snap(EditHeight + list, null);
+    }
+
+    private void ShowRows()
+    {
         foreach (var container in GetRealizedContainers())
             container.Height = Row;
-        Snap(EditHeight + list, null);
     }
 
     private void WriteList()

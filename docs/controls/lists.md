@@ -85,9 +85,7 @@ An item keeps its `ItemData` and its icon as items go in before it, and the sele
 |Items added and removed|Otherwise leave the top where it is, the last top at most. `Clear` makes it 0.|
 |The user's scroll bar|Moves the top and raises Scroll once the list has scrolled. The list ends its scroll on a whole row (RDForms' own).|
 |The mouse wheel|Moves the top and raises no Scroll.|
-
-> [!NOTE]
-> **Not implemented.** A Dropdown Combo's and a Dropdown List's open list shows more than 8 rows, opens at the selected item rather than at `TopIndex`, and its scrolling raises no Scroll.
+|A dropped list opened or closed|A Dropdown Combo's and a Dropdown List's list opens and closes with the selected item at the top row, or item 0 where none is selected. A Dropdown Combo opened with none selected raises Scroll where its top moves; closing raises none. A Dropdown Combo's list narrowed by typing shows its matches from its first row: see [Completion](#completion).|
 
 ## Item icons
 
@@ -167,6 +165,10 @@ On an RDForms form, a program can set `Style` (see [Properties set only at desig
 |`ListIndex` from code|The edit box takes the item's text with nothing selected, even where the item's text is the text already in the box, the caret before the first character, then Click is raised: its handler reads a `SelStart` and a `SelLength` of 0.|
 |`SelText` set over a chosen item|The combo selects no item, `ListIndex` -1, and raises its Change, even where the text does not change.|
 |`Text` from code, the same text|The selection and `ListIndex` stay as they are.|
+
+### Dropped list
+
+A Dropdown Combo's and a Dropdown List's list drops under the combo, as wide as the combo whatever its items. It shows a row of a line of the combo's font for each item, 8 at most, with a scroll bar where it has more, and one row where it has none, in a border of a pixel on each side: 8 rows are 106 pixels high at MS Sans Serif 8, and 162 at MS Sans Serif 12. Where it opens and how it scrolls: see [TopIndex](#topindex).
 
 ### Simple Combo
 
