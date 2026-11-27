@@ -286,9 +286,13 @@ public static class Properties
 
     /// <summary>
     /// The pointer shown when <see cref="MousePointer"/> is <see cref="Model.MousePointer.Custom"/>, as the bytes of its icon or cursor
-    /// file, or <see langword="null"/> for none.
+    /// file, or <see langword="null"/> for none. Any other picture, and one <see cref="FormPictures.Inspect"/> refuses, is refused, as
+    /// VB6 refuses a bitmap with 380.
     /// </summary>
-    public static readonly PropertyDefinition<byte[]?> MouseIcon = new("MouseIcon", PropertyCategory.Behavior, null);
+    public static readonly PropertyDefinition<byte[]?> MouseIcon = new("MouseIcon", PropertyCategory.Behavior, null)
+    {
+        Valid = bytes => FormPictures.Inspect(bytes, out var info) is null && info.Format is PictureFormat.Icon or PictureFormat.Cursor,
+    };
 
     /// <summary>
     /// The image shown while the control is dragged, as the bytes of its icon file, or <see langword="null"/> for none.

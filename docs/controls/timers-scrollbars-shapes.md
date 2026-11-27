@@ -44,9 +44,6 @@ RDForms' own, not measured with VB6: a thumb released where it started raises no
 
 Its behaviour is RDForms' own, not measured with MSForms. The arrows are drawn in its `ForeColor` on its `BackColor`.
 
-> [!NOTE]
-> **Not implemented.** The `MouseIcon` is not drawn.
-
 ## Shape
 
 [`RDFormsShape`](../api/RDCore.Forms.Avalonia.Controls.RDFormsShape.yml) is windowless and takes no input: a click on it is a click on what is under it.

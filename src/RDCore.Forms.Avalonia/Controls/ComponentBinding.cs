@@ -102,8 +102,8 @@ internal static class ComponentBinding
             case nameof(P.ToolTipText):
                 ToolTip.SetTip(control, value is string { Length: > 0 } tip ? tip : null);
                 return true;
-            case nameof(P.MousePointer):
-                control.Cursor = ToCursor((MousePointer)value!);
+            case nameof(P.MousePointer) or nameof(P.MouseIcon):
+                control.Cursor = PointerOf(control);
                 return true;
             case nameof(P.TabIndex):
                 KeyboardNavigation.SetTabIndex(control, (short)value!);
@@ -129,8 +129,22 @@ internal static class ComponentBinding
         return false;
     }
 
+    // The pointer a control's component shows: a Custom pointer is made from its MouseIcon, and is the arrow where it has none.
+    private static Cursor? PointerOf(Control control)
+    {
+        var instance = RDFormsControl.GetInstance(control)!;
+        var pointer = instance.Class.Has(P.MousePointer) ? instance.Get(P.MousePointer) : MousePointer.Default;
+        if (pointer is MousePointer.Custom && instance.Class.Has(P.MouseIcon))
+        {
+            using var image = RDFormsPicture.DecodePointer(instance.Get(P.MouseIcon), out var hotSpot);
+            if (image is not null)
+                return new Cursor(image, hotSpot);
+        }
+        return ToCursor(pointer);
+    }
+
     // The pointer VB draws for a MousePointer. Default is the control's own, such as a TextBox's I-beam. Icon is the plain arrow,
-    // and Size the four-way size pointer, as VB6 draws them on Windows 10. A Custom pointer, drawn from MouseIcon, is the arrow.
+    // and Size the four-way size pointer, as VB6 draws them on Windows 10. Custom, with no MouseIcon, is the arrow.
     public static Cursor? ToCursor(MousePointer pointer) => pointer switch
     {
         MousePointer.Default => null,

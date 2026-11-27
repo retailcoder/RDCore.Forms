@@ -39,6 +39,42 @@ public static class RDFormsPicture
     /// </returns>
     public static Bitmap? Decode(byte[]? bytes, out FormError? error) => DecodeWithFormat(bytes, out error, out _);
 
+    /// <summary>
+    /// The side in pixels of the pointer VB6 makes of a <c>MouseIcon</c>: the system's pointer size at 96 DPI.
+    /// </summary>
+    public const int PointerSide = 32;
+
+    /// <summary>
+    /// Decodes a <c>MouseIcon</c> as the pointer VB6 shows for it, where <c>MousePointer</c> is Custom (99).
+    /// </summary>
+    /// <remarks>
+    /// The pointer is <see cref="PointerSide"/> pixels square whatever the picture's size: the picture's image of that size, the one
+    /// <c>LoadPicture</c> loads when asked for it (<see cref="StdPictureObject.TryLoad"/>), scaled to it where it is of another. An
+    /// icon's hot spot is the pointer's centre; a cursor's is its image's own (<see cref="IconImage.HotSpotX"/>,
+    /// <see cref="IconImage.HotSpotY"/>), scaled with the image.
+    /// </remarks>
+    /// <param name="bytes">The <c>MouseIcon</c>, as its file holds it, or <see langword="null"/> for none.</param>
+    /// <param name="hotSpot">The pixel of the pointer it points with, from its top left; (0, 0) where there is no pointer.</param>
+    /// <returns>
+    /// The pointer's image, or <see langword="null"/> where there is no picture, or it is neither an icon nor a cursor, or it is refused
+    /// or not decoded. The caller disposes it.
+    /// </returns>
+    public static Bitmap? DecodePointer(byte[]? bytes, out PixelPoint hotSpot)
+    {
+        hotSpot = default;
+        if (bytes is not { Length: > 0 } || FormPictures.Inspect(bytes, out var info) is not null
+            || info.Format is not (PictureFormat.Icon or PictureFormat.Cursor)
+            || StdPictureObject.TryLoad(bytes, PointerSide, PointerSide, () => 1, out var loaded) is not StdPictureLoadFailure.None
+            || loaded!.Image is not { } image
+            || PictureDecoder.TryDecodeIconImage(bytes, image, out var decoded) is not PictureDecodeFailure.None
+            || decoded is not { Width: > 0, Height: > 0 })
+            return null;
+        hotSpot = info.Format is PictureFormat.Cursor
+            ? new PixelPoint(image.HotSpotX * PointerSide / image.Width, image.HotSpotY * PointerSide / image.Height)
+            : new PixelPoint(PointerSide / 2, PointerSide / 2);
+        return Premultiplied(decoded, PointerSide, PointerSide);
+    }
+
     [ThreadStatic]
     private static int decodes;
 
@@ -78,22 +114,26 @@ public static class RDFormsPicture
     }
 
     // The decoded pixels as a bitmap of one pixel per pixel of the form (96 DPI), premultiplied, as the pictures drawn and masked here are.
-    private static WriteableBitmap Premultiplied(DecodedPicture picture)
+    private static WriteableBitmap Premultiplied(DecodedPicture picture) => Premultiplied(picture, picture.Width, picture.Height);
+
+    // The same, scaled to a size by taking the nearest pixel: a written bitmap is not one Avalonia scales.
+    private static WriteableBitmap Premultiplied(DecodedPicture picture, int width, int height)
     {
-        var bitmap = new WriteableBitmap(new PixelSize(picture.Width, picture.Height), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Premul);
+        var bitmap = new WriteableBitmap(new PixelSize(width, height), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Premul);
         using var buffer = bitmap.Lock();
         var bgra = picture.Bgra.Span;
-        var row = new byte[picture.Width * 4];
-        for (var y = 0; y < picture.Height; y++)
+        var row = new byte[width * 4];
+        for (var y = 0; y < height; y++)
         {
-            var pixels = bgra.Slice(y * row.Length, row.Length);
-            for (var x = 0; x < row.Length; x += 4)
+            var pixels = bgra.Slice(y * picture.Height / height * picture.Width * 4, picture.Width * 4);
+            for (var x = 0; x < width; x++)
             {
-                var alpha = pixels[x + 3];
-                row[x] = (byte)((pixels[x] * alpha + 127) / 255);
-                row[x + 1] = (byte)((pixels[x + 1] * alpha + 127) / 255);
-                row[x + 2] = (byte)((pixels[x + 2] * alpha + 127) / 255);
-                row[x + 3] = alpha;
+                var from = x * picture.Width / width * 4;
+                var alpha = pixels[from + 3];
+                row[x * 4] = (byte)((pixels[from] * alpha + 127) / 255);
+                row[x * 4 + 1] = (byte)((pixels[from + 1] * alpha + 127) / 255);
+                row[x * 4 + 2] = (byte)((pixels[from + 2] * alpha + 127) / 255);
+                row[x * 4 + 3] = alpha;
             }
             Marshal.Copy(row, 0, buffer.Address + y * buffer.RowBytes, row.Length);
         }

@@ -73,7 +73,7 @@ A push button that stays down once clicked. Its `Value` is True while it is down
 Its behaviour is RDForms' own, not measured with MSForms.
 
 > [!NOTE]
-> **Not implemented.** The button does not draw its `Picture`, and ignores `PicturePosition`, `AutoSize`, `WordWrap`, `BackStyle` and `MouseIcon`. The form's file keeps their values.
+> **Not implemented.** The button does not draw its `Picture`, and ignores `PicturePosition`, `AutoSize`, `WordWrap` and `BackStyle`. The form's file keeps their values.
 
 ## Style Graphical
 
