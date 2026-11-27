@@ -32,7 +32,12 @@ public sealed class DataControlTests
             .Set(P.BackColor, FormColor.FromRgb(255, 0, 0)).Set(P.ForeColor, FormColor.FromRgb(0, 0, 255))),
         ["D8"] = (184, 104, 40, 23, data => data.Set(P.Caption, "X")),
         ["D9"] = (184, 136, 160, 30, data => data.Set(P.Caption, "Bold").Set(P.Font, new FormFont("Arial", 12, FormFont.BoldWeight))),
+        // 13 pixels tall, drawn 23 tall: the fixture holds its first 15 rows, which are those of a control 23 pixels tall.
+        ["D10"] = (184, 176, 160, 13, data => data.Set(P.Caption, "Short")),
     };
+
+    // The height VB6 draws a Data control at: its own, 23 pixels at least.
+    private static int Drawn(int height) => Math.Max(height, 23);
 
     private static ComponentInstance Data(ComponentInstance root, string name)
     {
@@ -107,7 +112,7 @@ public sealed class DataControlTests
     {
         var (_, _, width, height, _) = Cases[name];
         var flat = name == "D6";
-        var (inset, right, bottom) = flat ? (1, width, height - 1) : (3, width - 3, height - 3);
+        var (inset, right, bottom) = flat ? (1, width, Drawn(height) - 1) : (3, width - 3, Drawn(height) - 3);
         return y >= inset && y < bottom && x >= inset + 38 && x < right - 39 - 3;
     }
 
@@ -121,6 +126,7 @@ public sealed class DataControlTests
     [DataRow("D7")]
     [DataRow("D8")]
     [DataRow("D9")]
+    [DataRow("D10", DisplayName = "D10, less than 23 pixels tall")]
     public void ADataControl_IsDrawnAsVB6DrawsIt_ButItsCaptionsText(string name)
     {
         var (grids, key) = Measured();
@@ -197,6 +203,24 @@ public sealed class DataControlTests
         });
 
         Assert.AreEqual((91, 91, 0), numbers);
+    }
+
+    [TestMethod]
+    public void ADataControlDrawnTallerThanItsHeight_ReadsBackItsHeightAsSet()
+    {
+        var height = UI.Run(() =>
+        {
+            var root = new ComponentInstance(ComponentClasses.Form, "Form1").Set(P.Width, (double)FormWidth).Set(P.Height, (double)FormHeight);
+            var data = Data(root, "D10");
+            var window = new RDFormsFormWindow(new FormDefinition(root));
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var read = data.Get(P.Height);
+            window.Close();
+            return read;
+        });
+
+        Assert.AreEqual(13d, height);
     }
 
     [TestMethod]

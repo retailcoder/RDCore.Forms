@@ -13,11 +13,12 @@ A Data control shows four buttons that move through a database's records, with i
 |Buttons|19 pixels wide, as tall as the control inside its edge: first and previous at the left, next and last at the right, each with its arrow glyph in the button text's colour.|
 |Caption|On a strip in `BackColor` between the second and the third button, in `ForeColor`, or in the grey text colour where the control is disabled. The text starts three pixels into the strip, is centred down it, and is cut off at its end.|
 |Narrow control|The caption's strip is the width left over after the four buttons. Where there is none, the last two buttons are drawn over the first two.|
+|Short control|A control less than 23 pixels tall is drawn 23 pixels tall, over what is below it. Its `Height` reads back as set.|
 
 The buttons keep their colours whatever `BackColor`, `ForeColor` and `Enabled` are.
 
 > [!NOTE]
-> **Not implemented.** VB6 draws a Data control less than 23 pixels tall as 23 pixels tall, though its `Height` reads back as set. The buttons are not drawn pressed, and the control raises no mouse event, drag event or OLE event. It raises no Resize as its size changes. An aligned one raises Resize once, when its form is first shown, after the form's and in the order of the [aligned PictureBoxes](containers.md#an-aligned-picturebox).
+> **Not implemented.** The buttons are not drawn pressed, and the control raises no mouse event, drag event or OLE event. It raises no Resize as its size changes. An aligned one raises Resize once, when its form is first shown, after the form's and in the order of the [aligned PictureBoxes](containers.md#an-aligned-picturebox).
 
 ## Properties
 

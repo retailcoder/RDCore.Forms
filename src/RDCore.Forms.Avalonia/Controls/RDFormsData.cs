@@ -31,11 +31,16 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// either colour, or with <c>Enabled</c>.</item>
 /// <item>Each glyph is 11 rows tall, centred on the middle row of the control's height in pixels, rounded down (row 11 of 23 or of 24, counted from 0): a triangle six pixels wide at its middle
 /// row, and on the outer buttons a bar two pixels wide.</item>
+/// <item>A control less than 23 pixels tall is drawn 23 pixels tall, over what is below it, and its glyphs are centred as at 23; its
+/// <c>Height</c> reads back as set.</item>
 /// </list>
 /// </remarks>
 public sealed class RDFormsData : Control
 {
     private const double ButtonWidth = 19;
+
+    // VB6 draws a Data control less tall than this as this tall, over what is below it, and its Height reads back as set.
+    private const double DrawnHeight = 23;
 
     // Where each glyph is, from its button's left edge: the triangle's base column, the way it points, and the bar's first column.
     private static readonly (double Base, int Toward, double? Bar)[] Glyphs = [(13, -1, 5), (11, -1, null), (6, 1, null), (5, 1, 12)];
@@ -56,6 +61,7 @@ public sealed class RDFormsData : Control
     public RDFormsData(ComponentInstance instance)
     {
         ClipToBounds = true;
+        MinHeight = DrawnHeight;
         ComponentBinding.Bind(this, instance, ComponentClasses.Data, Apply);
     }
 

@@ -123,7 +123,7 @@ public sealed class RunTimeControlViewTests
     }
 
     // VB6 snaps a ListBox added at run time to whole rows at once: 450 twips, 30 pixels at the default font. RDForms snaps it
-    // as its view is made, so one added to a form not shown keeps its 32 pixels until the form is shown.
+    // as its view is made, so one added to a form that has no window yet keeps its 32 pixels until the form's window is made.
     [TestMethod]
     public void AListBoxAdded_IsSnappedToWholeRows_AsItsViewIsMade()
     {
@@ -147,6 +147,27 @@ public sealed class RunTimeControlViewTests
         Assert.AreEqual(30d, onShown);
         Assert.AreEqual(32d, beforeShown);
         Assert.AreEqual(30d, afterShown);
+    }
+
+    // A loaded form has its window, shown or not, as a host makes one for each form it loads: a ListBox added to it is snapped at once.
+    [TestMethod]
+    public void AListBoxAdded_ToAFormLoadedAndNotShown_IsSnappedToWholeRows_AtOnce()
+    {
+        var (added, shown) = UI.Run(() =>
+        {
+            var form = new FormDefinition(new ComponentInstance(ComponentClasses.Form, "Form2").Set(P.Width, 320d).Set(P.Height, 240d));
+            var window = new RDFormsFormWindow(form);
+            var list = form.AddControl("RDForms.ListBox", "lstNew");
+            var added = list.Get(P.Height);
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var shown = list.Get(P.Height);
+            window.Close();
+            return (added, shown);
+        });
+
+        Assert.AreEqual(30d, added);
+        Assert.AreEqual(30d, shown);
     }
 
     [TestMethod]

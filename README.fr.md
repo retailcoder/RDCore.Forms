@@ -18,6 +18,7 @@ Le paquet RDCore.Forms contient deux assemblages :
 
 RDCore.Forms est en développement **pré-alpha**. Le paquet RDCore.Forms est sur [nuget.org](https://www.nuget.org/packages/RDCore.Forms) en préversion.
 
+[![NuGet](https://img.shields.io/nuget/vpre/RDCore.Forms)](https://www.nuget.org/packages/RDCore.Forms)
 [![Build and Test](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml/badge.svg)](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml)
 
 ## Compiler

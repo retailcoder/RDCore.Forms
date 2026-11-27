@@ -191,8 +191,10 @@ A program's `Set Control.Container = Frame1` is `FormDefinition.SetContainer(con
 |740|The control to remove holds a control that was not added at run time. Nothing is removed.|
 |-2147467262 (&H80004002)|The name to remove is a control array's: *No such interface supported*.|
 
+A ListBox added is snapped to whole rows as it is added, on a form shown or not, as VB6 snaps it: 450 twips are 30 pixels. The form's window snaps it, so a [`FormDefinition`](../api/RDCore.Forms.Model.FormDefinition.yml) that has no [`RDFormsFormWindow`](../api/RDCore.Forms.Avalonia.Rendering.RDFormsFormWindow.yml) yet keeps its 32 pixels until its window is made.
+
 > [!NOTE]
-> **Not implemented.** A ListBox added at run time to a form that is not shown keeps a height of 32 pixels until the form is shown, where its height is snapped to whole rows (450 twips, 30 pixels); VB6 snaps it as it is added. The `Controls` collection itself, error 735 for a control used after its removal, and the controls of a form's file coming back after Unload and Load belong to the runtime that runs the program.
+> **Not implemented.** The `Controls` collection itself, error 735 for a control used after its removal, and the controls of a form's file coming back after Unload and Load belong to the runtime that runs the program.
 
 ## Control arrays
 
