@@ -49,7 +49,7 @@ public static class FormFonts
     /// <param name="font">The font.</param>
     /// <remarks>
     /// The underline and the strikethrough are drawn under and through the text of each of the control's text blocks, along the
-    /// whole text. A text box's text is drawn without them.
+    /// whole text. Avalonia's text box draws neither; an <see cref="RDFormsTextBox"/> draws them over its text.
     /// </remarks>
     public static void Apply(Control control, FormFont font)
     {
