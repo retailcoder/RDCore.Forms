@@ -3,10 +3,12 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Controls.Primitives;
+using Avalonia.VisualTree;
 using RDCore.Forms.Model;
 using P = RDCore.Forms.Model.Properties;
 using ScrollBars = RDCore.Forms.Model.ScrollBars;
@@ -162,6 +164,22 @@ public sealed class RDFormsTextBox : TextBox, IRaisesKeyEvents, IKeepsEdits
         finally
         {
             selecting = false;
+        }
+    }
+
+    // The underline and the strikethrough of its font, drawn over its text.
+    private TextBoxLines? lines;
+
+    /// <inheritdoc/>
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        // Avalonia's presenter draws neither: they are drawn over it, in the panel that scrolls it.
+        lines = null;
+        if (e.NameScope.Find<TextPresenter>("PART_TextPresenter") is { } presenter && presenter.GetVisualParent() is Panel panel)
+        {
+            lines = new TextBoxLines(presenter, () => instance.Get(P.Font));
+            panel.Children.Add(lines);
         }
     }
 
