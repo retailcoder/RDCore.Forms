@@ -967,9 +967,14 @@ public static class Properties
 
     /// <summary>
     /// The index of a MultiPage's selected page, or of a TabStrip's selected tab, from 0; -1 when it has none. Setting it selects that
-    /// page or tab. Its <c>Value</c>.
+    /// page or tab. Its <c>Value</c>. As in MSForms, a program can set it to -1, or to the index of one of the control's pages or
+    /// tabs; any other value is error 380, and the selection stays.
     /// </summary>
-    public static readonly PropertyDefinition<int> SelectedIndex = new("Value", PropertyCategory.Behavior) { Valid = i => i >= -1 };
+    public static readonly PropertyDefinition<int> SelectedIndex = new("Value", PropertyCategory.Behavior)
+    {
+        Valid = i => i >= -1,
+        ValidOn = (component, i) => i < SelectedIndexes.Count(component),
+    };
 
     /// <summary>
     /// A TabStrip's tabs, in their order: two, <c>Tab1</c> and <c>Tab2</c>, by default. No two have the same name, compared without

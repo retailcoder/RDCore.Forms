@@ -263,7 +263,7 @@ public sealed class ComponentInstance
     /// </remarks>
     public bool TrySet(PropertyDefinition property, object? value)
     {
-        if (!Class.Has(property) || !property.IsPresent(this) || !property.Accepts(value))
+        if (!Class.Has(property) || !property.IsPresent(this) || !property.Accepts(value) || !property.AcceptsOn(this, value))
             return false;
         Assign(property, value);
         return true;

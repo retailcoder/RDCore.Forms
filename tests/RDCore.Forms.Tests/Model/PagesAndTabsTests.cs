@@ -76,6 +76,49 @@ public sealed class PagesAndTabsTests
         Assert.IsFalse(P.TabStyle.Accepts((TabStyle)3));
     }
 
+    // As measured in Excel: a program sets a MultiPage's or a TabStrip's Value to -1 or to one of its pages or tabs; any other value is 380,
+    // and the selection stays. With every page or tab removed, only -1 is left.
+    [TestMethod]
+    public void AProgramsValue_IsMinusOneOrAPageOrATab_AndAnyOtherIs380_TheSelectionStaying()
+    {
+        var (_, multiPage, pages) = MultiPage();
+        var tabStrip = new ComponentInstance(ComponentClasses.TabStrip, "TabStrip1");
+        foreach (var control in new[] { multiPage, tabStrip })
+        {
+            var codes = new List<int>();
+            var values = new List<int>();
+            foreach (var value in new[] { 1, 0, 2, -1, 5, 1 })
+            {
+                codes.Add(Code(() => RunTime.Assign(control, P.SelectedIndex, value, onAVisualBasic6Form: false)));
+                values.Add(control.Get(P.SelectedIndex));
+            }
+            CollectionAssert.AreEqual(new[] { 0, 0, 380, 0, 380, 0 }, codes, control.Name);
+            CollectionAssert.AreEqual(new[] { 1, 0, 0, -1, -1, 1 }, values, control.Name);
+            Assert.IsFalse(control.TrySet(P.SelectedIndex, 2), control.Name);
+        }
+
+        pages.Clear();
+        Tabs.Of(tabStrip).Clear();
+        foreach (var control in new[] { multiPage, tabStrip })
+            CollectionAssert.AreEqual(new[] { 380, 0 },
+                new[] { Code(() => RunTime.Assign(control, P.SelectedIndex, 0, onAVisualBasic6Form: false)),
+                        Code(() => RunTime.Assign(control, P.SelectedIndex, -1, onAVisualBasic6Form: false)) }, control.Name);
+    }
+
+    // The error an action raises, or 0 where it raises none.
+    private static int Code(Action action)
+    {
+        try
+        {
+            action();
+            return 0;
+        }
+        catch (FormErrorException e)
+        {
+            return e.Error.Number;
+        }
+    }
+
     [TestMethod]
     public void TabsOfTheSameName_AreRefused_WithoutRegardToCase() =>
         Assert.IsFalse(P.Tabs.Accepts(new List<Tab> { new("Tab1", "A"), new("TAB1", "B") }));

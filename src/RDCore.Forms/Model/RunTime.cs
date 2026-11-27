@@ -34,7 +34,7 @@ public static class RunTime
             throw new ArgumentException($"{component.Class.ClassName} has no property {property.Name}.", nameof(property));
         if (onAVisualBasic6Form ? component.Class.IsReadOnlyAtRunTimeOnAVisualBasic6Form(property) : component.Class.IsReadOnlyAtRunTime(property))
             throw new FormErrorException(FormError.SetNotSupportedAtRuntime);
-        if (!property.Accepts(value))
+        if (!property.Accepts(value) || !property.AcceptsOn(component, value))
             throw new FormErrorException(FormError.InvalidPropertyValue);
         if (AlignLayout.Refusal(component, property) is { } refused)
             throw new FormErrorException(refused);

@@ -150,6 +150,10 @@ public sealed class Pages : IReadOnlyList<ComponentInstance>
 // How a MultiPage's or a TabStrip's Value follows its selected page or tab as one is added or removed.
 internal static class SelectedIndexes
 {
+    // How many pages or tabs the MultiPage or the TabStrip has.
+    public static int Count(ComponentInstance component) =>
+        component.Class.Has(Properties.Tabs) ? component.Get(Properties.Tabs).Count : component.Contents.Count;
+
     // One was added at index, so the collection holds count: the first one added is selected, and one added at or before the selected one moves it along.
     public static void Inserted(ComponentInstance component, int index, int count)
     {

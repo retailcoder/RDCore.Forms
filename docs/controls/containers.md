@@ -67,7 +67,7 @@ Its key events are RDForms' own, not measured with VB6. With the focus, it raise
 
 - A page, of the class `RDForms.Page`, is placed only in a MultiPage, and a MultiPage holds only pages. A page has no place or size of its own: it fills the MultiPage under its tabs. The controls placed in a page are shown on it, as a Frame's are.
 - A page's tab shows its `Caption`, with its access key, and its `ToolTipText`. A hidden page has no tab. A disabled page's tab is drawn disabled and cannot be selected.
-- `Value` is the index of the selected page, from 0, or -1 where there is none. Only the selected page and its controls are shown.
+- `Value` is the index of the selected page, from 0, or -1 where there is none. Only the selected page and its controls are shown. A program can set it to -1 even where there are pages. Any other value outside the pages is error 380: the selection stays, and no Change is raised.
 - A press of the left button on an enabled tab selects its page, which raises Change where `Value` changes, and takes the focus. Its release over the same tab raises Click with the tab's index, after MouseUp.
 - Its mouse events take the tab's index first, -1 where the pointer is over no tab: `MouseDown(Index, Button, Shift, X, Y)`. X and Y are in twips. A double click's second press raises `DblClick(Index, Cancel)` in place of MouseDown, and no Click.
 - With the focus on the MultiPage itself, the arrow keys along its tabs select the next or the previous tab, skipping the hidden and the disabled ones, and stop at the last and the first. From anywhere in it, Ctrl+Tab and Ctrl+Shift+Tab do the same, and go round. Each raises Change and Click.
@@ -98,7 +98,7 @@ A MultiPage added by a program gets two pages, named `Page` and the first free n
 [`Tabs`](../api/RDCore.Forms.Model.Tabs.yml) is a TabStrip's collection of tabs, as a program's `Tabs` is: `Count`, `Item` by index or name, `Add` (named `Tab` and the first free number by default), `Remove`, `Clear` and `SelectedItem`, as a MultiPage's `Pages` has. An index outside the tabs, a name no tab has, and a name another tab has are 5.
 
 > [!NOTE]
-> **Not implemented.** A `Value` outside the pages or the tabs raises no error 380, and a page's or a tab's index cannot be changed. A page's `Picture` is not drawn, and a page has no scroll bars. A MultiPage declares Layout, AddControl and RemoveControl and does not raise them, and it has no Scroll event. The order of the events was not measured with MSForms.
+> **Not implemented.** A page's or a tab's index cannot be changed. A page's `Picture` is not drawn, and a page has no scroll bars. A MultiPage declares Layout, AddControl and RemoveControl and does not raise them, and it has no Scroll event. The order of the events was not measured with MSForms.
 
 ## A size from the picture
 

@@ -119,6 +119,10 @@ public abstract class PropertyDefinition
     // Whether a value of the property's type is among its valid values.
     private protected abstract bool IsValid(object value);
 
+    // Whether a component can be set to a value the property accepts, where the component's other properties bound it: a MultiPage's
+    // Value is one of its pages. Reading a form's file does not check it, as the file sets the Value before it adds the pages.
+    internal abstract bool AcceptsOn(ComponentInstance component, object? value);
+
     // The value a component holds when the property is set to a value.
     internal abstract object? Coerced(ComponentInstance component, object? value);
 
@@ -172,6 +176,9 @@ public sealed class PropertyDefinition<T>(string name, PropertyCategory category
     // Whether a component has the property, or null where every component of a class that has it does.
     internal Func<ComponentInstance, bool>? Present { get; init; }
 
+    // Which valid values a component can be set to, from its other properties, or null where it can be set to all of them.
+    internal Func<ComponentInstance, T, bool>? ValidOn { get; init; }
+
     // The value a component reads, made from its other properties, in place of a value it holds.
     internal Func<ComponentInstance, T>? Read { get; init; }
 
@@ -185,6 +192,8 @@ public sealed class PropertyDefinition<T>(string name, PropertyCategory category
     public override object? BoxedDefault => Default;
 
     private protected override bool IsValid(object value) => Valid is null || Valid((T)value);
+
+    internal override bool AcceptsOn(ComponentInstance component, object? value) => ValidOn is null || value is not T typed || ValidOn(component, typed);
 
     internal override object? Coerced(ComponentInstance component, object? value) =>
         Coerce is not null && value is T typed ? Coerce(component, typed) : value;
