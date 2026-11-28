@@ -40,12 +40,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <!-- every project, its tests included, builds with no warning: a warning is an error. A missing xmldoc (CS1591) and an advisory published against
-       a package are warnings still, which a build reports without failing: the first marks a member the API reference has no text for, the second is news of the
-       package, not of the code built. -->
+  <!-- every project, its tests included, builds with no warning: a warning is an error. A missing xmldoc (CS1591) is a warning still, which a build
+       reports without failing: it marks a member the API reference has no text for. An advisory published against a package is below. -->
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591;NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsPackable)' != 'false'">
@@ -55,5 +54,22 @@
     <None Include="$(MSBuildThisFileDirectory)NOTICE.md" Pack="true" PackagePath="" Visible="false" />
     <None Include="$(MSBuildThisFileDirectory)assets/nuget-readme.md" Pack="true" PackagePath="README.md" Visible="false" />
   </ItemGroup>
+
+  <!-- restore audits every package, the transitive ones included, against nuget.org's advisories of every severity: an advisory is NU1901 (low) to NU1904
+       (critical), naming the package, its version and the advisory. The fix is a version bump of the package, or a pin of the transitive one above it. -->
+  <PropertyGroup>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+  </PropertyGroup>
+
+  <!-- in CI (GitHub Actions sets GITHUB_ACTIONS), RDCore.Forms ships with no known vulnerability in any package it uses, and an advisory fails the build.
+       Elsewhere it is a warning, which a build reports without failing: an advisory published after a commit is news of a package, not of the code. -->
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' != 'true'">
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+  </PropertyGroup>
 
 </Project>
