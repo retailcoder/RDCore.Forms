@@ -12,6 +12,7 @@ RDCore.Forms is RDForms, the form toolkit of the [RDCore](https://github.com/rub
 
 [![NuGet](https://img.shields.io/nuget/vpre/RDCore.Forms)](https://www.nuget.org/packages/RDCore.Forms)
 [![Build and Test](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml/badge.svg)](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/rubberduck-vba/RDCore.Forms/badges/coverage.json)](https://github.com/rubberduck-vba/RDCore.Forms/actions/workflows/build.yml)
 
 ## Installation
 
