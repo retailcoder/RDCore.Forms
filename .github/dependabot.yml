@@ -1,0 +1,23 @@
+# Dependabot opens pull requests each week for the packages and actions of RDCore.Forms that have a newer version: one per group below, and one per
+# package otherwise. An action is pinned by its commit, with its version in the comment beside it.
+# Left out: RDCore.SDK, whose version Directory.Build.props sets when RDCore.Forms takes a new RDCore.SDK release.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "RDCore.*"
+    groups:
+      avalonia:
+        patterns:
+          - "Avalonia*"
+      mstest:
+        patterns:
+          - "MSTest*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

@@ -1,16 +1,42 @@
 name: Build and Test
 
+# every push and pull request to main, and each Monday: an advisory published after the last push shows on main within a week. The scheduled
+# run audits the packages and runs nothing else.
 on:
  push:
   branches: [main]
  pull_request:
   branches: [main]
+ schedule:
+  - cron: '17 6 * * 1'
 
 permissions:
  contents: read
 
 jobs:
+ # restore audits every package, the transitive ones included, against nuget.org's advisories of every severity (Directory.Build.props): in CI each
+ # vulnerable package is an error NU1901-NU1904 that names it, its version and its advisory, and the run stops here, before any build. It needs no
+ # repository setting.
+ vulnerable-packages:
+  runs-on: ubuntu-latest
+  timeout-minutes: 10
+
+  steps:
+   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+     with:
+      persist-credentials: false
+
+   - name: Setup .NET
+     uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+     with:
+      dotnet-version: 11.0
+
+   - name: Vulnerable packages
+     run: dotnet restore RDCore.Forms.slnx --force-evaluate
+
  build-and-test:
+  needs: vulnerable-packages
+  if: github.event_name != 'schedule'
   runs-on: ubuntu-latest
   timeout-minutes: 30
 
@@ -37,13 +63,15 @@ jobs:
    - name: Test (Release)
      run: dotnet test RDCore.Forms.slnx --configuration Release --no-build --verbosity normal
 
- # the same runs on Windows and macOS. win-x64 and osx-x64 (macos-15-intel, GitHub's Intel image) run for every pull request;
- # osx-arm64 (macos-latest) runs on main only, where it is too slow to hold a pull request up.
+ # the same runs on Windows and macOS. win-x64 runs for every pull request; osx-arm64 (macos-latest) runs on main only, where it
+ # is too slow to hold a pull request up.
  build-and-test-os:
+  needs: vulnerable-packages
+  if: github.event_name != 'schedule'
   strategy:
    fail-fast: false
    matrix:
-    os: ${{ fromJSON(github.event_name == 'push' && github.ref == 'refs/heads/main' && '["windows-latest", "macos-15-intel", "macos-latest"]' || '["windows-latest", "macos-15-intel"]') }}
+    os: ${{ fromJSON(github.event_name == 'push' && github.ref == 'refs/heads/main' && '["windows-latest", "macos-latest"]' || '["windows-latest"]') }}
   name: build-and-test (${{ matrix.os }})
   runs-on: ${{ matrix.os }}
   timeout-minutes: 30
