@@ -56,7 +56,8 @@
   </ItemGroup>
 
   <!-- restore audits every package, the transitive ones included, against nuget.org's advisories of every severity: an advisory is NU1901 (low) to NU1904
-       (critical), naming the package, its version and the advisory. The fix is a version bump of the package, or a pin of the transitive one above it. -->
+       (critical), naming the package, its version and the advisory. The fix is a version bump of the package; for a
+       transitive package, it is a PackageReference of its own at a version above the advisory. -->
   <PropertyGroup>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
