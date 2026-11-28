@@ -1,10 +1,14 @@
 ﻿// Derived from HexIDE (https://github.com/hexide-io/HexIDE), commit ae17f1db.
 // Copyright (c) 2024 Bartosz Korczyński. Copyright (c) 2026 The HexIDE Authors. MIT License; see NOTICE.md.
 
+using System.Runtime.CompilerServices;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using RDCore.Forms.Model;
 using MousePointer = RDCore.Forms.Model.MousePointer;
 using P = RDCore.Forms.Model.Properties;
@@ -103,7 +107,15 @@ internal static class ComponentBinding
                 ToolTip.SetTip(control, value is string { Length: > 0 } tip ? tip : null);
                 return true;
             case nameof(P.MousePointer) or nameof(P.MouseIcon):
-                control.Cursor = PointerOf(control);
+                ShowPointer(control);
+                // The controls it holds whose MousePointer is Default show its pointer, or the next container's. Applied again, as they
+                // join the tree or take a new theme, they apply their own.
+                if (IsReapplying(RDFormsControl.GetInstance(control)!))
+                    return true;
+                foreach (var held in control.GetVisualDescendants().OfType<Control>())
+                    if (RDFormsControl.GetInstance(held) is { } component && component.Class.Has(P.MousePointer)
+                        && component.Get(P.MousePointer) == MousePointer.Default)
+                        ShowPointer(held);
                 return true;
             case nameof(P.TabIndex):
                 KeyboardNavigation.SetTabIndex(control, (short)value!);
@@ -129,11 +141,75 @@ internal static class ComponentBinding
         return false;
     }
 
-    // The pointer a control's component shows: a Custom pointer is made from its MouseIcon, and is the arrow where it has none.
-    private static Cursor? PointerOf(Control control)
+    // A control shows its component's pointer. Where its MousePointer is Default, it shows the pointer of its nearest container (a
+    // Frame, a PictureBox, then the form) whose MousePointer is not, as VB6 does, and else its own, such as a TextBox's I-beam: the
+    // pointer its theme gives it.
+    private static void ShowPointer(Control control)
     {
         var instance = RDFormsControl.GetInstance(control)!;
-        var pointer = instance.Class.Has(P.MousePointer) ? instance.Get(P.MousePointer) : MousePointer.Default;
+        var from = instance;
+        while (from is not null && Pointer(from) == MousePointer.Default)
+            from = from.Container;
+        var cursor = from is null ? null : PointerOf(from);
+        Show(control, cursor);
+        // A theme sets the pointer of parts of its template, such as a TextBox's text area, over the control's own, and may style a part
+        // after it is made: the pointer shown is set on every part, and taken off them gives them the theme's again. The parts are there
+        // once the control's template, and the template of each part that has one, is applied, and once the content of each presenter
+        // among them joins the tree: the pointer is shown again then.
+        Follow(control, control);
+        foreach (var part in Parts(control))
+        {
+            if (part is InputElement element)
+                Show(element, cursor);
+            Follow(part, control);
+        }
+
+        static void Show(InputElement element, Cursor? cursor)
+        {
+            if (cursor is null)
+                element.ClearValue(InputElement.CursorProperty);
+            else
+                element.Cursor = cursor;
+        }
+
+        static void Follow(Visual part, Control control)
+        {
+            if (part is TemplatedControl templated && Followed.TryAdd(templated, null))
+                templated.TemplateApplied += (_, _) => ShowPointer(control);
+            else if (part is ContentPresenter presenter && Followed.TryAdd(presenter, null))
+                // A presenter takes its content before the content joins the visual tree: the pointer is shown as it joins.
+                presenter.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == ContentPresenter.ChildProperty && e.NewValue is Visual content && Followed.TryAdd(content, null))
+                        content.AttachedToVisualTree += (_, _) => ShowPointer(control);
+                };
+        }
+    }
+
+    // The parts whose template or content the pointer follows.
+    private static readonly ConditionalWeakTable<Visual, object?> Followed = new();
+
+    // The parts of a control's template: none inside a control it holds, and none of its scroll bars, which keep their own pointer, as
+    // the scroll bars of VB6's windows are outside the area VB6 sets the pointer of.
+    private static IEnumerable<Visual> Parts(Visual control)
+    {
+        foreach (var child in control.GetVisualChildren())
+        {
+            if (child is Control held && RDFormsControl.GetInstance(held) is not null || child is ScrollBar)
+                continue;
+            yield return child;
+            foreach (var part in Parts(child))
+                yield return part;
+        }
+    }
+
+    private static MousePointer Pointer(ComponentInstance instance) =>
+        instance.Class.Has(P.MousePointer) ? instance.Get(P.MousePointer) : MousePointer.Default;
+
+    // The pointer a component's MousePointer names: a Custom pointer is made from its MouseIcon, and is the arrow where it has none.
+    private static Cursor? PointerOf(ComponentInstance instance)
+    {
+        var pointer = Pointer(instance);
         if (pointer is MousePointer.Custom && instance.Class.Has(P.MouseIcon))
         {
             using var image = RDFormsPicture.DecodePointer(instance.Get(P.MouseIcon), out var hotSpot);
