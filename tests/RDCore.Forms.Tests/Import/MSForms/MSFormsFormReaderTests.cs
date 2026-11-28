@@ -1,5 +1,7 @@
 using System.Globalization;
+using Avalonia;
 using Avalonia.Threading;
+using RDCore.Forms.Avalonia.Controls;
 using RDCore.Forms.Avalonia.Rendering;
 using RDCore.Forms.Import.MSForms;
 using RDCore.Forms.Model;
@@ -347,6 +349,31 @@ public sealed class MSFormsFormReaderTests
         var instance = Find(import, name);
         Assert.AreEqual("0", instance.Get(P.Text));
         Assert.IsFalse(instance.UnmodelledProperties.Any(p => p.Name == "Value"));
+    }
+
+    // MSForms' CommandButton lays its picture out by its PicturePosition, 7 by default. A file that stores none reads as 7, set, so the
+    // ported button, given a picture, draws as MSForms' does where a VB6 Graphical button keeps VB6's layout.
+    [TestMethod]
+    public void ACommandButtonWithNoPicturePosition_ReadsAsAboveCenter_Set_AndDrawsWithMSFormsLayout()
+    {
+        var go = MSFormsReader.Read(Bytes("AllControls.storage")).Form.DescendantsAndSelf().Single(control => control.Name == "Go");
+        Assert.IsFalse(go.Properties.IsStored("PicturePosition"));
+
+        var button = Find(AllControls(), "Go");
+        var picture = UI.Run(() =>
+        {
+            var red = Png(16, 12, [.. Enumerable.Repeat(0xFFFF0000u, 192)]);
+            var control = new RDFormsCommandButton(button.Set(P.ButtonStyle, ButtonStyle.Graphical).Set(P.Picture, red));
+            var (window, _) = Controls.ControlHost.Show((control, new Rect(0, 0, 200, 93)));
+            Dispatcher.UIThread.RunJobs();
+            var bounds = control.PictureBounds;
+            window.Close();
+            return bounds;
+        });
+
+        Assert.IsTrue(button.IsSet(P.PicturePosition));
+        Assert.AreEqual(PicturePosition.AboveCenter, button.Get(P.PicturePosition));
+        Assert.AreEqual(new Size(16, 12), picture?.Size);
     }
 
     [TestMethod]

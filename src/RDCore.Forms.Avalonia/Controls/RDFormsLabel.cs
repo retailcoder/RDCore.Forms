@@ -341,9 +341,19 @@ internal sealed class LabelFace : Control
             text?.Arrange(new Rect(finalSize));
             return finalSize;
         }
+        var (pictureAt, textAt) = Layout(finalSize, picture.PixelSize, text, position);
+        text?.Arrange(textAt);
+        PictureBounds = pictureAt;
+        return finalSize;
+    }
+
+    // Where MSForms puts a picture of a size in pixels and a caption in an area, for a PicturePosition, as its Label and its buttons
+    // do: the two make one block, centred, or from the edge where it is larger than the area, the picture one pixel from the caption.
+    // The caption is measured here.
+    internal static (Rect Picture, Rect Text) Layout(Size area, PixelSize pixels, TextBlock? text, PicturePosition position)
+    {
         var side = position <= PicturePosition.RightBottom;
-        var (width, height) = (finalSize.Width, finalSize.Height);
-        var pixels = picture.PixelSize;
+        var (width, height) = (area.Width, area.Height);
         // A caption that wraps does so in the width the picture leaves beside it; one that does not is measured whole. The picture is
         // then shrunk to the room the caption leaves.
         var room = side ? Math.Max(0, width - pixels.Width - Gap) : width;
@@ -384,9 +394,7 @@ internal sealed class LabelFace : Control
                 textAt = new Rect(Aligned(x0, bw, tw, 1), Aligned(y0, bh, th, 1), tw, th);
                 break;
         }
-        text?.Arrange(textAt);
-        PictureBounds = pictureAt;
-        return finalSize;
+        return (pictureAt, textAt);
 
         static double Aligned(double start, double extent, double length, int along) =>
             start + along switch { 0 => 0, 1 => Math.Floor((extent - length) / 2), _ => extent - length };

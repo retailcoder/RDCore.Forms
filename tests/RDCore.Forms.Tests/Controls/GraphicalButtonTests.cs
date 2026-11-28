@@ -137,6 +137,28 @@ public sealed class GraphicalButtonTests
         Assert.IsTrue(red.Value.Y > 0, "The picture starts at the top of the button.");
     }
 
+    // A VB6 form's Graphical button, with no PicturePosition, keeps VB6's layout: in a tall button its caption is still at the bottom,
+    // where MSForms' layout would centre the picture and the caption together.
+    [TestMethod]
+    [DataRow("RDForms.CommandButton")]
+    [DataRow("RDForms.CheckBox")]
+    [DataRow("RDForms.OptionButton")]
+    public void AVB6GraphicalButton_KeepsItsCaptionAtTheBottom_InATallButton(string type)
+    {
+        var (red, caption) = UI.Run(() =>
+        {
+            var control = Make(Button(ComponentClasses.All.Single(c => c.TypeName == type), ButtonStyle.Graphical));
+            var (window, _) = ControlHost.Show((control, new Rect(10, 10, 100, 100)));
+            var result = (Box(window, control, Red), CaptionBounds(control));
+            window.Close();
+            return result;
+        });
+
+        Assert.AreEqual(new PixelRect(42, red!.Value.Y, 16, 16), red);
+        Assert.IsTrue(caption.Bottom >= 90, $"The caption ends at {caption.Bottom}, above the bottom of the button.");
+        Assert.IsTrue(red.Value.Bottom <= caption.Top, $"The picture ends at {red.Value.Bottom}, under the caption's top at {caption.Top}.");
+    }
+
     [TestMethod]
     public void AGraphicalButtonWithNoCaption_CentresItsPicture()
     {

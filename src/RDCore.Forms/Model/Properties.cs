@@ -245,8 +245,9 @@ public static class Properties
     public static readonly PropertyDefinition<byte[]?> Picture = new("Picture", PropertyCategory.Appearance, null);
 
     /// <summary>
-    /// Where a Label draws its <see cref="Picture"/> against its caption: an RD-VBA addition, as MSForms' Label has it.
-    /// <see cref="Model.PicturePosition.AboveCenter"/> by default.
+    /// Where a Label, a ToggleButton or a Graphical CommandButton draws its <see cref="Picture"/> against its caption, as MSForms' controls
+    /// of those names have it: an RD-VBA addition on a Label and a CommandButton. <see cref="Model.PicturePosition.AboveCenter"/> by default.
+    /// A CommandButton uses it only where it is set, and keeps VB6's layout where it is not.
     /// </summary>
     public static readonly PropertyDefinition<PicturePosition> PicturePosition =
         new("PicturePosition", PropertyCategory.Appearance, Model.PicturePosition.AboveCenter) { Valid = Enum.IsDefined };

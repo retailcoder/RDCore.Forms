@@ -1,9 +1,11 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using RDCore.Forms.Model;
+using RDCore.SDK.Workspace.Pictures;
 using P = RDCore.Forms.Model.Properties;
 
 namespace RDCore.Forms.Avalonia.Controls;
@@ -12,20 +14,69 @@ namespace RDCore.Forms.Avalonia.Controls;
 // above it (centred in the whole face where there is no caption), and both one pixel right and down while the button is down. A button
 // that is down shows its DownPicture where it has one, and a disabled button its DisabledPicture, or else its Picture greyed. Where
 // UseMaskColor is set, the pixels of a picture of exactly the MaskColor show the face, whichever picture is shown.
+// With a Position, it lays the picture and the caption out as MSForms' buttons do (measured in Excel): the Label's layout
+// (LabelFace.Layout) inside the button inset 4 pixels, the caption's box 4 pixels wider and taller than its text, with the
+// text at its left and 2 pixels from its top. An empty caption takes its box too. Where there is no picture, the caption is centred.
 internal sealed class GraphicalFace : Control
 {
     // How much of its colour a disabled button's caption keeps, and its Picture where it has no DisabledPicture.
     private const double GreyedOpacity = 0.5;
 
+    // MSForms' layout: the button's inside, from its edge, and the room its caption's box takes around the text.
+    private static readonly Thickness Inset = new(4);
+    private static readonly Thickness CaptionPadding = new(0, 2, 4, 2);
+
     private readonly RDFormsPicture.Holder picture = new();
     private readonly RDFormsPicture.Holder downPicture = new();
     private readonly RDFormsPicture.Holder disabledPicture = new();
-    private Control? caption;
+    private TextBlock? caption;
+    private string captionText = "";
+    private PicturePosition? position;
+    private Rect? pictureAt;
     private bool isDown;
     private FormColor maskColor = P.MaskColor.Default;
     private bool useMaskColor;
 
     public GraphicalFace() => ClipToBounds = true;
+
+    // Where the button lays out as MSForms' do, the position of its picture; null for VB6's layout.
+    public PicturePosition? Position
+    {
+        get => position;
+        set
+        {
+            if (position == value)
+                return;
+            var mode = position is null != value is null;
+            position = value;
+            if (mode)
+                ShowCaption(captionText);
+            InvalidateMeasure();
+            InvalidateVisual();
+        }
+    }
+
+    // Whether the colour of a bitmap's lower-left pixel shows the face, as in MSForms, in place of the MaskColor.
+    public bool MasksLowerLeft { get; init; }
+
+    // Whether the face has a Picture.
+    public bool HasPicture => picture.Picture is not null;
+
+    // The caption's control, or null where there is none.
+    public TextBlock? Caption => caption;
+
+    // Where the picture is drawn, in MSForms' layout, or null where it draws none or lays out as VB6 does.
+    public Rect? PictureBounds => position is not null && Shown.Picture is not null ? pictureAt : null;
+
+    // PictureBounds, from the top left corner of the button the face is in.
+    public Rect? PictureBoundsIn(Visual button) =>
+        PictureBounds is { } at && this.TranslatePoint(at.Position, button) is { } from ? new Rect(from, at.Size) : null;
+
+    // Where the caption's text is drawn, from the top left corner of the button, in MSForms' layout with a picture, or null.
+    public Rect? CaptionBoundsIn(Visual button) =>
+        position is not null && HasPicture && caption is not null && caption.TranslatePoint(default, button) is { } from
+            ? new Rect(from + new Vector(caption.Padding.Left, caption.Padding.Top), caption.Bounds.Size.Deflate(caption.Padding))
+            : null;
 
     public bool IsDown
     {
@@ -49,7 +100,9 @@ internal sealed class GraphicalFace : Control
                 ? disabledPicture.Picture is not null ? (disabledPicture, false) : (picture, true)
                 : (isDown && downPicture.Picture is not null ? downPicture : picture, false);
             // A system mask colour names a colour of the picture: the one Windows gives it, the light palette's, under every variant.
-            return (holder.MaskedBy(useMaskColor ? FormPalette.ToColor(maskColor) : null), greyed);
+            var mask = MasksLowerLeft ? holder.Format == PictureFormat.Bitmap ? holder.LowerLeft : null
+                : useMaskColor ? FormPalette.ToColor(maskColor) : (Color?)null;
+            return (holder.MaskedBy(mask), greyed);
         }
     }
 
@@ -60,10 +113,14 @@ internal sealed class GraphicalFace : Control
             LogicalChildren.Remove(caption);
             VisualChildren.Remove(caption);
         }
-        caption = RDFormsCaption.AsShown(text).Length == 0 ? null : RDFormsCaption.Present(text);
+        captionText = text;
+        caption = position is null && RDFormsCaption.AsShown(text).Length == 0 ? null : RDFormsCaption.Present(text);
         if (caption is not null)
         {
-            caption.HorizontalAlignment = HorizontalAlignment.Center;
+            if (position is null)
+                caption.HorizontalAlignment = HorizontalAlignment.Center;
+            else
+                caption.Padding = CaptionPadding;
             caption.Opacity = CaptionOpacity;
             LogicalChildren.Add(caption);
             VisualChildren.Add(caption);
@@ -113,6 +170,30 @@ internal sealed class GraphicalFace : Control
 
     protected override Size ArrangeOverride(Size finalSize)
     {
+        if (position is { } at)
+        {
+            // The face is inside the button's border, which takes its part of the inset.
+            var border = (Parent as TemplatedControl)?.BorderThickness ?? default;
+            var inside = new Rect(finalSize).Deflate(new Thickness(Math.Max(0, Inset.Left - border.Left), Math.Max(0, Inset.Top - border.Top),
+                Math.Max(0, Inset.Right - border.Right), Math.Max(0, Inset.Bottom - border.Bottom)));
+            var origin = inside.Position + new Vector(Offset, Offset);
+            Rect textAt;
+            if (Shown.Picture is { } shown)
+            {
+                var (pictureIn, textIn) = LabelFace.Layout(inside.Size, shown.PixelSize, caption, at);
+                (pictureAt, textAt) = (pictureIn.Translate(origin), textIn.Translate(origin));
+            }
+            else
+            {
+                caption?.Measure(Size.Infinity);
+                var text = caption?.DesiredSize ?? default;
+                pictureAt = null;
+                textAt = new Rect(new Point(Math.Floor(Math.Max(0, (inside.Width - text.Width) / 2)),
+                    Math.Floor(Math.Max(0, (inside.Height - text.Height) / 2))) + origin, text);
+            }
+            caption?.Arrange(textAt);
+            return finalSize;
+        }
         if (caption is not null)
         {
             var height = caption.DesiredSize.Height;
@@ -127,16 +208,28 @@ internal sealed class GraphicalFace : Control
         if (shown is null)
             return;
         var pixels = shown.PixelSize;
-        var above = caption is null ? Bounds.Height : Math.Max(0, Bounds.Height - caption.DesiredSize.Height);
-        var x = Math.Floor((Bounds.Width - pixels.Width) / 2) + Offset;
-        var y = Math.Floor((above - pixels.Height) / 2) + Offset;
-        using (context.PushTransform(Matrix.CreateTranslation(x, y)))
+        Rect at;
+        if (position is not null)
+        {
+            if (pictureAt is not { Width: > 0, Height: > 0 } laidOut)
+                return;
+            at = laidOut;
+        }
+        else
+        {
+            var above = caption is null ? Bounds.Height : Math.Max(0, Bounds.Height - caption.DesiredSize.Height);
+            at = new Rect(Math.Floor((Bounds.Width - pixels.Width) / 2) + Offset, Math.Floor((above - pixels.Height) / 2) + Offset,
+                pixels.Width, pixels.Height);
+        }
+        // MSForms shrinks a picture larger than its room to fit it.
+        var stretch = position is not null;
+        using (context.PushTransform(Matrix.CreateTranslation(at.X, at.Y)))
         {
             if (!greyed)
-                RDFormsPicture.Draw(context, shown, new Size(pixels.Width, pixels.Height));
+                RDFormsPicture.Draw(context, shown, at.Size, stretch);
             else
                 using (context.PushOpacity(GreyedOpacity))
-                    RDFormsPicture.Draw(context, shown, new Size(pixels.Width, pixels.Height));
+                    RDFormsPicture.Draw(context, shown, at.Size, stretch);
         }
     }
 

@@ -24,12 +24,16 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// draws.
 /// </para>
 /// <para>
-/// It shows its <c>Caption</c>, with its access key. It does not draw its <c>Picture</c>.
+/// It shows its <c>Caption</c>, with its access key. With a <c>Picture</c>, it lays the picture and the caption out as an MSForms
+/// ToggleButton does (measured in Excel): one block, centred inside the button 4 pixels from its edge, the picture
+/// where its <c>PicturePosition</c> puts it, one pixel from the caption, and shrunk to fit. The caption takes 4 pixels more across and
+/// down than its text. A bitmap's lower-left pixel is transparent. While the button is down, both are drawn one pixel right and down.
 /// </para>
 /// </remarks>
 public sealed class RDFormsToggleButton : ToggleButton, ICustomHitTest, IRaisesKeyEvents
 {
     private readonly ComponentInstance instance;
+    private readonly GraphicalFace face = new() { Position = PicturePosition.AboveCenter, MasksLowerLeft = true };
 
     static RDFormsToggleButton()
     {
@@ -58,6 +62,24 @@ public sealed class RDFormsToggleButton : ToggleButton, ICustomHitTest, IRaisesK
     /// <inheritdoc/>
     public bool HitTest(Point point) => new Rect(Bounds.Size).Contains(point);
 
+    /// <summary>
+    /// Where the button draws its picture, from its top left corner, or <see langword="null"/> where it draws none.
+    /// </summary>
+    public Rect? PictureBounds => face.PictureBoundsIn(this);
+
+    /// <summary>
+    /// Where the button draws its caption's text, from its top left corner, or <see langword="null"/> where its picture is not shown with it.
+    /// </summary>
+    public Rect? CaptionBounds => face.CaptionBoundsIn(this);
+
+    /// <inheritdoc/>
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IsCheckedProperty || change.Property == IsPressedProperty)
+            face.IsDown = IsChecked == true || IsPressed;
+    }
+
     /// <inheritdoc/>
     protected override void OnClick()
     {
@@ -84,9 +106,41 @@ public sealed class RDFormsToggleButton : ToggleButton, ICustomHitTest, IRaisesK
                 RDFormsControl.Raise(this, Events.Click);
             }
         }
-        else if (ReferenceEquals(e.Property, P.Caption))
-            RDFormsCaption.ShowIn(this, (string)e.After!);
+        else if (ReferenceEquals(e.Property, P.Caption) || ReferenceEquals(e.Property, P.Picture))
+        {
+            if (ReferenceEquals(e.Property, P.Picture))
+                face.Take(P.Picture, e.After);
+            ShowContent();
+        }
+        else if (ReferenceEquals(e.Property, P.PicturePosition))
+            face.Position = (PicturePosition)e.After!;
         else
             ComponentBinding.ApplyCommon(this, e.Property, e.After);
+    }
+
+    // The caption alone as the theme shows it, or, with a picture, the face that lays the two out.
+    private void ShowContent()
+    {
+        var caption = instance.Get(P.Caption);
+        if (face.HasPicture)
+        {
+            if (!ReferenceEquals(Content, face))
+            {
+                // The caption's template makes controls of strings only.
+                ClearValue(ContentTemplateProperty);
+                GraphicalFace.ShowIn(this, face);
+            }
+            GraphicalFace.ShowCaption(this, face, caption);
+            return;
+        }
+        if (ReferenceEquals(Content, face))
+        {
+            Content = null;
+            ClearValue(OpacityProperty);
+            ClearValue(PaddingProperty);
+            ClearValue(HorizontalContentAlignmentProperty);
+            ClearValue(VerticalContentAlignmentProperty);
+        }
+        RDFormsCaption.ShowIn(this, caption);
     }
 }

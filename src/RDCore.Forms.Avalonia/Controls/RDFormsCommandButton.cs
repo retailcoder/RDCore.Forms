@@ -31,6 +31,11 @@ namespace RDCore.Forms.Avalonia.Controls;
 /// <c>DisabledPicture</c> shows its <c>Picture</c> greyed. Its caption is in the system's <c>ButtonText</c> colour: a CommandButton has
 /// no <c>ForeColor</c>.
 /// </para>
+/// <para>
+/// A Graphical button whose <c>PicturePosition</c> is set, by a program or by its form's file, lays its picture and its caption out
+/// as an MSForms CommandButton does, as <see cref="RDFormsToggleButton"/> lays out its own, and one whose <c>PicturePosition</c> is not
+/// set keeps VB6's layout. Its <c>MaskColor</c> and <c>UseMaskColor</c> mask its picture in either layout.
+/// </para>
 /// </remarks>
 public sealed class RDFormsCommandButton : Button, IRaisesKeyEvents
 {
@@ -75,6 +80,18 @@ public sealed class RDFormsCommandButton : Button, IRaisesKeyEvents
 
     /// <inheritdoc/>
     protected override Type StyleKeyOverride => typeof(Button);
+
+    /// <summary>
+    /// Where a Graphical button with its <c>PicturePosition</c> set draws its picture, from its top left corner, or
+    /// <see langword="null"/> where it draws none or lays it out as VB6 does.
+    /// </summary>
+    public Rect? PictureBounds => face?.PictureBoundsIn(this);
+
+    /// <summary>
+    /// Where a Graphical button with its <c>PicturePosition</c> set and a picture draws its caption's text, from its top left corner, or
+    /// <see langword="null"/> where it lays it out as VB6 does.
+    /// </summary>
+    public Rect? CaptionBounds => face?.CaptionBoundsIn(this);
 
     // A Standard button's face is the system's button face colour, pressed or not, as its caption is the button text colour: both are
     // the form's palette, in the button's variant, never the theme's own button colours.
@@ -132,6 +149,12 @@ public sealed class RDFormsCommandButton : Button, IRaisesKeyEvents
         }
         else if (ReferenceEquals(e.Property, P.Caption))
             GraphicalFace.ShowCaption(this, face, (string)e.After!);
+        else if (ReferenceEquals(e.Property, P.PicturePosition))
+        {
+            // Set, from a program or a form's file, it lays the face out as MSForms' does; unset, as VB6's.
+            if (face is not null)
+                face.Position = instance.IsSet(P.PicturePosition) ? (PicturePosition)e.After! : null;
+        }
         else if (GraphicalFace.IsDrawnByFace(e.Property))
             face?.Take(e.Property, e.After);
         else if (ReferenceEquals(e.Property, P.ButtonStyle) || face is null && ReferenceEquals(e.Property, P.BackColor))

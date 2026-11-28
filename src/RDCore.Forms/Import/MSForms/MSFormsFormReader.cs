@@ -371,6 +371,12 @@ public static class MSFormsFormReader
             }
 
             PortCaption(instance, legacyClass, properties);
+
+            // MSForms' CommandButton lays its picture out by its PicturePosition, 7 where its file has none: set, the port keeps that layout.
+            if (instance.Class.Has(P.CommandButtonValue) && instance.Class.Has(P.PicturePosition) && !instance.IsSet(P.PicturePosition))
+            {
+                instance.TryRead(P.PicturePosition, instance.Class.DefaultOf(P.PicturePosition));
+            }
         }
 
         private void PortProperty(ComponentInstance instance, string legacyClass, string name, object value, bool stored)

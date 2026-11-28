@@ -24,7 +24,7 @@ public sealed class RDFormsLibrariesTests
         "Frame.ScrollBars", "Frame.KeepScrollBarsVisible", "Frame.ScrollHeight", "Frame.ScrollWidth", "Frame.ScrollLeft", "Frame.ScrollTop",
         "Frame.Opacity", "Frame.ContextMenu", "Frame.Scroll",
         "Frame.BeforeDragOver", "Frame.BeforeDropOrPaste", "Frame.Error",
-        "CommandButton.Opacity", "CommandButton.ContextMenu",
+        "CommandButton.PicturePosition", "CommandButton.Opacity", "CommandButton.ContextMenu",
         "CommandButton.Validate", "CommandButton.BeforeDragOver", "CommandButton.BeforeDropOrPaste", "CommandButton.Error",
         "CheckBox.ControlSource", "CheckBox.Opacity", "CheckBox.ContextMenu",
         "CheckBox.BeforeUpdate", "CheckBox.AfterUpdate", "CheckBox.BeforeDragOver", "CheckBox.BeforeDropOrPaste", "CheckBox.Error",

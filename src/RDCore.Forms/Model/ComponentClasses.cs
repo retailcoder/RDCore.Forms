@@ -112,12 +112,13 @@ public static class ComponentClasses
 
     /// <summary>
     /// <c>RDForms.CommandButton</c>. It has no <c>ForeColor</c>, as VB6's has none: its caption is drawn in the system's <c>ButtonText</c>
-    /// colour.
+    /// colour. Its <c>PicturePosition</c> is an RD-VBA addition: a Graphical button where it is set lays its picture out as MSForms'
+    /// CommandButton does, and one where it is not keeps VB6's layout.
     /// </summary>
     public static readonly ComponentClass CommandButton = Control("RDForms.CommandButton", "Command",
         [P.Caption, P.BackColor, P.Appearance, P.Font, P.MousePointer, P.MouseIcon, P.Picture, P.Enabled, P.TabStop, P.TabIndex, P.ToolTipText,
          P.Default, P.Cancel, P.ButtonStyle, P.DownPicture, P.DisabledPicture, P.CommandButtonValue, P.MaskColor, P.UseMaskColor,
-         P.CausesValidation],
+         P.CausesValidation, P.PicturePosition],
         [Click, GotFocus, LostFocus, KeyDown, KeyPress, KeyUp, MouseDown, MouseMove, MouseUp, Validate, BeforeDragOver, BeforeDropOrPaste,
          Error]);
 
